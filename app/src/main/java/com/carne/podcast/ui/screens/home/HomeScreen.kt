@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Whatshot
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -18,26 +20,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.carne.podcast.ui.components.CarneEmptyState
 import com.carne.podcast.ui.components.EpisodeRow
+import com.carne.podcast.ui.components.EpisodeRowDividerStartInset
 import com.carne.podcast.ui.theme.CarneTheme
 
 @Composable
 fun HomeScreen(
     onOpenPlayer: () -> Unit,
+    onBrowse: () -> Unit,
     contentPadding: PaddingValues,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
-    val inProgress by viewModel.inProgress.collectAsStateWithLifecycle()
-    val latest by viewModel.latest.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val playerState by viewModel.playerState.collectAsStateWithLifecycle()
 
-    if (inProgress.isEmpty() && latest.isEmpty()) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    when {
+        uiState.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+            ) {
                 ContainedLoadingIndicator()
                 Spacer(Modifier.height(CarneTheme.spacing.lg))
                 Text(
@@ -46,42 +56,51 @@ fun HomeScreen(
                 )
             }
         }
-        return
-    }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = contentPadding,
-    ) {
-        if (inProgress.isNotEmpty()) {
-            item { SectionHeader("Continue listening") }
-            items(inProgress, key = { "ip_${it.id}" }) { episode ->
+        uiState.inProgress.isEmpty() && uiState.latest.isEmpty() -> CarneEmptyState(
+            icon = Icons.Rounded.Whatshot,
+            title = "Welcome to Carne 🌶️",
+            message = "Subscribe to a few shows and your latest episodes will show up right here.",
+            actionLabel = "Find podcasts",
+            onAction = onBrowse,
+        )
+
+        else -> LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = contentPadding,
+        ) {
+            if (uiState.inProgress.isNotEmpty()) {
+                item { SectionHeader("Continue listening") }
+                items(uiState.inProgress, key = { "ip_${it.id}" }) { episode ->
+                    EpisodeRow(
+                        episode = episode,
+                        isCurrent = playerState.currentEpisodeId == episode.id,
+                        isPlaying = playerState.isPlaying,
+                        onPlayToggle = { viewModel.playToggle(episode) },
+                        onClick = { viewModel.open(episode); onOpenPlayer() },
+                        onDownload = { viewModel.download(episode) },
+                        onDeleteDownload = { viewModel.deleteDownload(episode) },
+                        modifier = Modifier.animateItem(),
+                    )
+                    HorizontalDivider(Modifier.padding(start = EpisodeRowDividerStartInset))
+                }
+                item { Spacer(Modifier.height(CarneTheme.spacing.sm)) }
+            }
+
+            item { SectionHeader("Latest episodes") }
+            items(uiState.latest, key = { "lt_${it.id}" }) { episode ->
                 EpisodeRow(
                     episode = episode,
                     isCurrent = playerState.currentEpisodeId == episode.id,
                     isPlaying = playerState.isPlaying,
-                    onPlayToggle = { viewModel.playToggle(episode); },
+                    onPlayToggle = { viewModel.playToggle(episode) },
                     onClick = { viewModel.open(episode); onOpenPlayer() },
                     onDownload = { viewModel.download(episode) },
                     onDeleteDownload = { viewModel.deleteDownload(episode) },
+                    modifier = Modifier.animateItem(),
                 )
-                HorizontalDivider(Modifier.padding(start = 84.dp))
+                HorizontalDivider(Modifier.padding(start = EpisodeRowDividerStartInset))
             }
-            item { Spacer(Modifier.height(8.dp)) }
-        }
-
-        item { SectionHeader("Latest episodes") }
-        items(latest, key = { "lt_${it.id}" }) { episode ->
-            EpisodeRow(
-                episode = episode,
-                isCurrent = playerState.currentEpisodeId == episode.id,
-                isPlaying = playerState.isPlaying,
-                onPlayToggle = { viewModel.playToggle(episode) },
-                onClick = { viewModel.open(episode); onOpenPlayer() },
-                onDownload = { viewModel.download(episode) },
-                onDeleteDownload = { viewModel.deleteDownload(episode) },
-            )
-            HorizontalDivider(Modifier.padding(start = 84.dp))
         }
     }
 }
@@ -92,6 +111,9 @@ private fun SectionHeader(title: String) {
         text = title,
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.Bold,
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(CarneTheme.spacing.lg)
+            .semantics { heading() },
     )
 }

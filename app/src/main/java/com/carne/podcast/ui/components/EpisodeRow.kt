@@ -25,11 +25,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.carne.podcast.data.local.DownloadState
 import com.carne.podcast.data.local.EpisodeEntity
 import com.carne.podcast.ui.theme.CarneTheme
+
+/**
+ * Start inset that aligns a list divider with an [EpisodeRow]'s text column,
+ * clearing the leading artwork: row start padding + artwork width + gap.
+ */
+val EpisodeRowDividerStartInset = 84.dp
 
 @Composable
 fun EpisodeRow(
@@ -54,7 +63,7 @@ fun EpisodeRow(
             PodcastArtwork(
                 url = episode.imageUrl,
                 modifier = Modifier.size(56.dp),
-                cornerRadius = 8.dp,
+                shape = CarneTheme.shapes.artworkSmall,
             )
             Spacer(Modifier.width(CarneTheme.spacing.md))
         }
@@ -102,11 +111,17 @@ fun EpisodeRow(
         }
         Spacer(Modifier.width(CarneTheme.spacing.sm))
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            IconButton(onClick = onPlayToggle) {
-                Icon(
-                    imageVector = if (isCurrent && isPlaying) Icons.Rounded.PauseCircle
-                    else Icons.Rounded.PlayCircle,
-                    contentDescription = if (isCurrent && isPlaying) "Pause" else "Play",
+            IconButton(
+                onClick = onPlayToggle,
+                modifier = Modifier.semantics {
+                    contentDescription = "Play or pause episode"
+                    stateDescription = if (isCurrent && isPlaying) "Playing" else "Paused"
+                },
+            ) {
+                PlayPauseIcon(
+                    isPlaying = isCurrent && isPlaying,
+                    playIcon = Icons.Rounded.PlayCircle,
+                    pauseIcon = Icons.Rounded.PauseCircle,
                     tint = CarneTheme.colors.brand,
                     modifier = Modifier.size(36.dp),
                 )
@@ -132,7 +147,11 @@ private fun DownloadAffordance(
             )
         }
         // Expressive activity indicator while the episode is fetching.
-        DownloadState.DOWNLOADING, DownloadState.QUEUED -> IconButton(onClick = {}) {
+        DownloadState.DOWNLOADING, DownloadState.QUEUED -> IconButton(
+            onClick = {},
+            enabled = false,
+            modifier = Modifier.semantics { contentDescription = "Downloading" },
+        ) {
             LoadingIndicator(
                 color = CarneTheme.colors.ember,
                 modifier = Modifier.size(20.dp),

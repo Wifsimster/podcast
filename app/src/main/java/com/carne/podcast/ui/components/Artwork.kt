@@ -14,17 +14,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
+import com.carne.podcast.ui.theme.CarneTheme
 
+/**
+ * Show / episode artwork.
+ *
+ * The corner [shape] defaults to the shared [CarneTheme.shapes] vocabulary so
+ * every artwork across the app reads with one consistent radius instead of a
+ * per-call-site literal. Pass a [contentDescription] when the artwork is the
+ * primary content of a screen (player, podcast header); leave it null in rows
+ * where adjacent text already names the show, so TalkBack isn't redundant.
+ */
 @Composable
 fun PodcastArtwork(
     url: String?,
     modifier: Modifier = Modifier,
-    cornerRadius: Dp = 12.dp,
+    shape: RoundedCornerShape = CarneTheme.shapes.artworkMedium,
+    contentDescription: String? = null,
 ) {
-    val shape = RoundedCornerShape(cornerRadius)
     Box(
         modifier = modifier
             .clip(shape)
@@ -36,7 +45,7 @@ fun PodcastArtwork(
         } else {
             SubcomposeAsyncImage(
                 model = url,
-                contentDescription = null,
+                contentDescription = contentDescription,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
                 loading = { Placeholder() },

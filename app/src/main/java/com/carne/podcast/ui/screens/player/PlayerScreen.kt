@@ -37,12 +37,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.carne.podcast.ui.components.PlayPauseIcon
 import com.carne.podcast.ui.components.PodcastArtwork
 import com.carne.podcast.ui.components.formatTime
 import com.carne.podcast.ui.components.stripHtml
@@ -71,10 +75,10 @@ fun PlayerScreen(
             .fillMaxSize()
             .statusBarsPadding()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = CarneTheme.spacing.xl),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = CarneTheme.spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onClose) {
@@ -87,23 +91,25 @@ fun PlayerScreen(
             )
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(CarneTheme.spacing.sm))
         PodcastArtwork(
             url = state.artworkUri ?: episode?.imageUrl,
             modifier = Modifier.fillMaxWidth().aspectRatio(1f),
-            cornerRadius = 20.dp,
+            shape = CarneTheme.shapes.artworkLarge,
+            contentDescription = "Artwork for ${state.title.ifEmpty { episode?.title.orEmpty() }}",
         )
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(CarneTheme.spacing.xl))
         Text(
             text = state.title.ifEmpty { episode?.title.orEmpty() },
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             maxLines = 3,
             overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.semantics { heading() },
         )
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(CarneTheme.spacing.xl))
         Slider(
             value = sliderPosition,
             onValueChange = { scrubbing = true; scrubValue = it },
@@ -113,6 +119,10 @@ fun PlayerScreen(
             },
             valueRange = 0f..maxValue,
             enabled = duration > 0,
+            modifier = Modifier.semantics {
+                contentDescription = "Playback position"
+                stateDescription = "${formatTime(sliderPosition.toLong())} of ${formatTime(duration)}"
+            },
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -122,7 +132,7 @@ fun PlayerScreen(
             Text(formatTime(duration), style = MaterialTheme.typography.bodySmall)
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(CarneTheme.spacing.sm))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -133,12 +143,17 @@ fun PlayerScreen(
             }
             IconButton(
                 onClick = viewModel::playPause,
-                modifier = Modifier.size(80.dp),
+                modifier = Modifier
+                    .size(80.dp)
+                    .semantics {
+                        contentDescription = "Play or pause"
+                        stateDescription = if (state.isPlaying) "Playing" else "Paused"
+                    },
             ) {
-                Icon(
-                    imageVector = if (state.isPlaying) Icons.Rounded.Pause
-                    else Icons.Rounded.PlayArrow,
-                    contentDescription = if (state.isPlaying) "Pause" else "Play",
+                PlayPauseIcon(
+                    isPlaying = state.isPlaying,
+                    playIcon = Icons.Rounded.PlayArrow,
+                    pauseIcon = Icons.Rounded.Pause,
                     tint = CarneTheme.colors.brand,
                     modifier = Modifier.size(72.dp),
                 )
@@ -148,7 +163,7 @@ fun PlayerScreen(
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(CarneTheme.spacing.lg))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -162,16 +177,20 @@ fun PlayerScreen(
         }
 
         episode?.description?.takeIf { it.isNotBlank() }?.let { desc ->
-            Spacer(Modifier.height(24.dp))
-            Text("Episode notes", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(CarneTheme.spacing.xl))
+            Text(
+                "Show notes",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics { heading() },
+            )
+            Spacer(Modifier.height(CarneTheme.spacing.sm))
             Text(
                 text = stripHtml(desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(CarneTheme.spacing.xxl))
     }
 }
 

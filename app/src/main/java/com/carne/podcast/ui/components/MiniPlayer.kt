@@ -22,6 +22,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.carne.podcast.playback.PlayerUiState
@@ -46,38 +50,48 @@ fun MiniPlayer(
     ) {
         Column {
             // Expressive wavy progress — the mini-player's signature flourish.
+            // Decorative here: the full player exposes the scrubber to TalkBack,
+            // so this duplicate progress is hidden from the accessibility tree.
             LinearWavyProgressIndicator(
                 progress = { progress },
                 color = CarneTheme.colors.brand,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = CarneTheme.spacing.md, vertical = CarneTheme.spacing.xs),
+                    .padding(horizontal = CarneTheme.spacing.md, vertical = CarneTheme.spacing.xs)
+                    .clearAndSetSemantics {},
             )
             Row(
                 modifier = Modifier
-                    .clickable(onClick = onClick)
+                    .clickable(onClick = onClick, onClickLabel = "Open player")
                     .padding(horizontal = CarneTheme.spacing.sm, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 PodcastArtwork(
                     url = state.artworkUri,
                     modifier = Modifier.size(44.dp),
-                    cornerRadius = 6.dp,
+                    shape = CarneTheme.shapes.artworkSmall,
                 )
                 Spacer(Modifier.width(CarneTheme.spacing.md))
                 Box(Modifier.weight(1f)) {
                     Text(
                         text = state.title.ifEmpty { "Playing" },
                         style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                IconButton(onClick = onPlayPause) {
-                    Icon(
-                        imageVector = if (state.isPlaying) Icons.Rounded.Pause
-                        else Icons.Rounded.PlayArrow,
-                        contentDescription = if (state.isPlaying) "Pause" else "Play",
+                IconButton(
+                    onClick = onPlayPause,
+                    modifier = Modifier.semantics {
+                        contentDescription = "Play or pause"
+                        stateDescription = if (state.isPlaying) "Playing" else "Paused"
+                    },
+                ) {
+                    PlayPauseIcon(
+                        isPlaying = state.isPlaying,
+                        playIcon = Icons.Rounded.PlayArrow,
+                        pauseIcon = Icons.Rounded.Pause,
                         modifier = Modifier.size(30.dp),
                     )
                 }

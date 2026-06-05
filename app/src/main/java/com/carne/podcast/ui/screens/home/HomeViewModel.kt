@@ -14,10 +14,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+/** Home content plus an explicit [loading] flag so a brand-new (empty) library
+ *  shows a welcome state instead of a perpetual loading spinner. */
+data class HomeUiState(
+    val loading: Boolean = true,
+    val inProgress: List<EpisodeEntity> = emptyList(),
+    val latest: List<EpisodeEntity> = emptyList(),
+)
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -26,11 +35,13 @@ class HomeViewModel @Inject constructor(
     private val downloadManager: DownloadManager,
 ) : ViewModel() {
 
-    val inProgress: StateFlow<List<EpisodeEntity>> = repository.observeInProgress()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    val latest: StateFlow<List<EpisodeEntity>> = repository.observeLatest()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val uiState: StateFlow<HomeUiState> = combine(
+        repository.observeInProgress(),
+        repository.observeLatest(),
+    ) { inProgress, latest ->
+        // Reaching the combine means Room has emitted: we're loaded, even if empty.
+        HomeUiState(loading = false, inProgress = inProgress, latest = latest)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState(loading = true))
 
     val playerState: StateFlow<PlayerUiState> = connection.state
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PlayerUiState())
