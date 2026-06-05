@@ -6,6 +6,17 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
+// Single source of truth for the app version. `VERSION_NAME` lives in
+// gradle.properties and is bumped automatically by semantic-release on each
+// release. versionCode is derived from the semver so it always increases.
+val appVersionName: String = (project.findProperty("VERSION_NAME") as String?) ?: "0.0.0"
+val appVersionCode: Int = appVersionName.substringBefore("-").split(".").let { parts ->
+    val major = parts.getOrNull(0)?.toIntOrNull() ?: 0
+    val minor = parts.getOrNull(1)?.toIntOrNull() ?: 0
+    val patch = parts.getOrNull(2)?.toIntOrNull() ?: 0
+    major * 10000 + minor * 100 + patch
+}
+
 android {
     namespace = "com.carne.podcast"
     compileSdk = 36
@@ -14,8 +25,8 @@ android {
         applicationId = "com.carne.podcast"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
         vectorDrawables { useSupportLibrary = true }
     }
 
@@ -50,6 +61,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     packaging {
         resources {
