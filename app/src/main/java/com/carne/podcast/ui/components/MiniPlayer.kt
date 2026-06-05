@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -15,7 +16,7 @@ import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -49,15 +50,18 @@ fun MiniPlayer(
         tonalElevation = 3.dp,
     ) {
         Column {
-            // Expressive wavy progress — the mini-player's signature flourish.
+            // A slim brand-tinted progress line flush to the player's top edge.
             // Decorative here: the full player exposes the scrubber to TalkBack,
             // so this duplicate progress is hidden from the accessibility tree.
-            LinearWavyProgressIndicator(
+            LinearProgressIndicator(
                 progress = { progress },
                 color = CarneTheme.colors.brand,
+                trackColor = CarneTheme.colors.brand.copy(alpha = 0.18f),
+                drawStopIndicator = {},
+                gapSize = 0.dp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = CarneTheme.spacing.md, vertical = CarneTheme.spacing.xs)
+                    .height(3.dp)
                     .clearAndSetSemantics {},
             )
             Row(
