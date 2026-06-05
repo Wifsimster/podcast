@@ -11,11 +11,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class DownloadsViewModel @Inject constructor(
-    repository: PodcastRepository,
+    private val repository: PodcastRepository,
     private val connection: PlaybackConnection,
     private val downloadManager: DownloadManager,
 ) : ViewModel() {
@@ -37,4 +38,8 @@ class DownloadsViewModel @Inject constructor(
 
     fun deleteDownload(episode: EpisodeEntity) =
         downloadManager.deleteDownload(episode.id, episode.localFilePath)
+
+    fun markPlayed(episode: EpisodeEntity, played: Boolean) {
+        viewModelScope.launch { repository.setPlayed(episode.id, played) }
+    }
 }

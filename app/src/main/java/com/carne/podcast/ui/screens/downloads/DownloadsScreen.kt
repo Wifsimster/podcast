@@ -48,6 +48,7 @@ fun DownloadsScreen(
                 onClick = { viewModel.open(episode); onOpenPlayer() },
                 onDownload = {},
                 onDeleteDownload = { viewModel.deleteDownload(episode) },
+                onTogglePlayed = { viewModel.markPlayed(episode, !episode.isFinished) },
                 modifier = Modifier.animateItem(),
             )
             HorizontalDivider(Modifier.padding(start = EpisodeRowDividerStartInset))

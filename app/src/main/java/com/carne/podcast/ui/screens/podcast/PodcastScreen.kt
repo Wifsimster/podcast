@@ -161,6 +161,7 @@ fun PodcastScreen(
                     onClick = { viewModel.open(episode); onOpenPlayer() },
                     onDownload = { viewModel.download(episode) },
                     onDeleteDownload = { viewModel.deleteDownload(episode) },
+                    onTogglePlayed = { viewModel.markPlayed(episode, !episode.isFinished) },
                     showArtwork = false,
                     modifier = Modifier.animateItem(),
                 )
