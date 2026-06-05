@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.carne.podcast.BuildConfig
 import com.carne.podcast.data.settings.ThemeMode
 
 @Composable
@@ -117,8 +118,36 @@ fun SettingsScreen(
             onCheckedChange = viewModel::setDynamicColor,
         )
 
+        SectionHeader("About")
+        InfoRow(
+            title = "Version",
+            value = BuildConfig.VERSION_NAME,
+        )
+
         Spacer(Modifier.padding(16.dp))
     }
+}
+
+@Composable
+private fun InfoRow(
+    title: String,
+    value: String,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(title, style = MaterialTheme.typography.bodyLarge)
+        Text(
+            value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+    HorizontalDivider(Modifier.padding(start = 16.dp))
 }
 
 @Composable
