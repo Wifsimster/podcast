@@ -11,6 +11,7 @@ import com.carne.podcast.data.remote.PodcastSearchService
 import com.carne.podcast.data.remote.RssParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -31,6 +32,12 @@ class PodcastRepository @Inject constructor(
     fun observeDownloaded(): Flow<List<EpisodeEntity>> = episodeDao.observeDownloaded()
 
     suspend fun getEpisode(id: String): EpisodeEntity? = episodeDao.getEpisode(id)
+
+    // --- one-shot snapshots, used to build the Android Auto browse tree ---
+    suspend fun getSubscriptionsOnce(): List<PodcastEntity> = observeSubscriptions().first()
+    suspend fun getEpisodesOnce(feedUrl: String): List<EpisodeEntity> = observeEpisodes(feedUrl).first()
+    suspend fun getInProgressOnce(): List<EpisodeEntity> = observeInProgress().first()
+    suspend fun getDownloadedOnce(): List<EpisodeEntity> = observeDownloaded().first()
 
     /** Subscribe to a feed by URL, fetching its content. Returns the feed URL. */
     suspend fun subscribe(feedUrl: String): Result<String> = withContext(Dispatchers.IO) {
