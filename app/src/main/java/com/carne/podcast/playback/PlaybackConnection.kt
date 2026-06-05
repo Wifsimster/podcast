@@ -12,6 +12,8 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.carne.podcast.data.local.EpisodeEntity
+import com.carne.podcast.data.settings.CarneSettings
+import com.carne.podcast.data.settings.SettingsRepository
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -46,6 +48,7 @@ data class PlayerUiState(
 @Singleton
 class PlaybackConnection @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val settingsRepository: SettingsRepository,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val _state = MutableStateFlow(PlayerUiState())
@@ -54,7 +57,11 @@ class PlaybackConnection @Inject constructor(
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private var controller: MediaController? = null
 
+    /** Latest settings snapshot, kept current so playback honours live changes. */
+    @Volatile private var settings: CarneSettings = CarneSettings()
+
     init {
+        scope.launch { settingsRepository.settings.collect { settings = it } }
         connect()
         startPositionTicker()
     }
@@ -108,14 +115,33 @@ class PlaybackConnection @Inject constructor(
         )
     }
 
-    /** Play an episode from the start position stored in the database. */
-    fun play(episode: EpisodeEntity) {
+    /**
+     * Play [episode], resuming from its saved position. When auto-advance is on
+     * and a [queue] is supplied, the episodes after it are loaded too so
+     * playback flows continuously into the next one.
+     */
+    fun play(episode: EpisodeEntity, queue: List<EpisodeEntity> = emptyList()) {
         val c = controller ?: return
         // If this episode is already loaded, just resume.
         if (c.currentMediaItem?.mediaId == episode.id) {
             c.play()
             return
         }
+
+        val items = if (settings.autoAdvance && queue.isNotEmpty()) {
+            val tail = queue.dropWhile { it.id != episode.id }
+            (if (tail.isEmpty()) listOf(episode) else tail).map(::mediaItemFor)
+        } else {
+            listOf(mediaItemFor(episode))
+        }
+
+        c.setMediaItems(items, /* startIndex = */ 0, episode.positionMs.coerceAtLeast(0))
+        c.playbackParameters = PlaybackParameters(settings.defaultSpeed)
+        c.prepare()
+        c.play()
+    }
+
+    private fun mediaItemFor(episode: EpisodeEntity): MediaItem {
         val uri: Uri = episode.localFilePath
             ?.let { path -> File(path).takeIf { it.exists() }?.let { Uri.fromFile(it) } }
             ?: episode.audioUrl.toUri()
@@ -127,15 +153,11 @@ class PlaybackConnection @Inject constructor(
             .setIsPlayable(true)
             .build()
 
-        val mediaItem = MediaItem.Builder()
+        return MediaItem.Builder()
             .setMediaId(episode.id)
             .setUri(uri)
             .setMediaMetadata(metadata)
             .build()
-
-        c.setMediaItem(mediaItem, /* startPositionMs = */ episode.positionMs.coerceAtLeast(0))
-        c.prepare()
-        c.play()
     }
 
     fun playPause() {
@@ -147,12 +169,23 @@ class PlaybackConnection @Inject constructor(
 
     fun seekTo(positionMs: Long) { controller?.seekTo(positionMs) }
 
-    fun seekBack() { controller?.seekBack() }
+    /** Skip backward by the user-configured interval. */
+    fun seekBack() {
+        val c = controller ?: return
+        c.seekTo((c.currentPosition - settings.skipBackMs).coerceAtLeast(0))
+    }
 
-    fun seekForward() { controller?.seekForward() }
+    /** Skip forward by the user-configured interval. */
+    fun seekForward() {
+        val c = controller ?: return
+        val target = c.currentPosition + settings.skipForwardMs
+        val duration = c.duration
+        c.seekTo(if (duration > 0) target.coerceAtMost(duration) else target)
+    }
 
     fun setSpeed(speed: Float) {
         controller?.playbackParameters = PlaybackParameters(speed)
+        scope.launch { settingsRepository.setDefaultSpeed(speed) }
     }
 
     fun stop() {

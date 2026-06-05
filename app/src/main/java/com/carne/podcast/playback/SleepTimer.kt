@@ -24,6 +24,10 @@ class SleepTimer @Inject constructor(
     /** Milliseconds left, or 0 when inactive. */
     val remainingMs = _remainingMs.asStateFlow()
 
+    private val _endOfEpisodeArmed = MutableStateFlow(false)
+    /** True when the timer is set to stop at the end of the current episode. */
+    val endOfEpisodeArmed = _endOfEpisodeArmed.asStateFlow()
+
     fun start(durationMs: Long) {
         cancel()
         _remainingMs.value = durationMs
@@ -38,9 +42,34 @@ class SleepTimer @Inject constructor(
         }
     }
 
+    /** Pause playback when the episode that is current right now finishes. */
+    fun startEndOfEpisode() {
+        cancel()
+        val targetId = playbackConnection.state.value.currentEpisodeId ?: return
+        _endOfEpisodeArmed.value = true
+        job = scope.launch {
+            playbackConnection.state.collect { state ->
+                val current = state.currentEpisodeId
+                val nearEnd = current == targetId &&
+                    state.durationMs > 0 &&
+                    state.positionMs >= state.durationMs - END_THRESHOLD_MS
+                // Either the episode played out / auto-advanced, or it is about to.
+                if (current != targetId || nearEnd) {
+                    playbackConnection.pause()
+                    cancel()
+                }
+            }
+        }
+    }
+
     fun cancel() {
         job?.cancel()
         job = null
         _remainingMs.value = 0
+        _endOfEpisodeArmed.value = false
+    }
+
+    private companion object {
+        const val END_THRESHOLD_MS = 1_500L
     }
 }

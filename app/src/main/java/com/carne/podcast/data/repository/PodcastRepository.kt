@@ -51,8 +51,12 @@ class PodcastRepository @Inject constructor(
         podcastDao.setSubscribed(feedUrl, false)
     }
 
-    /** (Re)fetch a feed and reconcile podcast + episodes into the database. */
-    suspend fun refreshFeed(feedUrl: String, markSubscribed: Boolean = false) =
+    /**
+     * (Re)fetch a feed and reconcile podcast + episodes into the database.
+     * Returns the episodes that were genuinely new this refresh (so callers can
+     * surface "new episode" notifications); known episodes keep their state.
+     */
+    suspend fun refreshFeed(feedUrl: String, markSubscribed: Boolean = false): List<EpisodeEntity> =
         withContext(Dispatchers.IO) {
             val parsed: ParsedFeed = rssParser.fetchAndParse(feedUrl)
             val existing = podcastDao.getPodcast(feedUrl)
@@ -81,12 +85,30 @@ class PodcastRepository @Inject constructor(
                     durationMs = e.durationMs,
                 )
             }
-            // INSERT IGNORE keeps existing playback state for known episodes.
-            episodeDao.insertNew(rows)
+            // INSERT IGNORE keeps existing playback state for known episodes; a
+            // rowId of -1 marks a row that already existed and was skipped.
+            val rowIds = episodeDao.insertNew(rows)
+            rows.filterIndexed { index, _ -> rowIds.getOrElse(index) { -1L } != -1L }
         }
 
     suspend fun refreshAllSubscriptions(feedUrls: List<String>) = withContext(Dispatchers.IO) {
         feedUrls.forEach { url -> runCatching { refreshFeed(url) } }
+    }
+
+    /**
+     * Refresh every subscribed feed and return the newly published episodes,
+     * skipping a podcast's first-ever fetch so an initial subscribe doesn't
+     * spam a notification for the whole back catalogue.
+     */
+    suspend fun refreshSubscriptionsForNew(): List<EpisodeEntity> = withContext(Dispatchers.IO) {
+        val subscriptions = getSubscriptionsOnce()
+        subscriptions.flatMap { podcast ->
+            val firstFetch = podcast.lastUpdated == 0L
+            runCatching { refreshFeed(podcast.feedUrl) }
+                .getOrDefault(emptyList())
+                .takeUnless { firstFetch }
+                ?: emptyList()
+        }
     }
 
     suspend fun search(term: String): List<PodcastSearchResult> = withContext(Dispatchers.IO) {

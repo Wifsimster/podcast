@@ -9,6 +9,7 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.carne.podcast.data.local.DownloadState
 import com.carne.podcast.data.repository.PodcastRepository
+import com.carne.podcast.data.settings.SettingsRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,13 +23,20 @@ import javax.inject.Singleton
 class DownloadManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val repository: PodcastRepository,
+    settingsRepository: SettingsRepository,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    @Volatile private var wifiOnly: Boolean = false
+
+    init {
+        scope.launch { settingsRepository.settings.collect { wifiOnly = it.wifiOnlyDownloads } }
+    }
 
     fun enqueue(episodeId: String) {
         scope.launch { repository.updateDownload(episodeId, DownloadState.QUEUED, 0, null) }
         val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .setRequiredNetworkType(if (wifiOnly) NetworkType.UNMETERED else NetworkType.CONNECTED)
             .build()
         val request = OneTimeWorkRequestBuilder<EpisodeDownloadWorker>()
             .setInputData(workDataOf(EpisodeDownloadWorker.KEY_EPISODE_ID to episodeId))

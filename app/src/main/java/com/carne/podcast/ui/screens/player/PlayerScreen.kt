@@ -60,6 +60,7 @@ fun PlayerScreen(
     val state by viewModel.playerState.collectAsStateWithLifecycle()
     val episode by viewModel.currentEpisode.collectAsStateWithLifecycle()
     val sleepRemaining by viewModel.sleepRemainingMs.collectAsStateWithLifecycle()
+    val sleepEndOfEpisode by viewModel.sleepEndOfEpisode.collectAsStateWithLifecycle()
 
     // Local scrub state so the thumb tracks the finger without fighting ticks.
     var scrubbing by remember { mutableStateOf(false) }
@@ -171,7 +172,9 @@ fun PlayerScreen(
             SpeedControl(current = state.speed, onSelect = viewModel::setSpeed)
             SleepControl(
                 remainingMs = sleepRemaining,
+                endOfEpisode = sleepEndOfEpisode,
                 onSelect = { viewModel.startSleepTimer(it) },
+                onSelectEndOfEpisode = viewModel::startSleepAtEpisodeEnd,
                 onCancel = viewModel::cancelSleepTimer,
             )
         }
@@ -216,14 +219,27 @@ private fun SpeedControl(current: Float, onSelect: (Float) -> Unit) {
 }
 
 @Composable
-private fun SleepControl(remainingMs: Long, onSelect: (Int) -> Unit, onCancel: () -> Unit) {
+private fun SleepControl(
+    remainingMs: Long,
+    endOfEpisode: Boolean,
+    onSelect: (Int) -> Unit,
+    onSelectEndOfEpisode: () -> Unit,
+    onCancel: () -> Unit,
+) {
     var open by remember { mutableStateOf(false) }
     val options = listOf(5, 15, 30, 45, 60)
+    val active = remainingMs > 0 || endOfEpisode
     Box {
         TextButton(onClick = { open = true }) {
             Icon(Icons.Rounded.Bedtime, contentDescription = null, modifier = Modifier.size(20.dp))
             Spacer(Modifier.size(6.dp))
-            Text(if (remainingMs > 0) formatTime(remainingMs) else "Sleep")
+            Text(
+                when {
+                    remainingMs > 0 -> formatTime(remainingMs)
+                    endOfEpisode -> "End"
+                    else -> "Sleep"
+                }
+            )
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             options.forEach { minutes ->
@@ -232,7 +248,11 @@ private fun SleepControl(remainingMs: Long, onSelect: (Int) -> Unit, onCancel: (
                     onClick = { onSelect(minutes); open = false },
                 )
             }
-            if (remainingMs > 0) {
+            DropdownMenuItem(
+                text = { Text("End of episode") },
+                onClick = { onSelectEndOfEpisode(); open = false },
+            )
+            if (active) {
                 DropdownMenuItem(
                     text = { Text("Cancel timer") },
                     onClick = { onCancel(); open = false },
