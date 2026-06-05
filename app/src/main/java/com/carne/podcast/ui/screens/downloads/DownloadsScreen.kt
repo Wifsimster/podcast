@@ -1,22 +1,21 @@
 package com.carne.podcast.ui.screens.downloads
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.DownloadForOffline
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.carne.podcast.ui.components.CarneEmptyState
 import com.carne.podcast.ui.components.EpisodeRow
+import com.carne.podcast.ui.components.EpisodeRowDividerStartInset
 
 @Composable
 fun DownloadsScreen(
@@ -28,12 +27,11 @@ fun DownloadsScreen(
     val playerState by viewModel.playerState.collectAsStateWithLifecycle()
 
     if (downloads.isEmpty()) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(
-                "No downloads yet.\nTap the download icon on any episode to save it offline.",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        CarneEmptyState(
+            icon = Icons.Rounded.DownloadForOffline,
+            title = "Nothing downloaded yet",
+            message = "Tap the download icon on any episode to keep it offline — perfect for flights and dead zones.",
+        )
         return
     }
 
@@ -50,8 +48,9 @@ fun DownloadsScreen(
                 onClick = { viewModel.open(episode); onOpenPlayer() },
                 onDownload = {},
                 onDeleteDownload = { viewModel.deleteDownload(episode) },
+                modifier = Modifier.animateItem(),
             )
-            HorizontalDivider(Modifier.padding(start = 84.dp))
+            HorizontalDivider(Modifier.padding(start = EpisodeRowDividerStartInset))
         }
     }
 }

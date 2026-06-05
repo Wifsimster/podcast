@@ -29,6 +29,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -37,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.carne.podcast.ui.components.EpisodeRow
 import com.carne.podcast.ui.components.PodcastArtwork
 import com.carne.podcast.ui.components.stripHtml
+import com.carne.podcast.ui.theme.CarneTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,7 +90,8 @@ fun PodcastScreen(
                         PodcastArtwork(
                             url = podcast?.imageUrl,
                             modifier = Modifier.size(110.dp),
-                            cornerRadius = 14.dp,
+                            shape = CarneTheme.shapes.artworkMedium,
+                            contentDescription = podcast?.title?.let { "Artwork for $it" },
                         )
                         Spacer(Modifier.width(16.dp))
                         Column {
@@ -95,6 +101,7 @@ fun PodcastScreen(
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 3,
                                 overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.semantics { heading() },
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
@@ -104,12 +111,22 @@ fun PodcastScreen(
                             )
                             Spacer(Modifier.height(12.dp))
                             val subscribed = podcast?.subscribed == true
+                            val subscribeSemantics = Modifier.semantics {
+                                contentDescription = "Subscribe"
+                                stateDescription = if (subscribed) "Subscribed" else "Not subscribed"
+                            }
                             if (subscribed) {
-                                OutlinedButton(onClick = viewModel::toggleSubscribe) {
+                                OutlinedButton(
+                                    onClick = viewModel::toggleSubscribe,
+                                    modifier = subscribeSemantics,
+                                ) {
                                     Text("Subscribed")
                                 }
                             } else {
-                                Button(onClick = viewModel::toggleSubscribe) {
+                                Button(
+                                    onClick = viewModel::toggleSubscribe,
+                                    modifier = subscribeSemantics,
+                                ) {
                                     Text("Subscribe")
                                 }
                             }
@@ -145,8 +162,9 @@ fun PodcastScreen(
                     onDownload = { viewModel.download(episode) },
                     onDeleteDownload = { viewModel.deleteDownload(episode) },
                     showArtwork = false,
+                    modifier = Modifier.animateItem(),
                 )
-                HorizontalDivider(Modifier.padding(start = 16.dp))
+                HorizontalDivider(Modifier.padding(start = CarneTheme.spacing.lg))
             }
         }
     }

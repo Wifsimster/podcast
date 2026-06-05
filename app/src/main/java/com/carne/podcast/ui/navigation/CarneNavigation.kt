@@ -1,6 +1,10 @@
 package com.carne.podcast.ui.navigation
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,6 +46,16 @@ fun CarneRoot() {
     val playerViewModel: PlayerViewModel = hiltViewModel()
     val playerState by playerViewModel.playerState.collectAsStateWithLifecycle()
 
+    // Switch to the Search tab (used by empty-state "browse" CTAs), reusing the
+    // same back-stack behaviour as a bottom-bar tap.
+    val openSearch: () -> Unit = {
+        navController.navigate(Routes.SEARCH) {
+            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
     Scaffold(
         bottomBar = {
             AnimatedVisibility(visible = !isPlayer) {
@@ -63,16 +77,24 @@ fun CarneRoot() {
             navController = navController,
             startDestination = Routes.HOME,
             modifier = Modifier.fillMaxSize(),
+            // Quiet cross-fade between the main destinations; the spring-based
+            // defaults pick up the expressive motion scheme from the theme.
+            enterTransition = { fadeIn() },
+            exitTransition = { fadeOut() },
+            popEnterTransition = { fadeIn() },
+            popExitTransition = { fadeOut() },
         ) {
             composable(Routes.HOME) {
                 HomeScreen(
                     onOpenPlayer = { navController.navigate(Routes.PLAYER) },
+                    onBrowse = openSearch,
                     contentPadding = innerPadding,
                 )
             }
             composable(Routes.LIBRARY) {
                 LibraryScreen(
                     onOpenPodcast = { navController.navigate(Routes.podcast(it)) },
+                    onBrowse = openSearch,
                     contentPadding = innerPadding,
                 )
             }
@@ -91,7 +113,12 @@ fun CarneRoot() {
                     onOpenPlayer = { navController.navigate(Routes.PLAYER) },
                 )
             }
-            composable(Routes.PLAYER) {
+            // The player is a "now playing" surface — slide it up from the bottom.
+            composable(
+                Routes.PLAYER,
+                enterTransition = { slideInVertically(initialOffsetY = { it }) + fadeIn() },
+                popExitTransition = { slideOutVertically(targetOffsetY = { it }) + fadeOut() },
+            ) {
                 PlayerScreen(onClose = { navController.popBackStack() })
             }
         }
@@ -119,7 +146,8 @@ private fun BottomBar(
                         }
                     }
                 },
-                icon = { Icon(dest.icon, contentDescription = dest.label) },
+                // Label is shown as text below; null avoids TalkBack reading it twice.
+                icon = { Icon(dest.icon, contentDescription = null) },
                 label = { Text(dest.label) },
             )
         }
