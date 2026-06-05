@@ -55,7 +55,7 @@ fun HomeScreen(
                     isCurrent = playerState.currentEpisodeId == episode.id,
                     isPlaying = playerState.isPlaying,
                     onPlayToggle = { viewModel.playToggle(episode); },
-                    onClick = onOpenPlayer,
+                    onClick = { viewModel.open(episode); onOpenPlayer() },
                     onDownload = { viewModel.download(episode) },
                     onDeleteDownload = { viewModel.deleteDownload(episode) },
                 )
@@ -71,7 +71,7 @@ fun HomeScreen(
                 isCurrent = playerState.currentEpisodeId == episode.id,
                 isPlaying = playerState.isPlaying,
                 onPlayToggle = { viewModel.playToggle(episode) },
-                onClick = onOpenPlayer,
+                onClick = { viewModel.open(episode); onOpenPlayer() },
                 onDownload = { viewModel.download(episode) },
                 onDeleteDownload = { viewModel.deleteDownload(episode) },
             )

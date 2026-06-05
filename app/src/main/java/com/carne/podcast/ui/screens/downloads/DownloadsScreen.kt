@@ -47,7 +47,7 @@ fun DownloadsScreen(
                 isCurrent = playerState.currentEpisodeId == episode.id,
                 isPlaying = playerState.isPlaying,
                 onPlayToggle = { viewModel.playToggle(episode) },
-                onClick = onOpenPlayer,
+                onClick = { viewModel.open(episode); onOpenPlayer() },
                 onDownload = {},
                 onDeleteDownload = { viewModel.deleteDownload(episode) },
             )

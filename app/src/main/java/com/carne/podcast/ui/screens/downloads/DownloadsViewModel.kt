@@ -32,6 +32,9 @@ class DownloadsViewModel @Inject constructor(
         else connection.play(episode)
     }
 
+    /** Load (and resume) an episode so the now-playing screen has something to show. */
+    fun open(episode: EpisodeEntity) = connection.play(episode)
+
     fun deleteDownload(episode: EpisodeEntity) =
         downloadManager.deleteDownload(episode.id, episode.localFilePath)
 }
