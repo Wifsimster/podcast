@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base theme. The actual colors are driven by Compose (Material You /
+         dynamic color), so this only needs to be a sane Material 3 splash. -->
+    <style name="Theme.Carne" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@color/seed_background</item>
+    </style>
+</resources>
