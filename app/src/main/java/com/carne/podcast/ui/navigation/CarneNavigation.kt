@@ -28,6 +28,7 @@ import com.carne.podcast.ui.screens.player.PlayerScreen
 import com.carne.podcast.ui.screens.player.PlayerViewModel
 import com.carne.podcast.ui.screens.podcast.PodcastScreen
 import com.carne.podcast.ui.screens.search.SearchScreen
+import com.carne.podcast.ui.screens.settings.SettingsScreen
 
 @Composable
 fun CarneRoot() {
@@ -84,6 +85,9 @@ fun CarneRoot() {
                     onOpenPlayer = { navController.navigate(Routes.PLAYER) },
                     contentPadding = innerPadding,
                 )
+            }
+            composable(Routes.SETTINGS) {
+                SettingsScreen(contentPadding = innerPadding)
             }
             composable(Routes.PODCAST) {
                 PodcastScreen(

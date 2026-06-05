@@ -17,6 +17,9 @@ import androidx.media3.session.MediaConstants
 import androidx.media3.session.SessionResult
 import com.carne.podcast.data.local.EpisodeEntity
 import com.carne.podcast.data.repository.PodcastRepository
+import com.carne.podcast.data.settings.CarneSettings
+import com.carne.podcast.data.settings.SettingsRepository
+import com.carne.podcast.download.DownloadManager
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,9 +29,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import javax.inject.Inject
 
@@ -45,14 +50,27 @@ import javax.inject.Inject
 class PlaybackService : MediaLibraryService() {
 
     @Inject lateinit var repository: PodcastRepository
+    @Inject lateinit var settingsRepository: SettingsRepository
+    @Inject lateinit var downloadManager: DownloadManager
 
     private var mediaSession: MediaLibrarySession? = null
     private lateinit var player: ExoPlayer
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var positionSaver: Job? = null
 
+    /** Latest settings snapshot, kept current for auto-delete decisions. */
+    @Volatile private var settings: CarneSettings = CarneSettings()
+
+    /** The item currently playing, tracked so we can mark it finished on transition. */
+    private var playingMediaId: String? = null
+
     override fun onCreate() {
         super.onCreate()
+
+        // Read the persisted settings once so the notification / Android Auto
+        // skip buttons honour the user's chosen intervals from launch.
+        settings = runBlocking { settingsRepository.settings.first() }
+        scope.launch { settingsRepository.settings.collect { settings = it } }
 
         val audioAttributes = AudioAttributes.Builder()
             .setUsage(C.USAGE_MEDIA)
@@ -62,8 +80,8 @@ class PlaybackService : MediaLibraryService() {
         player = ExoPlayer.Builder(this)
             .setAudioAttributes(audioAttributes, /* handleAudioFocus = */ true)
             .setHandleAudioBecomingNoisy(true)
-            .setSeekBackIncrementMs(SEEK_BACK_MS)
-            .setSeekForwardIncrementMs(SEEK_FORWARD_MS)
+            .setSeekBackIncrementMs(settings.skipBackMs)
+            .setSeekForwardIncrementMs(settings.skipForwardMs)
             .build()
 
         player.addListener(object : Player.Listener {
@@ -75,8 +93,13 @@ class PlaybackService : MediaLibraryService() {
             }
 
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                // Persist the outgoing item's position before moving on.
+                // An automatic transition means the previous episode played out
+                // to the end — mark it finished before moving on.
+                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) {
+                    playingMediaId?.let(::markFinished)
+                }
                 persistPosition()
+                playingMediaId = mediaItem?.mediaId?.takeIf { it.isNotBlank() }
             }
 
             override fun onPlaybackStateChanged(state: Int) {
@@ -324,13 +347,23 @@ class PlaybackService : MediaLibraryService() {
 
     private fun markCurrentFinished() {
         val id = player.currentMediaItem?.mediaId ?: return
+        markFinished(id)
+    }
+
+    /** Mark an episode played and, if the user opted in, delete its download. */
+    private fun markFinished(id: String) {
         if (id.isBlank()) return
-        scope.launch(Dispatchers.IO) { repository.setPlayed(id, true) }
+        scope.launch(Dispatchers.IO) {
+            repository.setPlayed(id, true)
+            if (settings.autoDeleteFinished) {
+                repository.getEpisode(id)?.let { episode ->
+                    downloadManager.deleteDownload(episode.id, episode.localFilePath)
+                }
+            }
+        }
     }
 
     companion object {
-        const val SEEK_BACK_MS = 10_000L
-        const val SEEK_FORWARD_MS = 30_000L
         private const val POSITION_SAVE_INTERVAL_MS = 5_000L
 
         // Browse-tree node ids.

@@ -10,15 +10,18 @@ Carlos Diaz, is pre-subscribed on first launch.
 
 - 🎧 **Background playback** with lock-screen & notification controls (Media3 / ExoPlayer + MediaSession)
 - 🚗 **Android Auto** — browse Continue listening / Subscriptions / Downloads and play hands-free in the car
-- ⏯️ Play / pause, **skip back 10s / forward 30s**, scrub
-- ⏩ **Variable speed** (0.8×–3×)
-- 😴 **Sleep timer**
-- 💾 **Offline downloads** (WorkManager — survives app being closed)
+- ⏯️ Play / pause, **configurable skip intervals**, scrub
+- ▶️ **Auto-play the next episode** — continuous playback through your list
+- ⏩ **Variable speed** (0.8×–3×), remembered as your default
+- 😴 **Sleep timer** — fixed durations or **stop at end of episode**
+- 💾 **Offline downloads** (WorkManager — survives app being closed), optional **Wi-Fi-only** and **auto-delete when finished**
+- 🔄 **Background refresh + new-episode notifications** for your subscriptions
 - 🔖 **Resume where you left off** — playback positions saved per episode
 - ✅ Auto mark-as-played, "Continue listening" on the home screen
 - 🔍 **Discover** podcasts (iTunes search) or paste any RSS feed URL
 - 📚 Subscriptions library with pull-to-refresh
-- 🎨 **Material You** dynamic theming, dark mode, edge-to-edge
+- ⚙️ **Settings** for playback, downloads, updates and appearance
+- 🎨 **Material You** dynamic theming, light/dark/system theme, edge-to-edge
 - 🚫 No ads, no analytics, no login
 
 ## Tech stack
@@ -61,9 +64,10 @@ keystore in `app/build.gradle.kts` for store distribution.
 
 ```
 app/src/main/java/com/carne/podcast/
-├─ data/        Room (local) · RSS + iTunes (remote) · repository
+├─ data/        Room (local) · RSS + iTunes (remote) · repository · settings (DataStore)
 ├─ playback/    Media3 service, controller bridge, sleep timer
 ├─ download/    WorkManager episode downloader
+├─ sync/        Periodic feed refresh worker + new-episode notifications
 ├─ ui/          Compose screens, theme, navigation, components
 ├─ di/          Hilt modules
 ├─ CarneApp     Application — seeds Silicon Carne on first run

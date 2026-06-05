@@ -6,6 +6,7 @@ import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 
 object Routes {
@@ -13,6 +14,7 @@ object Routes {
     const val LIBRARY = "library"
     const val SEARCH = "search"
     const val DOWNLOADS = "downloads"
+    const val SETTINGS = "settings"
     const val PLAYER = "player"
     const val PODCAST = "podcast/{feedUrl}"
 
@@ -28,4 +30,5 @@ enum class TopLevelDestination(
     LIBRARY(Routes.LIBRARY, "Library", Icons.Rounded.LibraryMusic),
     SEARCH(Routes.SEARCH, "Search", Icons.Rounded.Search),
     DOWNLOADS(Routes.DOWNLOADS, "Downloads", Icons.Rounded.Download),
+    SETTINGS(Routes.SETTINGS, "Settings", Icons.Rounded.Settings),
 }

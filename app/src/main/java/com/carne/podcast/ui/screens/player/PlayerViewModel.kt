@@ -37,6 +37,7 @@ class PlayerViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val sleepRemainingMs: StateFlow<Long> = sleepTimer.remainingMs
+    val sleepEndOfEpisode: StateFlow<Boolean> = sleepTimer.endOfEpisodeArmed
 
     fun playPause() = connection.playPause()
     fun seekTo(ms: Long) = connection.seekTo(ms)
@@ -45,5 +46,6 @@ class PlayerViewModel @Inject constructor(
     fun setSpeed(speed: Float) = connection.setSpeed(speed)
 
     fun startSleepTimer(minutes: Int) = sleepTimer.start(minutes * 60_000L)
+    fun startSleepAtEpisodeEnd() = sleepTimer.startEndOfEpisode()
     fun cancelSleepTimer() = sleepTimer.cancel()
 }

@@ -63,11 +63,11 @@ class PodcastViewModel @Inject constructor(
     fun playToggle(episode: EpisodeEntity) {
         val state = connection.state.value
         if (state.currentEpisodeId == episode.id && state.isPlaying) connection.pause()
-        else connection.play(episode)
+        else connection.play(episode, episodes.value)
     }
 
     /** Load (and resume) an episode so the now-playing screen has something to show. */
-    fun open(episode: EpisodeEntity) = connection.play(episode)
+    fun open(episode: EpisodeEntity) = connection.play(episode, episodes.value)
 
     fun download(episode: EpisodeEntity) = downloadManager.enqueue(episode.id)
     fun deleteDownload(episode: EpisodeEntity) =
