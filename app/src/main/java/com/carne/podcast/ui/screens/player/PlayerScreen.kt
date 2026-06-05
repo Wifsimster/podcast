@@ -46,6 +46,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.carne.podcast.ui.components.PodcastArtwork
 import com.carne.podcast.ui.components.formatTime
 import com.carne.podcast.ui.components.stripHtml
+import com.carne.podcast.ui.theme.CarneTheme
 
 @Composable
 fun PlayerScreen(
@@ -138,7 +139,7 @@ fun PlayerScreen(
                     imageVector = if (state.isPlaying) Icons.Rounded.Pause
                     else Icons.Rounded.PlayArrow,
                     contentDescription = if (state.isPlaying) "Pause" else "Play",
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = CarneTheme.colors.brand,
                     modifier = Modifier.size(72.dp),
                 )
             }

@@ -1,5 +1,5 @@
 [versions]
-agp = "8.7.3"
+agp = "8.9.3"
 kotlin = "2.0.21"
 ksp = "2.0.21-1.0.28"
 hilt = "2.52"
@@ -7,7 +7,13 @@ hiltNavigationCompose = "1.2.0"
 coreKtx = "1.15.0"
 lifecycle = "2.8.7"
 activityCompose = "1.9.3"
-composeBom = "2024.12.01"
+composeBom = "2025.10.01"
+# Material 3 Expressive APIs (MaterialExpressiveTheme, wavy progress, loading
+# indicators) are only public in the 1.5.0-alpha line; stable 1.4.0 keeps them
+# internal. alpha14 is the last alpha on the Compose 1.8/1.9 train — alpha15+
+# pull Compose 1.11/1.12 which require AGP 9.1+. Pinned explicitly to override
+# the BOM (which resolves Compose UI up to 1.9.4, compatible with AGP 8.9.3).
+material3 = "1.5.0-alpha14"
 navigationCompose = "2.8.5"
 media3 = "1.5.1"
 room = "2.6.1"
@@ -30,7 +36,7 @@ androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 

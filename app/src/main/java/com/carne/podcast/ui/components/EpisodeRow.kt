@@ -13,14 +13,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.DownloadDone
-import androidx.compose.material.icons.rounded.Downloading
-import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.PauseCircle
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.carne.podcast.data.local.DownloadState
 import com.carne.podcast.data.local.EpisodeEntity
+import com.carne.podcast.ui.theme.CarneTheme
 
 @Composable
 fun EpisodeRow(
@@ -47,7 +47,7 @@ fun EpisodeRow(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = CarneTheme.spacing.lg, vertical = CarneTheme.spacing.md),
         verticalAlignment = Alignment.Top,
     ) {
         if (showArtwork) {
@@ -56,7 +56,7 @@ fun EpisodeRow(
                 modifier = Modifier.size(56.dp),
                 cornerRadius = 8.dp,
             )
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(CarneTheme.spacing.md))
         }
         Column(Modifier.weight(1f)) {
             Text(
@@ -73,7 +73,7 @@ fun EpisodeRow(
                     Icon(
                         Icons.Rounded.CheckCircle,
                         contentDescription = "Played",
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = CarneTheme.colors.played,
                         modifier = Modifier.size(14.dp),
                     )
                     Spacer(Modifier.width(4.dp))
@@ -100,14 +100,14 @@ fun EpisodeRow(
                 )
             }
         }
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(CarneTheme.spacing.sm))
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             IconButton(onClick = onPlayToggle) {
                 Icon(
                     imageVector = if (isCurrent && isPlaying) Icons.Rounded.PauseCircle
                     else Icons.Rounded.PlayCircle,
                     contentDescription = if (isCurrent && isPlaying) "Pause" else "Play",
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = CarneTheme.colors.brand,
                     modifier = Modifier.size(36.dp),
                 )
             }
@@ -127,15 +127,14 @@ private fun DownloadAffordance(
             Icon(
                 Icons.Rounded.DownloadDone,
                 contentDescription = "Downloaded — tap to delete",
-                tint = MaterialTheme.colorScheme.primary,
+                tint = CarneTheme.colors.downloaded,
                 modifier = Modifier.size(20.dp),
             )
         }
+        // Expressive activity indicator while the episode is fetching.
         DownloadState.DOWNLOADING, DownloadState.QUEUED -> IconButton(onClick = {}) {
-            Icon(
-                Icons.Rounded.Downloading,
-                contentDescription = "Downloading",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            LoadingIndicator(
+                color = CarneTheme.colors.ember,
                 modifier = Modifier.size(20.dp),
             )
         }

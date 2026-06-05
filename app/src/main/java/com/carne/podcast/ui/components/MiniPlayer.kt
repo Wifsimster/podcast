@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -16,7 +15,7 @@ import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -26,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.carne.podcast.playback.PlayerUiState
+import com.carne.podcast.ui.theme.CarneTheme
 
 @Composable
 fun MiniPlayer(
@@ -45,14 +45,18 @@ fun MiniPlayer(
         tonalElevation = 3.dp,
     ) {
         Column {
-            LinearProgressIndicator(
+            // Expressive wavy progress — the mini-player's signature flourish.
+            LinearWavyProgressIndicator(
                 progress = { progress },
-                modifier = Modifier.fillMaxWidth().height(2.dp),
+                color = CarneTheme.colors.brand,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = CarneTheme.spacing.md, vertical = CarneTheme.spacing.xs),
             )
             Row(
                 modifier = Modifier
                     .clickable(onClick = onClick)
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                    .padding(horizontal = CarneTheme.spacing.sm, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 PodcastArtwork(
@@ -60,7 +64,7 @@ fun MiniPlayer(
                     modifier = Modifier.size(44.dp),
                     cornerRadius = 6.dp,
                 )
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(CarneTheme.spacing.md))
                 Box(Modifier.weight(1f)) {
                     Text(
                         text = state.title.ifEmpty { "Playing" },

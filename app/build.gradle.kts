@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace = "com.carne.podcast"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.carne.podcast"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
         vectorDrawables { useSupportLibrary = true }
@@ -44,6 +44,9 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
+        // Material 3 Expressive APIs (motion scheme, wavy progress, loading
+        // indicators) are still annotated experimental in material3 1.4.x.
+        freeCompilerArgs += "-opt-in=androidx.compose.material3.ExperimentalMaterial3ExpressiveApi"
     }
     buildFeatures {
         compose = true
