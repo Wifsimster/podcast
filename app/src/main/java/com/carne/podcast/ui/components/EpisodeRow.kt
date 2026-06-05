@@ -1,7 +1,9 @@
 package com.carne.podcast.ui.components
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +18,9 @@ import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.PauseCircle
 import androidx.compose.material.icons.rounded.PlayCircle
+import androidx.compose.material.icons.rounded.RemoveDone
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -23,6 +28,10 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
@@ -40,6 +49,7 @@ import com.carne.podcast.ui.theme.CarneTheme
  */
 val EpisodeRowDividerStartInset = 84.dp
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EpisodeRow(
     episode: EpisodeEntity,
@@ -49,16 +59,22 @@ fun EpisodeRow(
     onClick: () -> Unit,
     onDownload: () -> Unit,
     onDeleteDownload: () -> Unit,
+    onTogglePlayed: () -> Unit,
     modifier: Modifier = Modifier,
     showArtwork: Boolean = true,
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = CarneTheme.spacing.lg, vertical = CarneTheme.spacing.md),
-        verticalAlignment = Alignment.Top,
-    ) {
+    var menuExpanded by remember { mutableStateOf(false) }
+    Box(modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = { menuExpanded = true },
+                )
+                .padding(horizontal = CarneTheme.spacing.lg, vertical = CarneTheme.spacing.md),
+            verticalAlignment = Alignment.Top,
+        ) {
         if (showArtwork) {
             PodcastArtwork(
                 url = episode.imageUrl,
@@ -127,6 +143,28 @@ fun EpisodeRow(
                 )
             }
             DownloadAffordance(episode, onDownload, onDeleteDownload)
+        }
+        }
+        DropdownMenu(
+            expanded = menuExpanded,
+            onDismissRequest = { menuExpanded = false },
+        ) {
+            DropdownMenuItem(
+                text = {
+                    Text(if (episode.isFinished) "Mark as unplayed" else "Mark as played")
+                },
+                leadingIcon = {
+                    Icon(
+                        if (episode.isFinished) Icons.Rounded.RemoveDone
+                        else Icons.Rounded.CheckCircle,
+                        contentDescription = null,
+                    )
+                },
+                onClick = {
+                    onTogglePlayed()
+                    menuExpanded = false
+                },
+            )
         }
     }
 }

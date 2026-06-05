@@ -72,4 +72,8 @@ class PodcastViewModel @Inject constructor(
     fun download(episode: EpisodeEntity) = downloadManager.enqueue(episode.id)
     fun deleteDownload(episode: EpisodeEntity) =
         downloadManager.deleteDownload(episode.id, episode.localFilePath)
+
+    fun markPlayed(episode: EpisodeEntity, played: Boolean) {
+        viewModelScope.launch { repository.setPlayed(episode.id, played) }
+    }
 }
