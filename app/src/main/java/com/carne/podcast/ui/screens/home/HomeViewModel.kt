@@ -61,11 +61,11 @@ class HomeViewModel @Inject constructor(
     fun playToggle(episode: EpisodeEntity) {
         val state = connection.state.value
         if (state.currentEpisodeId == episode.id && state.isPlaying) connection.pause()
-        else connection.play(episode, latest.value)
+        else connection.play(episode, uiState.value.latest)
     }
 
     /** Load (and resume) an episode so the now-playing screen has something to show. */
-    fun open(episode: EpisodeEntity) = connection.play(episode, latest.value)
+    fun open(episode: EpisodeEntity) = connection.play(episode, uiState.value.latest)
 
     fun download(episode: EpisodeEntity) = downloadManager.enqueue(episode.id)
     fun deleteDownload(episode: EpisodeEntity) =
