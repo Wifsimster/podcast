@@ -1,0 +1,103 @@
+package com.carne.podcast.data.repository
+
+import com.carne.podcast.data.local.DownloadState
+import com.carne.podcast.data.local.EpisodeDao
+import com.carne.podcast.data.local.EpisodeEntity
+import com.carne.podcast.data.local.PodcastDao
+import com.carne.podcast.data.local.PodcastEntity
+import com.carne.podcast.data.remote.ParsedFeed
+import com.carne.podcast.data.remote.PodcastSearchResult
+import com.carne.podcast.data.remote.PodcastSearchService
+import com.carne.podcast.data.remote.RssParser
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class PodcastRepository @Inject constructor(
+    private val podcastDao: PodcastDao,
+    private val episodeDao: EpisodeDao,
+    private val rssParser: RssParser,
+    private val searchService: PodcastSearchService,
+) {
+    fun observeSubscriptions(): Flow<List<PodcastEntity>> = podcastDao.observeSubscribed()
+    fun observePodcast(feedUrl: String): Flow<PodcastEntity?> = podcastDao.observePodcast(feedUrl)
+    fun observeEpisodes(feedUrl: String): Flow<List<EpisodeEntity>> = episodeDao.observeForFeed(feedUrl)
+    fun observeEpisode(id: String): Flow<EpisodeEntity?> = episodeDao.observeEpisode(id)
+    fun observeLatest(): Flow<List<EpisodeEntity>> = episodeDao.observeLatest()
+    fun observeInProgress(): Flow<List<EpisodeEntity>> = episodeDao.observeInProgress()
+    fun observeDownloaded(): Flow<List<EpisodeEntity>> = episodeDao.observeDownloaded()
+
+    suspend fun getEpisode(id: String): EpisodeEntity? = episodeDao.getEpisode(id)
+
+    /** Subscribe to a feed by URL, fetching its content. Returns the feed URL. */
+    suspend fun subscribe(feedUrl: String): Result<String> = withContext(Dispatchers.IO) {
+        runCatching {
+            refreshFeed(feedUrl, markSubscribed = true)
+            feedUrl
+        }
+    }
+
+    suspend fun unsubscribe(feedUrl: String) = withContext(Dispatchers.IO) {
+        podcastDao.setSubscribed(feedUrl, false)
+    }
+
+    /** (Re)fetch a feed and reconcile podcast + episodes into the database. */
+    suspend fun refreshFeed(feedUrl: String, markSubscribed: Boolean = false) =
+        withContext(Dispatchers.IO) {
+            val parsed: ParsedFeed = rssParser.fetchAndParse(feedUrl)
+            val existing = podcastDao.getPodcast(feedUrl)
+            podcastDao.upsert(
+                PodcastEntity(
+                    feedUrl = feedUrl,
+                    title = parsed.title,
+                    author = parsed.author,
+                    description = parsed.description,
+                    imageUrl = parsed.imageUrl.ifEmpty { existing?.imageUrl.orEmpty() },
+                    link = parsed.link,
+                    subscribed = markSubscribed || (existing?.subscribed ?: true),
+                    lastUpdated = System.currentTimeMillis(),
+                )
+            )
+            val fallbackImage = parsed.imageUrl
+            val rows = parsed.episodes.map { e ->
+                EpisodeEntity(
+                    id = e.guid,
+                    feedUrl = feedUrl,
+                    title = e.title,
+                    description = e.description,
+                    audioUrl = e.audioUrl,
+                    imageUrl = e.imageUrl.ifEmpty { fallbackImage },
+                    pubDate = e.pubDate,
+                    durationMs = e.durationMs,
+                )
+            }
+            // INSERT IGNORE keeps existing playback state for known episodes.
+            episodeDao.insertNew(rows)
+        }
+
+    suspend fun refreshAllSubscriptions(feedUrls: List<String>) = withContext(Dispatchers.IO) {
+        feedUrls.forEach { url -> runCatching { refreshFeed(url) } }
+    }
+
+    suspend fun search(term: String): List<PodcastSearchResult> = withContext(Dispatchers.IO) {
+        runCatching { searchService.search(term) }.getOrDefault(emptyList())
+    }
+
+    // --- playback / state mutations ---
+
+    suspend fun savePosition(episodeId: String, positionMs: Long, durationMs: Long) =
+        episodeDao.updatePosition(episodeId, positionMs, durationMs)
+
+    suspend fun setPlayed(episodeId: String, played: Boolean) =
+        episodeDao.setPlayed(episodeId, played)
+
+    suspend fun updateDownload(
+        episodeId: String,
+        state: DownloadState,
+        progress: Int,
+        path: String?,
+    ) = episodeDao.updateDownload(episodeId, state, progress, path)
+}
