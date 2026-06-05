@@ -9,6 +9,7 @@ Carlos Diaz, is pre-subscribed on first launch.
 ## Features
 
 - 🎧 **Background playback** with lock-screen & notification controls (Media3 / ExoPlayer + MediaSession)
+- 🚗 **Android Auto** — browse Continue listening / Subscriptions / Downloads and play hands-free in the car
 - ⏯️ Play / pause, **skip back 10s / forward 30s**, scrub
 - ⏩ **Variable speed** (0.8×–3×)
 - 😴 **Sleep timer**
