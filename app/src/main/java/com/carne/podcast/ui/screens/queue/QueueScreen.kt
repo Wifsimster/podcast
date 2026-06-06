@@ -30,7 +30,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -46,6 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.carne.podcast.R
 import com.carne.podcast.data.local.EpisodeEntity
 import com.carne.podcast.ui.components.CarneEmptyState
+import com.carne.podcast.ui.components.CarneTopAppBar
 import com.carne.podcast.ui.components.PlayPauseIcon
 import com.carne.podcast.ui.components.PodcastArtwork
 import com.carne.podcast.ui.components.formatDate
@@ -57,6 +57,7 @@ import com.carne.podcast.ui.theme.CarneTheme
 fun QueueScreen(
     onOpenPlayer: () -> Unit,
     onBrowse: () -> Unit,
+    onOpenSettings: () -> Unit,
     contentPadding: PaddingValues,
     viewModel: QueueViewModel = hiltViewModel(),
 ) {
@@ -64,7 +65,13 @@ fun QueueScreen(
     val playerState by viewModel.playerState.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = { QueueTopBar(showClear = queue.isNotEmpty(), onClear = viewModel::clear) },
+        topBar = {
+            QueueTopBar(
+                showClear = queue.isNotEmpty(),
+                onClear = viewModel::clear,
+                onOpenSettings = onOpenSettings,
+            )
+        },
     ) { padding ->
         if (queue.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(top = padding.calculateTopPadding())) {
@@ -105,11 +112,15 @@ fun QueueScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun QueueTopBar(showClear: Boolean, onClear: () -> Unit) {
-    TopAppBar(
-        title = { Text(stringResource(R.string.queue_title)) },
+private fun QueueTopBar(
+    showClear: Boolean,
+    onClear: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
+    CarneTopAppBar(
+        title = stringResource(R.string.queue_title),
+        onOpenSettings = onOpenSettings,
         actions = {
             if (showClear) {
                 TextButton(onClick = onClear) { Text(stringResource(R.string.queue_clear)) }

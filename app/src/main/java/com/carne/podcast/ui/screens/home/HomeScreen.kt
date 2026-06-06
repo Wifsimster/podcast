@@ -13,13 +13,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Whatshot
 import androidx.compose.material3.ContainedLoadingIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
@@ -30,50 +34,95 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.carne.podcast.R
 import com.carne.podcast.ui.components.CarneEmptyState
+import com.carne.podcast.ui.components.CarneTopAppBar
 import com.carne.podcast.ui.components.EpisodeRow
 import com.carne.podcast.ui.components.EpisodeRowDividerStartInset
 import com.carne.podcast.ui.theme.CarneTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onOpenPlayer: () -> Unit,
     onBrowse: () -> Unit,
+    onOpenSettings: () -> Unit,
     contentPadding: PaddingValues,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val playerState by viewModel.playerState.collectAsStateWithLifecycle()
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    when {
-        uiState.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            CarneTopAppBar(
+                title = stringResource(R.string.app_name),
+                scrollBehavior = scrollBehavior,
+                onOpenSettings = onOpenSettings,
+            )
+        },
+    ) { padding ->
+        val topInset = padding.calculateTopPadding()
+        when {
+            uiState.loading -> Box(
+                Modifier.fillMaxSize().padding(top = topInset),
+                contentAlignment = Alignment.Center,
             ) {
-                ContainedLoadingIndicator()
-                Spacer(Modifier.height(CarneTheme.spacing.lg))
-                Text(
-                    stringResource(R.string.loading_podcasts),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                ) {
+                    ContainedLoadingIndicator()
+                    Spacer(Modifier.height(CarneTheme.spacing.lg))
+                    Text(
+                        stringResource(R.string.loading_podcasts),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            uiState.inProgress.isEmpty() && uiState.latest.isEmpty() -> Box(
+                Modifier.fillMaxSize().padding(top = topInset),
+            ) {
+                CarneEmptyState(
+                    icon = Icons.Rounded.Whatshot,
+                    title = stringResource(R.string.home_welcome_title),
+                    message = stringResource(R.string.home_welcome_message),
+                    actionLabel = stringResource(R.string.find_podcasts),
+                    onAction = onBrowse,
                 )
             }
-        }
 
-        uiState.inProgress.isEmpty() && uiState.latest.isEmpty() -> CarneEmptyState(
-            icon = Icons.Rounded.Whatshot,
-            title = stringResource(R.string.home_welcome_title),
-            message = stringResource(R.string.home_welcome_message),
-            actionLabel = stringResource(R.string.find_podcasts),
-            onAction = onBrowse,
-        )
+            else -> LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    top = topInset,
+                    bottom = contentPadding.calculateBottomPadding(),
+                ),
+            ) {
+                if (uiState.inProgress.isNotEmpty()) {
+                    item { SectionHeader(stringResource(R.string.continue_listening)) }
+                    items(uiState.inProgress, key = { "ip_${it.id}" }) { episode ->
+                        EpisodeRow(
+                            episode = episode,
+                            isCurrent = playerState.currentEpisodeId == episode.id,
+                            isPlaying = playerState.isPlaying,
+                            onPlayToggle = { viewModel.playToggle(episode) },
+                            onClick = { viewModel.open(episode); onOpenPlayer() },
+                            onDownload = { viewModel.download(episode) },
+                            onDeleteDownload = { viewModel.deleteDownload(episode) },
+                            onTogglePlayed = { viewModel.markPlayed(episode, !episode.isFinished) },
+                            onPlayNext = { viewModel.playNext(episode) },
+                            onAddToQueue = { viewModel.addToQueue(episode) },
+                            modifier = Modifier.animateItem(),
+                        )
+                        HorizontalDivider(Modifier.padding(start = EpisodeRowDividerStartInset))
+                    }
+                    item { Spacer(Modifier.height(CarneTheme.spacing.sm)) }
+                }
 
-        else -> LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = contentPadding,
-        ) {
-            if (uiState.inProgress.isNotEmpty()) {
-                item { SectionHeader(stringResource(R.string.continue_listening)) }
-                items(uiState.inProgress, key = { "ip_${it.id}" }) { episode ->
+                item { SectionHeader(stringResource(R.string.latest_episodes)) }
+                items(uiState.latest, key = { "lt_${it.id}" }) { episode ->
                     EpisodeRow(
                         episode = episode,
                         isCurrent = playerState.currentEpisodeId == episode.id,
@@ -89,25 +138,6 @@ fun HomeScreen(
                     )
                     HorizontalDivider(Modifier.padding(start = EpisodeRowDividerStartInset))
                 }
-                item { Spacer(Modifier.height(CarneTheme.spacing.sm)) }
-            }
-
-            item { SectionHeader(stringResource(R.string.latest_episodes)) }
-            items(uiState.latest, key = { "lt_${it.id}" }) { episode ->
-                EpisodeRow(
-                    episode = episode,
-                    isCurrent = playerState.currentEpisodeId == episode.id,
-                    isPlaying = playerState.isPlaying,
-                    onPlayToggle = { viewModel.playToggle(episode) },
-                    onClick = { viewModel.open(episode); onOpenPlayer() },
-                    onDownload = { viewModel.download(episode) },
-                    onDeleteDownload = { viewModel.deleteDownload(episode) },
-                    onTogglePlayed = { viewModel.markPlayed(episode, !episode.isFinished) },
-                    onPlayNext = { viewModel.playNext(episode) },
-                    onAddToQueue = { viewModel.addToQueue(episode) },
-                    modifier = Modifier.animateItem(),
-                )
-                HorizontalDivider(Modifier.padding(start = EpisodeRowDividerStartInset))
             }
         }
     }

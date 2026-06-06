@@ -44,13 +44,15 @@
     <string name="library_empty_title">Votre bibliothèque est vide</string>
     <string name="library_empty_message">Abonnez-vous à des émissions et elles apparaîtront ici, prêtes quand vous l\'êtes. À table. 🌶️</string>
     <string name="browse_podcasts">Parcourir les podcasts</string>
+    <string name="library_tab_shows">Émissions</string>
+    <string name="library_tab_downloads">Téléchargements</string>
 
     <!-- Téléchargements -->
     <string name="downloads_empty_title">Aucun téléchargement</string>
     <string name="downloads_empty_message">Appuyez sur l\'icône de téléchargement d\'un épisode pour l\'écouter hors ligne — parfait pour l\'avion et les zones blanches.</string>
 
     <!-- Recherche / Découverte -->
-    <string name="search_placeholder">Rechercher des podcasts ou coller une URL de flux</string>
+    <string name="search_placeholder">Rechercher ou coller une URL de flux</string>
     <string name="search_no_luck_title">Pas de chance</string>
     <string name="try_again">Réessayer</string>
     <string name="search_no_matches_title">Aucun résultat</string>

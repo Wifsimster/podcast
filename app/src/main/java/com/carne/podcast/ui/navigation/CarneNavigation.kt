@@ -27,7 +27,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.carne.podcast.ui.components.MiniPlayer
-import com.carne.podcast.ui.screens.downloads.DownloadsScreen
 import com.carne.podcast.ui.screens.home.HomeScreen
 import com.carne.podcast.ui.screens.library.LibraryScreen
 import com.carne.podcast.ui.screens.player.PlayerScreen
@@ -70,6 +69,13 @@ fun CarneRoot(
         }
     }
 
+    // Settings left the bottom bar; it's reached from the top-bar gear on every
+    // primary screen and pushed on top as a regular back-navigable destination.
+    val openSettings: () -> Unit = {
+        navController.navigate(Routes.SETTINGS) { launchSingleTop = true }
+    }
+    val openPlayer: () -> Unit = { navController.navigate(Routes.PLAYER) }
+
     Scaffold(
         bottomBar = {
             AnimatedVisibility(visible = !isPlayer) {
@@ -100,36 +106,40 @@ fun CarneRoot(
         ) {
             composable(Routes.HOME) {
                 HomeScreen(
-                    onOpenPlayer = { navController.navigate(Routes.PLAYER) },
+                    onOpenPlayer = openPlayer,
                     onBrowse = openSearch,
+                    onOpenSettings = openSettings,
                     contentPadding = innerPadding,
                 )
             }
             composable(Routes.QUEUE) {
                 QueueScreen(
-                    onOpenPlayer = { navController.navigate(Routes.PLAYER) },
+                    onOpenPlayer = openPlayer,
                     onBrowse = openSearch,
+                    onOpenSettings = openSettings,
                     contentPadding = innerPadding,
                 )
             }
             composable(Routes.LIBRARY) {
                 LibraryScreen(
                     onOpenPodcast = { navController.navigate(Routes.podcast(it)) },
+                    onOpenPlayer = openPlayer,
                     onBrowse = openSearch,
+                    onOpenSettings = openSettings,
                     contentPadding = innerPadding,
                 )
             }
             composable(Routes.SEARCH) {
-                SearchScreen(contentPadding = innerPadding)
-            }
-            composable(Routes.DOWNLOADS) {
-                DownloadsScreen(
-                    onOpenPlayer = { navController.navigate(Routes.PLAYER) },
+                SearchScreen(
+                    onOpenSettings = openSettings,
                     contentPadding = innerPadding,
                 )
             }
             composable(Routes.SETTINGS) {
-                SettingsScreen(contentPadding = innerPadding)
+                SettingsScreen(
+                    onBack = { navController.popBackStack() },
+                    contentPadding = innerPadding,
+                )
             }
             composable(Routes.PODCAST) {
                 PodcastScreen(

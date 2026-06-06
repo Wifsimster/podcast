@@ -44,13 +44,15 @@
     <string name="library_empty_title">Your library\'s empty</string>
     <string name="library_empty_message">Subscribe to shows and they\'ll live here, ready when you are. Let\'s get cooking. 🌶️</string>
     <string name="browse_podcasts">Browse podcasts</string>
+    <string name="library_tab_shows">Shows</string>
+    <string name="library_tab_downloads">Downloads</string>
 
     <!-- Downloads -->
     <string name="downloads_empty_title">Nothing downloaded yet</string>
     <string name="downloads_empty_message">Tap the download icon on any episode to keep it offline — perfect for flights and dead zones.</string>
 
     <!-- Search / Discover -->
-    <string name="search_placeholder">Search podcasts or paste a feed URL</string>
+    <string name="search_placeholder">Search or paste a feed URL</string>
     <string name="search_no_luck_title">No luck there</string>
     <string name="try_again">Try again</string>
     <string name="search_no_matches_title">No matches</string>

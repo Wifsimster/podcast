@@ -17,8 +17,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,9 +41,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.carne.podcast.BuildConfig
 import com.carne.podcast.R
 import com.carne.podcast.data.settings.ThemeMode
+import com.carne.podcast.ui.components.CarneTopAppBar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    onBack: () -> Unit,
     contentPadding: PaddingValues,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -67,22 +72,23 @@ fun SettingsScreen(
         ActivityResultContracts.OpenDocument(),
     ) { uri -> uri?.let(viewModel::importBackup) }
 
+    Scaffold(
+        topBar = {
+            CarneTopAppBar(
+                title = stringResource(R.string.settings_title),
+                onBack = onBack,
+            )
+        },
+    ) { padding ->
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
             .padding(
-                top = contentPadding.calculateTopPadding(),
+                top = padding.calculateTopPadding(),
                 bottom = contentPadding.calculateBottomPadding(),
             ),
     ) {
-        Text(
-            text = stringResource(R.string.settings_title),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(16.dp),
-        )
-
         SectionHeader(stringResource(R.string.settings_playback))
         ChoiceRow(
             title = stringResource(R.string.skip_back),
@@ -174,6 +180,7 @@ fun SettingsScreen(
         )
 
         Spacer(Modifier.padding(16.dp))
+    }
     }
 }
 

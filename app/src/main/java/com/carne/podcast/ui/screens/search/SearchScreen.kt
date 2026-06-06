@@ -21,10 +21,12 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.SearchOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,29 +46,46 @@ import com.carne.podcast.R
 import com.carne.podcast.data.remote.PodcastSearchResult
 import com.carne.podcast.data.remote.PodcastTheme
 import com.carne.podcast.ui.components.CarneEmptyState
+import com.carne.podcast.ui.components.CarneTopAppBar
 import com.carne.podcast.ui.components.PodcastArtwork
 import com.carne.podcast.ui.theme.CarneTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
+    onOpenSettings: () -> Unit,
     contentPadding: PaddingValues,
     viewModel: SearchViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(
-                top = contentPadding.calculateTopPadding(),
-                bottom = contentPadding.calculateBottomPadding(),
-            ),
-    ) {
+    Scaffold(
+        topBar = {
+            CarneTopAppBar(
+                title = stringResource(R.string.nav_search),
+                onOpenSettings = onOpenSettings,
+            )
+        },
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    top = padding.calculateTopPadding(),
+                    bottom = contentPadding.calculateBottomPadding(),
+                ),
+        ) {
         OutlinedTextField(
             value = state.query,
             onValueChange = viewModel::onQueryChange,
             modifier = Modifier.fillMaxWidth().padding(CarneTheme.spacing.lg),
-            placeholder = { Text(stringResource(R.string.search_placeholder)) },
+            placeholder = {
+                Text(
+                    stringResource(R.string.search_placeholder),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
             leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -111,6 +130,7 @@ fun SearchScreen(
                 title = stringResource(R.string.search_no_matches_title),
                 message = stringResource(R.string.search_no_matches_message),
             )
+        }
         }
     }
 }
