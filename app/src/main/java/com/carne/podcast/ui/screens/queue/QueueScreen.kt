@@ -112,6 +112,7 @@ fun QueueScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun QueueTopBar(
     showClear: Boolean,
