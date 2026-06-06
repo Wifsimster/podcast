@@ -2,7 +2,6 @@ package com.carne.podcast.ui.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +16,8 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.PauseCircle
+import androidx.compose.material.icons.rounded.PlaylistAdd
+import androidx.compose.material.icons.rounded.PlaylistPlay
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.RemoveDone
 import androidx.compose.material3.DropdownMenu
@@ -34,11 +35,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.carne.podcast.R
 import com.carne.podcast.data.local.DownloadState
 import com.carne.podcast.data.local.EpisodeEntity
 import com.carne.podcast.ui.theme.CarneTheme
@@ -62,8 +65,13 @@ fun EpisodeRow(
     onTogglePlayed: () -> Unit,
     modifier: Modifier = Modifier,
     showArtwork: Boolean = true,
+    onPlayNext: (() -> Unit)? = null,
+    onAddToQueue: (() -> Unit)? = null,
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
+    val playOrPauseLabel = stringResource(R.string.play_or_pause_episode)
+    val playingLabel = stringResource(R.string.playing)
+    val pausedLabel = stringResource(R.string.paused)
     Box(modifier) {
         Row(
             modifier = Modifier
@@ -97,7 +105,7 @@ fun EpisodeRow(
                 if (episode.isFinished) {
                     Icon(
                         Icons.Rounded.CheckCircle,
-                        contentDescription = "Played",
+                        contentDescription = stringResource(R.string.played),
                         tint = CarneTheme.colors.played,
                         modifier = Modifier.size(14.dp),
                     )
@@ -130,8 +138,8 @@ fun EpisodeRow(
             IconButton(
                 onClick = onPlayToggle,
                 modifier = Modifier.semantics {
-                    contentDescription = "Play or pause episode"
-                    stateDescription = if (isCurrent && isPlaying) "Playing" else "Paused"
+                    contentDescription = playOrPauseLabel
+                    stateDescription = if (isCurrent && isPlaying) playingLabel else pausedLabel
                 },
             ) {
                 PlayPauseIcon(
@@ -151,7 +159,10 @@ fun EpisodeRow(
         ) {
             DropdownMenuItem(
                 text = {
-                    Text(if (episode.isFinished) "Mark as unplayed" else "Mark as played")
+                    Text(
+                        if (episode.isFinished) stringResource(R.string.mark_as_unplayed)
+                        else stringResource(R.string.mark_as_played)
+                    )
                 },
                 leadingIcon = {
                     Icon(
@@ -165,6 +176,30 @@ fun EpisodeRow(
                     menuExpanded = false
                 },
             )
+            if (onPlayNext != null) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.play_next)) },
+                    leadingIcon = {
+                        Icon(Icons.Rounded.PlaylistPlay, contentDescription = null)
+                    },
+                    onClick = {
+                        onPlayNext()
+                        menuExpanded = false
+                    },
+                )
+            }
+            if (onAddToQueue != null) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.add_to_queue)) },
+                    leadingIcon = {
+                        Icon(Icons.Rounded.PlaylistAdd, contentDescription = null)
+                    },
+                    onClick = {
+                        onAddToQueue()
+                        menuExpanded = false
+                    },
+                )
+            }
         }
     }
 }
@@ -179,26 +214,29 @@ private fun DownloadAffordance(
         DownloadState.DOWNLOADED -> IconButton(onClick = onDeleteDownload) {
             Icon(
                 Icons.Rounded.DownloadDone,
-                contentDescription = "Downloaded — tap to delete",
+                contentDescription = stringResource(R.string.downloaded_tap_delete),
                 tint = CarneTheme.colors.downloaded,
                 modifier = Modifier.size(20.dp),
             )
         }
         // Expressive activity indicator while the episode is fetching.
-        DownloadState.DOWNLOADING, DownloadState.QUEUED -> IconButton(
-            onClick = {},
-            enabled = false,
-            modifier = Modifier.semantics { contentDescription = "Downloading" },
-        ) {
-            LoadingIndicator(
-                color = CarneTheme.colors.ember,
-                modifier = Modifier.size(20.dp),
-            )
+        DownloadState.DOWNLOADING, DownloadState.QUEUED -> {
+            val downloadingLabel = stringResource(R.string.downloading)
+            IconButton(
+                onClick = {},
+                enabled = false,
+                modifier = Modifier.semantics { contentDescription = downloadingLabel },
+            ) {
+                LoadingIndicator(
+                    color = CarneTheme.colors.ember,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
         }
         else -> IconButton(onClick = onDownload) {
             Icon(
                 Icons.Rounded.Download,
-                contentDescription = "Download",
+                contentDescription = stringResource(R.string.download),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp),
             )

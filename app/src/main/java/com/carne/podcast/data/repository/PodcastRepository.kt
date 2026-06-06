@@ -5,6 +5,8 @@ import com.carne.podcast.data.local.EpisodeDao
 import com.carne.podcast.data.local.EpisodeEntity
 import com.carne.podcast.data.local.PodcastDao
 import com.carne.podcast.data.local.PodcastEntity
+import com.carne.podcast.data.local.QueueDao
+import com.carne.podcast.data.local.QueueItemEntity
 import com.carne.podcast.data.remote.ParsedFeed
 import com.carne.podcast.data.remote.PodcastSearchResult
 import com.carne.podcast.data.remote.PodcastSearchService
@@ -30,6 +32,7 @@ data class NewEpisodeBatch(
 class PodcastRepository @Inject constructor(
     private val podcastDao: PodcastDao,
     private val episodeDao: EpisodeDao,
+    private val queueDao: QueueDao,
     private val rssParser: RssParser,
     private val searchService: PodcastSearchService,
 ) {
@@ -149,4 +152,41 @@ class PodcastRepository @Inject constructor(
         progress: Int,
         path: String?,
     ) = episodeDao.updateDownload(episodeId, state, progress, path)
+
+    // --- Up-Next queue ---
+
+    fun observeQueue(): Flow<List<EpisodeEntity>> = queueDao.observeQueue()
+    suspend fun getQueueOnce(): List<EpisodeEntity> = queueDao.getQueueOnce()
+
+    /** Append an episode to the end of the queue (no-op if already queued). */
+    suspend fun addToQueueEnd(episodeId: String) = withContext(Dispatchers.IO) {
+        if (queueDao.contains(episodeId)) return@withContext
+        val next = (queueDao.maxSortIndex() ?: 0L) + QUEUE_STEP
+        queueDao.upsert(QueueItemEntity(episodeId, next))
+    }
+
+    /** Splice an episode to the front of the queue so it plays next. */
+    suspend fun playNextInQueue(episodeId: String) = withContext(Dispatchers.IO) {
+        val head = (queueDao.minSortIndex() ?: 0L) - QUEUE_STEP
+        queueDao.upsert(QueueItemEntity(episodeId, head))
+    }
+
+    suspend fun removeFromQueue(episodeId: String) = withContext(Dispatchers.IO) {
+        queueDao.remove(episodeId)
+    }
+
+    suspend fun clearQueue() = withContext(Dispatchers.IO) { queueDao.clear() }
+
+    /** Persist a new explicit ordering of the queue (used by drag/move). */
+    suspend fun setQueueOrder(orderedEpisodeIds: List<String>) = withContext(Dispatchers.IO) {
+        queueDao.upsertAll(
+            orderedEpisodeIds.mapIndexed { index, id ->
+                QueueItemEntity(id, index.toLong() * QUEUE_STEP)
+            }
+        )
+    }
+
+    companion object {
+        private const val QUEUE_STEP = 1_000L
+    }
 }

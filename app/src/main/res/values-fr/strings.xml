@@ -1,0 +1,154 @@
+<resources>
+    <string name="app_name">Carne</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Accueil</string>
+    <string name="nav_queue">File</string>
+    <string name="nav_library">Bibliothèque</string>
+    <string name="nav_search">Recherche</string>
+    <string name="nav_downloads">Téléchargements</string>
+    <string name="nav_settings">Réglages</string>
+
+    <!-- Commun -->
+    <string name="subscribe">S\'abonner</string>
+    <string name="subscribed_added">Ajouté</string>
+    <string name="subscribed_label">Abonné</string>
+    <string name="not_subscribed">Non abonné</string>
+    <string name="back">Retour</string>
+    <string name="refresh">Actualiser</string>
+    <string name="close">Fermer</string>
+    <string name="cancel">Annuler</string>
+
+    <!-- Ligne d\'épisode -->
+    <string name="played">Écouté</string>
+    <string name="mark_as_played">Marquer comme écouté</string>
+    <string name="mark_as_unplayed">Marquer comme non écouté</string>
+    <string name="play_or_pause_episode">Lire ou mettre en pause l\'épisode</string>
+    <string name="playing">En lecture</string>
+    <string name="paused">En pause</string>
+    <string name="download">Télécharger</string>
+    <string name="downloading">Téléchargement…</string>
+    <string name="downloaded_tap_delete">Téléchargé — appuyer pour supprimer</string>
+    <string name="play_next">Lire ensuite</string>
+    <string name="add_to_queue">Ajouter à la file</string>
+
+    <!-- Accueil -->
+    <string name="loading_podcasts">Chargement de vos podcasts…</string>
+    <string name="home_welcome_title">Bienvenue dans Carne 🌶️</string>
+    <string name="home_welcome_message">Abonnez-vous à quelques émissions et vos derniers épisodes apparaîtront ici.</string>
+    <string name="find_podcasts">Trouver des podcasts</string>
+    <string name="continue_listening">Reprendre l\'écoute</string>
+    <string name="latest_episodes">Derniers épisodes</string>
+
+    <!-- Bibliothèque -->
+    <string name="library_empty_title">Votre bibliothèque est vide</string>
+    <string name="library_empty_message">Abonnez-vous à des émissions et elles apparaîtront ici, prêtes quand vous l\'êtes. À table. 🌶️</string>
+    <string name="browse_podcasts">Parcourir les podcasts</string>
+
+    <!-- Téléchargements -->
+    <string name="downloads_empty_title">Aucun téléchargement</string>
+    <string name="downloads_empty_message">Appuyez sur l\'icône de téléchargement d\'un épisode pour l\'écouter hors ligne — parfait pour l\'avion et les zones blanches.</string>
+
+    <!-- Recherche / Découverte -->
+    <string name="search_placeholder">Rechercher des podcasts ou coller une URL de flux</string>
+    <string name="search_no_luck_title">Pas de chance</string>
+    <string name="try_again">Réessayer</string>
+    <string name="search_no_matches_title">Aucun résultat</string>
+    <string name="search_no_matches_message">Vérifiez l\'orthographe ou essayez une autre émission.</string>
+    <string name="browse_by_theme">Parcourir par thème</string>
+    <string name="nothing_to_show_title">Rien à afficher</string>
+    <string name="theme_load_error">Impossible de charger les meilleures émissions pour %1$s. Vérifiez votre connexion et essayez un autre thème. 🌶️</string>
+    <string name="subscribe_to">S\'abonner à %1$s</string>
+    <string name="subscribed_to">Abonné à %1$s</string>
+    <string name="search_error_none">Aucun podcast trouvé</string>
+    <string name="search_subscribed">Abonné</string>
+    <string name="search_feed_error">Impossible de charger ce flux</string>
+
+    <!-- Détail du podcast -->
+    <string name="artwork_for">Pochette de %1$s</string>
+    <string name="show_notes">Notes de l\'épisode</string>
+    <plurals name="episodes_count">
+        <item quantity="one">%1$d épisode</item>
+        <item quantity="other">%1$d épisodes</item>
+    </plurals>
+
+    <!-- Lecteur -->
+    <string name="now_playing">En cours de lecture</string>
+    <string name="back_10">Reculer de 10 secondes</string>
+    <string name="forward_30">Avancer de 30 secondes</string>
+    <string name="play_or_pause">Lire ou mettre en pause</string>
+    <string name="playback_position">Position de lecture</string>
+    <string name="position_of_duration">%1$s sur %2$s</string>
+    <string name="sleep">Minuteur</string>
+    <string name="sleep_end">Fin</string>
+    <string name="minutes_short">%1$d min</string>
+    <string name="end_of_episode">Fin de l\'épisode</string>
+    <string name="cancel_timer">Annuler le minuteur</string>
+    <string name="open_player">Ouvrir le lecteur</string>
+
+    <!-- Réglages -->
+    <string name="settings_title">Réglages</string>
+    <string name="settings_playback">Lecture</string>
+    <string name="skip_back">Reculer</string>
+    <string name="skip_forward">Avancer</string>
+    <string name="seconds_short">%1$d s</string>
+    <string name="autoplay_next_title">Lecture auto de l\'épisode suivant</string>
+    <string name="autoplay_next_subtitle">Enchaîner sur l\'épisode suivant à la fin</string>
+    <string name="settings_downloads">Téléchargements</string>
+    <string name="wifi_only_title">Télécharger en Wi-Fi uniquement</string>
+    <string name="wifi_only_subtitle">Ne jamais utiliser les données mobiles pour les téléchargements</string>
+    <string name="delete_finished_title">Supprimer une fois terminé</string>
+    <string name="delete_finished_subtitle">Supprimer le téléchargement à la fin de l\'épisode</string>
+    <string name="settings_updates">Mises à jour</string>
+    <string name="bg_refresh_title">Actualisation en arrière-plan</string>
+    <string name="bg_refresh_subtitle">Vérifier régulièrement les nouveaux épisodes</string>
+    <string name="new_episode_notifs_title">Notifications de nouveaux épisodes</string>
+    <string name="new_episode_notifs_subtitle">M\'avertir quand mes abonnements publient de nouveaux épisodes</string>
+    <string name="settings_appearance">Apparence</string>
+    <string name="theme">Thème</string>
+    <string name="dynamic_color_title">Couleurs dynamiques</string>
+    <string name="dynamic_color_subtitle">Adapter les couleurs à votre fond d\'écran (Android 12+)</string>
+    <string name="settings_about">À propos</string>
+    <string name="version">Version</string>
+    <string name="theme_system">Système</string>
+    <string name="theme_light">Clair</string>
+    <string name="theme_dark">Sombre</string>
+
+    <!-- Réglages : possession des données (OPML / sauvegarde) -->
+    <string name="settings_data">Vos données</string>
+    <string name="export_opml_title">Exporter les abonnements (OPML)</string>
+    <string name="export_opml_subtitle">Enregistrer vos flux dans un fichier OPML standard</string>
+    <string name="import_opml_title">Importer des abonnements (OPML)</string>
+    <string name="import_opml_subtitle">S\'abonner en masse depuis un fichier OPML</string>
+    <string name="export_backup_title">Tout sauvegarder</string>
+    <string name="export_backup_subtitle">Abonnements, progression et réglages dans un fichier</string>
+    <string name="import_backup_title">Restaurer une sauvegarde</string>
+    <string name="import_backup_subtitle">Restaurer les données depuis une sauvegarde Carne</string>
+    <string name="export_opml_done">%1$d abonnements exportés</string>
+    <string name="import_opml_done">%1$d abonnements importés</string>
+    <string name="backup_done">Sauvegarde enregistrée</string>
+    <string name="restore_done">Restauration terminée</string>
+    <string name="data_op_failed">Une erreur est survenue</string>
+
+    <!-- File d\'attente -->
+    <string name="queue_title">File d\'attente</string>
+    <string name="queue_empty_title">Votre file est vide</string>
+    <string name="queue_empty_message">Ajoutez des épisodes via « Lire ensuite » ou « Ajouter à la file » et ils s\'aligneront ici.</string>
+    <string name="queue_clear">Vider</string>
+    <string name="move_up">Monter</string>
+    <string name="move_down">Descendre</string>
+    <string name="remove">Retirer</string>
+
+    <!-- Android Auto / arborescence -->
+    <string name="subscriptions_title">Abonnements</string>
+
+    <!-- Notifications de nouveaux épisodes -->
+    <string name="notif_channel_name">Nouveaux épisodes</string>
+    <string name="notif_channel_desc">Alertes quand vos abonnements publient de nouveaux épisodes</string>
+    <plurals name="new_episodes_count">
+        <item quantity="one">%1$d nouvel épisode</item>
+        <item quantity="other">%1$d nouveaux épisodes</item>
+    </plurals>
+    <string name="notif_more">+%1$d de plus</string>
+    <string name="notif_podcast_line">%1$s : %2$s</string>
+</resources>

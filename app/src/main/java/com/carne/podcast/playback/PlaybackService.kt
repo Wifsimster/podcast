@@ -15,6 +15,7 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import androidx.media3.session.MediaConstants
 import androidx.media3.session.SessionResult
+import com.carne.podcast.R
 import com.carne.podcast.data.local.EpisodeEntity
 import com.carne.podcast.data.repository.PodcastRepository
 import com.carne.podcast.data.settings.CarneSettings
@@ -153,9 +154,10 @@ class PlaybackService : MediaLibraryService() {
         ): ListenableFuture<LibraryResult<MediaItem>> = scope.future {
             val item = when (mediaId) {
                 ROOT_ID -> rootItem()
-                CONTINUE_ID -> folderItem(CONTINUE_ID, CONTINUE_TITLE)
-                SUBSCRIPTIONS_ID -> folderItem(SUBSCRIPTIONS_ID, SUBSCRIPTIONS_TITLE)
-                DOWNLOADS_ID -> folderItem(DOWNLOADS_ID, DOWNLOADS_TITLE)
+                CONTINUE_ID -> folderItem(CONTINUE_ID, getString(R.string.continue_listening))
+                SUBSCRIPTIONS_ID ->
+                    folderItem(SUBSCRIPTIONS_ID, getString(R.string.subscriptions_title))
+                DOWNLOADS_ID -> folderItem(DOWNLOADS_ID, getString(R.string.nav_downloads))
                 else -> when {
                     mediaId.startsWith(PODCAST_PREFIX) ->
                         repository.getSubscriptionsOnce()
@@ -178,9 +180,9 @@ class PlaybackService : MediaLibraryService() {
         ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = scope.future {
             val children: List<MediaItem> = when (parentId) {
                 ROOT_ID -> listOf(
-                    folderItem(CONTINUE_ID, CONTINUE_TITLE),
-                    folderItem(SUBSCRIPTIONS_ID, SUBSCRIPTIONS_TITLE),
-                    folderItem(DOWNLOADS_ID, DOWNLOADS_TITLE),
+                    folderItem(CONTINUE_ID, getString(R.string.continue_listening)),
+                    folderItem(SUBSCRIPTIONS_ID, getString(R.string.subscriptions_title)),
+                    folderItem(DOWNLOADS_ID, getString(R.string.nav_downloads)),
                 )
                 CONTINUE_ID -> repository.getInProgressOnce().map(::episodeBrowseItem)
                 DOWNLOADS_ID -> repository.getDownloadedOnce().map(::episodeBrowseItem)
@@ -245,7 +247,7 @@ class PlaybackService : MediaLibraryService() {
     // MediaItem builders
     // ---------------------------------------------------------------------
 
-    private fun rootItem(): MediaItem = folderItem(ROOT_ID, ROOT_TITLE)
+    private fun rootItem(): MediaItem = folderItem(ROOT_ID, getString(R.string.app_name))
 
     private fun rootParams(): LibraryParams = LibraryParams.Builder()
         .setExtras(
@@ -355,6 +357,8 @@ class PlaybackService : MediaLibraryService() {
         if (id.isBlank()) return
         scope.launch(Dispatchers.IO) {
             repository.setPlayed(id, true)
+            // A finished episode leaves the Up-Next queue so it stays current.
+            repository.removeFromQueue(id)
             if (settings.autoDeleteFinished) {
                 repository.getEpisode(id)?.let { episode ->
                     downloadManager.deleteDownload(episode.id, episode.localFilePath)
@@ -372,10 +376,5 @@ class PlaybackService : MediaLibraryService() {
         private const val SUBSCRIPTIONS_ID = "[subscriptions]"
         private const val DOWNLOADS_ID = "[downloads]"
         private const val PODCAST_PREFIX = "[podcast]"
-
-        private const val ROOT_TITLE = "Carne"
-        private const val CONTINUE_TITLE = "Continue listening"
-        private const val SUBSCRIPTIONS_TITLE = "Subscriptions"
-        private const val DOWNLOADS_TITLE = "Downloads"
     }
 }

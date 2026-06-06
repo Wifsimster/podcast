@@ -42,4 +42,12 @@ class DownloadsViewModel @Inject constructor(
     fun markPlayed(episode: EpisodeEntity, played: Boolean) {
         viewModelScope.launch { repository.setPlayed(episode.id, played) }
     }
+
+    fun playNext(episode: EpisodeEntity) {
+        viewModelScope.launch { repository.playNextInQueue(episode.id) }
+    }
+
+    fun addToQueue(episode: EpisodeEntity) {
+        viewModelScope.launch { repository.addToQueueEnd(episode.id) }
+    }
 }

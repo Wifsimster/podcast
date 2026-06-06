@@ -141,6 +141,24 @@ class PlaybackConnection @Inject constructor(
         c.play()
     }
 
+    /**
+     * Play the user-curated queue starting at [startIndex], loading that episode
+     * and everything after it into the player so it flows through the queue.
+     */
+    fun playFromQueue(queue: List<EpisodeEntity>, startIndex: Int) {
+        val c = controller ?: return
+        val start = queue.getOrNull(startIndex) ?: return
+        if (c.currentMediaItem?.mediaId == start.id) {
+            c.play()
+            return
+        }
+        val items = queue.drop(startIndex).map(::mediaItemFor)
+        c.setMediaItems(items, /* startIndex = */ 0, start.positionMs.coerceAtLeast(0))
+        c.playbackParameters = PlaybackParameters(settings.defaultSpeed)
+        c.prepare()
+        c.play()
+    }
+
     private fun mediaItemFor(episode: EpisodeEntity): MediaItem {
         val uri: Uri = episode.localFilePath
             ?.let { path -> File(path).takeIf { it.exists() }?.let { Uri.fromFile(it) } }

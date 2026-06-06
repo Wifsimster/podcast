@@ -27,12 +27,22 @@ interface PodcastDao {
 
     @Query("DELETE FROM podcasts WHERE feedUrl = :feedUrl")
     suspend fun delete(feedUrl: String)
+
+    @Query("SELECT * FROM podcasts")
+    suspend fun getAll(): List<PodcastEntity>
 }
 
 @Dao
 interface EpisodeDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertNew(episodes: List<EpisodeEntity>): List<Long>
+
+    /** Insert-or-replace, used to restore episode playback state from a backup. */
+    @Upsert
+    suspend fun upsertAll(episodes: List<EpisodeEntity>)
+
+    @Query("SELECT * FROM episodes")
+    suspend fun getAll(): List<EpisodeEntity>
 
     @Update
     suspend fun update(episode: EpisodeEntity)
@@ -77,4 +87,50 @@ interface EpisodeDao {
 
     @Query("SELECT * FROM episodes WHERE downloadState = 'DOWNLOADED' ORDER BY pubDate DESC")
     fun observeDownloaded(): Flow<List<EpisodeEntity>>
+}
+
+@Dao
+interface QueueDao {
+    /** The queue, resolved to full episodes, in play order. */
+    @Query(
+        """
+        SELECT e.* FROM episodes e
+        INNER JOIN queue q ON e.id = q.episodeId
+        ORDER BY q.sortIndex ASC
+        """
+    )
+    fun observeQueue(): Flow<List<EpisodeEntity>>
+
+    @Query(
+        """
+        SELECT e.* FROM episodes e
+        INNER JOIN queue q ON e.id = q.episodeId
+        ORDER BY q.sortIndex ASC
+        """
+    )
+    suspend fun getQueueOnce(): List<EpisodeEntity>
+
+    @Query("SELECT episodeId FROM queue ORDER BY sortIndex ASC")
+    suspend fun getOrderedIds(): List<String>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM queue WHERE episodeId = :episodeId)")
+    suspend fun contains(episodeId: String): Boolean
+
+    @Query("SELECT MAX(sortIndex) FROM queue")
+    suspend fun maxSortIndex(): Long?
+
+    @Query("SELECT MIN(sortIndex) FROM queue")
+    suspend fun minSortIndex(): Long?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(item: QueueItemEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertAll(items: List<QueueItemEntity>)
+
+    @Query("DELETE FROM queue WHERE episodeId = :episodeId")
+    suspend fun remove(episodeId: String)
+
+    @Query("DELETE FROM queue")
+    suspend fun clear()
 }

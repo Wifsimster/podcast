@@ -1,12 +1,15 @@
 package com.carne.podcast.ui.screens.search
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.carne.podcast.R
 import com.carne.podcast.data.remote.PodcastSearchResult
 import com.carne.podcast.data.remote.PodcastTheme
 import com.carne.podcast.data.remote.PodcastThemes
 import com.carne.podcast.data.repository.PodcastRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -27,6 +30,7 @@ data class SearchUiState(
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val repository: PodcastRepository,
 ) : ViewModel() {
 
@@ -56,7 +60,9 @@ class SearchViewModel @Inject constructor(
             _state.value = _state.value.copy(
                 loading = false,
                 results = results,
-                error = if (results.isEmpty()) "No podcasts found" else null,
+                error = if (results.isEmpty()) {
+                    context.getString(R.string.search_error_none)
+                } else null,
             )
         }
     }
@@ -93,10 +99,13 @@ class SearchViewModel @Inject constructor(
                 _state.value.copy(
                     loading = false,
                     subscribedFeeds = _state.value.subscribedFeeds + url,
-                    error = "Subscribed",
+                    error = context.getString(R.string.search_subscribed),
                 )
             } else {
-                _state.value.copy(loading = false, error = "Couldn't load that feed")
+                _state.value.copy(
+                    loading = false,
+                    error = context.getString(R.string.search_feed_error),
+                )
             }
         }
     }

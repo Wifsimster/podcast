@@ -21,12 +21,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.carne.podcast.BuildConfig
+import com.carne.podcast.R
 import com.carne.podcast.ui.components.CarneEmptyState
 import com.carne.podcast.ui.components.PodcastArtwork
 import com.carne.podcast.ui.theme.CarneTheme
@@ -43,9 +45,9 @@ fun LibraryScreen(
     if (subscriptions.isEmpty()) {
         CarneEmptyState(
             icon = Icons.Rounded.LibraryMusic,
-            title = "Your library's empty",
-            message = "Subscribe to shows and they'll live here, ready when you are. Let's get cooking. 🌶️",
-            actionLabel = "Browse podcasts",
+            title = stringResource(R.string.library_empty_title),
+            message = stringResource(R.string.library_empty_message),
+            actionLabel = stringResource(R.string.browse_podcasts),
             onAction = onBrowse,
         )
         return
