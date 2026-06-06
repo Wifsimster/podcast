@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
@@ -43,12 +42,10 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.carne.podcast.BuildConfig
 import com.carne.podcast.R
 import com.carne.podcast.data.local.PodcastWithCount
 import com.carne.podcast.ui.components.CarneEmptyState
@@ -134,16 +131,6 @@ fun LibraryScreen(
                                 item = item,
                                 onClick = { onOpenPodcast(item.podcast.feedUrl) },
                                 modifier = Modifier.animateItem(),
-                            )
-                        }
-
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            Text(
-                                text = stringResource(R.string.library_version, BuildConfig.VERSION_NAME),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth().padding(top = CarneTheme.spacing.sm),
                             )
                         }
                     }
