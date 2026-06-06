@@ -24,6 +24,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -71,6 +72,7 @@ fun PodcastScreen(
     val episodes by viewModel.episodes.collectAsStateWithLifecycle()
     val filteredEpisodes by viewModel.filteredEpisodes.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
+    val unplayedOnly by viewModel.unplayedOnly.collectAsStateWithLifecycle()
     val playerState by viewModel.playerState.collectAsStateWithLifecycle()
     val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
 
@@ -202,13 +204,24 @@ fun PodcastScreen(
                         )
                     }
                     Spacer(Modifier.height(8.dp))
-                    Text(
-                        pluralStringResource(
-                            R.plurals.episodes_count, episodes.size, episodes.size,
-                        ),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            pluralStringResource(
+                                R.plurals.episodes_count, episodes.size, episodes.size,
+                            ),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f),
+                        )
+                        FilterChip(
+                            selected = unplayedOnly,
+                            onClick = viewModel::toggleUnplayedOnly,
+                            label = { Text(stringResource(R.string.filter_unplayed_only)) },
+                        )
+                    }
                     if (episodes.size > 8) {
                         Spacer(Modifier.height(8.dp))
                         OutlinedTextField(

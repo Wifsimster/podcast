@@ -47,6 +47,15 @@
     <string name="browse_podcasts">Parcourir les podcasts</string>
     <string name="library_tab_podcasts">Podcasts</string>
     <string name="library_version">🌶️ Carne v%1$s</string>
+    <string name="sort_library">Trier</string>
+    <string name="sort_recent">Récemment mis à jour</string>
+    <string name="sort_alphabetical">Alphabétique</string>
+    <string name="sort_unplayed">Non écoutés d\'abord</string>
+    <string name="filter_unplayed_only">Non écoutés uniquement</string>
+    <plurals name="unplayed_count">
+        <item quantity="one">%1$d non écouté</item>
+        <item quantity="other">%1$d non écoutés</item>
+    </plurals>
 
     <!-- Téléchargements -->
     <string name="downloads_empty_title">Aucun téléchargement</string>

@@ -5,6 +5,7 @@ import com.carne.podcast.data.local.EpisodeDao
 import com.carne.podcast.data.local.EpisodeEntity
 import com.carne.podcast.data.local.PodcastDao
 import com.carne.podcast.data.local.PodcastEntity
+import com.carne.podcast.data.local.PodcastWithCount
 import com.carne.podcast.data.local.Chapter
 import com.carne.podcast.data.local.QueueDao
 import com.carne.podcast.data.local.QueueItemEntity
@@ -42,6 +43,8 @@ class PodcastRepository @Inject constructor(
     private val httpClient: OkHttpClient,
 ) {
     fun observeSubscriptions(): Flow<List<PodcastEntity>> = podcastDao.observeSubscribed()
+    fun observeSubscriptionsWithCounts(): Flow<List<PodcastWithCount>> =
+        podcastDao.observeSubscribedWithCounts()
     fun observePodcast(feedUrl: String): Flow<PodcastEntity?> = podcastDao.observePodcast(feedUrl)
     fun observeEpisodes(feedUrl: String): Flow<List<EpisodeEntity>> = episodeDao.observeForFeed(feedUrl)
     fun observeEpisode(id: String): Flow<EpisodeEntity?> = episodeDao.observeEpisode(id)
