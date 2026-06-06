@@ -37,6 +37,7 @@ import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import javax.inject.Inject
 
@@ -76,8 +77,13 @@ class PlaybackService : MediaLibraryService() {
         Log.i(TAG, "onCreate: media service starting")
 
         // Read the persisted settings once so the notification / Android Auto
-        // skip buttons honour the user's chosen intervals from launch.
-        settings = runBlocking { settingsRepository.settings.first() }
+        // skip buttons honour the user's chosen intervals from launch. Bounded by
+        // a timeout so a slow DataStore read can never block onCreate (and the main
+        // thread the browse callbacks would otherwise queue behind) indefinitely —
+        // falling back to defaults, which the collector below promptly corrects.
+        settings = runBlocking {
+            withTimeoutOrNull(SETTINGS_LOAD_TIMEOUT_MS) { settingsRepository.settings.first() }
+        } ?: CarneSettings()
         scope.launch {
             settingsRepository.settings.collect {
                 settings = it
@@ -187,7 +193,7 @@ class PlaybackService : MediaLibraryService() {
             session: MediaLibrarySession,
             browser: MediaSession.ControllerInfo,
             params: LibraryParams?,
-        ): ListenableFuture<LibraryResult<MediaItem>> = scope.future {
+        ): ListenableFuture<LibraryResult<MediaItem>> = scope.future(Dispatchers.IO) {
             Log.i(
                 TAG,
                 "onGetLibraryRoot: caller='${browser.packageName}' " +
@@ -210,7 +216,7 @@ class PlaybackService : MediaLibraryService() {
             session: MediaLibrarySession,
             browser: MediaSession.ControllerInfo,
             mediaId: String,
-        ): ListenableFuture<LibraryResult<MediaItem>> = scope.future {
+        ): ListenableFuture<LibraryResult<MediaItem>> = scope.future(Dispatchers.IO) {
             Log.i(TAG, "onGetItem: mediaId='$mediaId' caller='${browser.packageName}'")
             try {
                 val item = when (mediaId) {
@@ -243,7 +249,7 @@ class PlaybackService : MediaLibraryService() {
             page: Int,
             pageSize: Int,
             params: LibraryParams?,
-        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = scope.future {
+        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = scope.future(Dispatchers.IO) {
             Log.i(
                 TAG,
                 "onGetChildren: parent='$parentId' page=$page pageSize=$pageSize " +
@@ -291,7 +297,7 @@ class PlaybackService : MediaLibraryService() {
             mediaSession: MediaSession,
             controller: MediaSession.ControllerInfo,
             mediaItems: List<MediaItem>,
-        ): ListenableFuture<List<MediaItem>> = scope.future {
+        ): ListenableFuture<List<MediaItem>> = scope.future(Dispatchers.IO) {
             resolve(mediaItems)
         }
 
@@ -301,7 +307,7 @@ class PlaybackService : MediaLibraryService() {
             mediaItems: List<MediaItem>,
             startIndex: Int,
             startPositionMs: Long,
-        ): ListenableFuture<MediaItemsWithStartPosition> = scope.future {
+        ): ListenableFuture<MediaItemsWithStartPosition> = scope.future(Dispatchers.IO) {
             val resolved = resolve(mediaItems)
             if (resolved.isEmpty()) {
                 return@future MediaItemsWithStartPosition(emptyList(), 0, 0L)
@@ -462,6 +468,9 @@ class PlaybackService : MediaLibraryService() {
         private const val TAG = "CarneAuto"
 
         private const val POSITION_SAVE_INTERVAL_MS = 5_000L
+
+        /** Upper bound on the blocking settings read in onCreate. */
+        private const val SETTINGS_LOAD_TIMEOUT_MS = 2_000L
 
         /** Volume-boost gain in millibels (~10 dB) when "Boost volume" is on. */
         private const val BOOST_GAIN_MB = 1_000
