@@ -162,12 +162,24 @@ fun PodcastScreen(
                     }
                     podcast?.description?.takeIf { it.isNotBlank() }?.let { desc ->
                         Spacer(Modifier.height(16.dp))
+                        var descExpanded by remember { mutableStateOf(false) }
                         HtmlText(
                             html = desc,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 5,
+                            maxLines = if (descExpanded) Int.MAX_VALUE else 5,
                             overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.clickable { descExpanded = !descExpanded },
+                        )
+                        Text(
+                            text = stringResource(
+                                if (descExpanded) R.string.show_less else R.string.show_more,
+                            ),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .padding(top = 4.dp)
+                                .clickable { descExpanded = !descExpanded },
                         )
                     }
                     if (podcast?.subscribed == true) {

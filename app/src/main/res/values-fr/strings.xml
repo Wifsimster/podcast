@@ -31,6 +31,7 @@
     <string name="downloaded_tap_delete">Téléchargé — appuyer pour supprimer</string>
     <string name="play_next">Lire ensuite</string>
     <string name="add_to_queue">Ajouter à la file</string>
+    <string name="time_left">%1$s restant</string>
 
     <!-- Accueil -->
     <string name="loading_podcasts">Chargement de vos podcasts…</string>
@@ -44,6 +45,8 @@
     <string name="library_empty_title">Votre bibliothèque est vide</string>
     <string name="library_empty_message">Abonnez-vous à des émissions et elles apparaîtront ici, prêtes quand vous l\'êtes. À table. 🌶️</string>
     <string name="browse_podcasts">Parcourir les podcasts</string>
+    <string name="library_tab_podcasts">Podcasts</string>
+    <string name="library_version">🌶️ Carne v%1$s</string>
 
     <!-- Téléchargements -->
     <string name="downloads_empty_title">Aucun téléchargement</string>
@@ -63,10 +66,13 @@
     <string name="search_error_none">Aucun podcast trouvé</string>
     <string name="search_subscribed">Abonné</string>
     <string name="search_feed_error">Impossible de charger ce flux</string>
+    <string name="clear_search">Effacer la recherche</string>
 
     <!-- Détail du podcast -->
     <string name="artwork_for">Pochette de %1$s</string>
     <string name="show_notes">Notes de l\'épisode</string>
+    <string name="show_more">Voir plus</string>
+    <string name="show_less">Voir moins</string>
     <plurals name="episodes_count">
         <item quantity="one">%1$d épisode</item>
         <item quantity="other">%1$d épisodes</item>

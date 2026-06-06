@@ -43,7 +43,13 @@ class SearchViewModel @Inject constructor(
     }
 
     fun onQueryChange(query: String) {
-        _state.value = _state.value.copy(query = query)
+        // Clearing the field returns to the Browse-by-theme landing rather than
+        // leaving stale results (or an error) on screen.
+        _state.value = if (query.isEmpty()) {
+            _state.value.copy(query = "", results = emptyList(), error = null)
+        } else {
+            _state.value.copy(query = query)
+        }
     }
 
     fun search() {

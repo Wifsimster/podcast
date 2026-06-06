@@ -31,6 +31,7 @@
     <string name="downloaded_tap_delete">Downloaded — tap to delete</string>
     <string name="play_next">Play next</string>
     <string name="add_to_queue">Add to queue</string>
+    <string name="time_left">%1$s left</string>
 
     <!-- Home -->
     <string name="loading_podcasts">Loading your podcasts…</string>
@@ -44,6 +45,8 @@
     <string name="library_empty_title">Your library\'s empty</string>
     <string name="library_empty_message">Subscribe to shows and they\'ll live here, ready when you are. Let\'s get cooking. 🌶️</string>
     <string name="browse_podcasts">Browse podcasts</string>
+    <string name="library_tab_podcasts">Podcasts</string>
+    <string name="library_version">🌶️ Carne v%1$s</string>
 
     <!-- Downloads -->
     <string name="downloads_empty_title">Nothing downloaded yet</string>
@@ -63,10 +66,13 @@
     <string name="search_error_none">No podcasts found</string>
     <string name="search_subscribed">Subscribed</string>
     <string name="search_feed_error">Couldn\'t load that feed</string>
+    <string name="clear_search">Clear search</string>
 
     <!-- Podcast detail -->
     <string name="artwork_for">Artwork for %1$s</string>
     <string name="show_notes">Show notes</string>
+    <string name="show_more">Show more</string>
+    <string name="show_less">Show less</string>
     <plurals name="episodes_count">
         <item quantity="one">%1$d episode</item>
         <item quantity="other">%1$d episodes</item>
