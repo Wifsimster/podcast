@@ -1,6 +1,7 @@
 package com.carne.podcast
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -14,10 +15,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.carne.podcast.data.settings.ThemeMode
+import com.carne.podcast.sync.NewEpisodeNotifier
 import com.carne.podcast.ui.navigation.CarneRoot
 import com.carne.podcast.ui.theme.CarneTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,6 +31,9 @@ class MainActivity : ComponentActivity() {
 
     private val mainViewModel: MainViewModel by viewModels()
 
+    // Feed URL to open from a tapped "new episode" notification, if any.
+    private var pendingFeedUrl by mutableStateOf<String?>(null)
+
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* no-op */ }
 
@@ -34,6 +41,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         maybeRequestNotificationPermission()
+        pendingFeedUrl = intent?.getStringExtra(NewEpisodeNotifier.EXTRA_OPEN_FEED_URL)
         setContent {
             val settings by mainViewModel.settings.collectAsStateWithLifecycle()
             val darkTheme = when (settings.themeMode) {
@@ -46,10 +54,21 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    CarneRoot()
+                    CarneRoot(
+                        deepLinkFeedUrl = pendingFeedUrl,
+                        onDeepLinkConsumed = { pendingFeedUrl = null },
+                    )
                 }
             }
         }
+    }
+
+    // The activity is singleTop, so a notification tap while it's already running
+    // arrives here rather than recreating it.
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        intent.getStringExtra(NewEpisodeNotifier.EXTRA_OPEN_FEED_URL)?.let { pendingFeedUrl = it }
     }
 
     private fun maybeRequestNotificationPermission() {

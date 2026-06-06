@@ -29,7 +29,7 @@ class FeedRefreshWorker @AssistedInject constructor(
         return try {
             val newEpisodes = repository.refreshSubscriptionsForNew()
             if (settings.newEpisodeNotifications) {
-                NewEpisodeNotifier.notify(appContext, newEpisodes)
+                NewEpisodeNotifier.notify(appContext, batches = newEpisodes)
             }
             Result.success()
         } catch (t: Throwable) {
