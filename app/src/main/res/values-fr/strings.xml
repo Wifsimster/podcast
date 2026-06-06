@@ -18,6 +18,12 @@
     <string name="refresh">Actualiser</string>
     <string name="close">Fermer</string>
     <string name="cancel">Annuler</string>
+    <string name="undo">Annuler</string>
+    <string name="download_deleted">Téléchargement supprimé</string>
+    <string name="removed_from_queue">Retiré de la file</string>
+    <string name="unsubscribed">Désabonné</string>
+    <string name="clear_queue_title">Vider la file ?</string>
+    <string name="clear_queue_message">Cela retire tous les épisodes de votre file.</string>
 
     <!-- Ligne d\'épisode -->
     <string name="played">Écouté</string>

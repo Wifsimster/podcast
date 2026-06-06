@@ -436,7 +436,8 @@ class PlaybackService : MediaLibraryService() {
             repository.removeFromQueue(id)
             if (settings.autoDeleteFinished) {
                 repository.getEpisode(id)?.let { episode ->
-                    downloadManager.deleteDownload(episode.id, episode.localFilePath)
+                    // Automatic cleanup — no "Undo" snackbar.
+                    downloadManager.deleteDownload(episode.id, episode.localFilePath, showUndo = false)
                 }
             }
         }
