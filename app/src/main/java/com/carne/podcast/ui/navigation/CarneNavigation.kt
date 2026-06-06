@@ -6,8 +6,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -27,7 +27,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.carne.podcast.ui.components.MiniPlayer
-import com.carne.podcast.ui.screens.downloads.DownloadsScreen
 import com.carne.podcast.ui.screens.home.HomeScreen
 import com.carne.podcast.ui.screens.library.LibraryScreen
 import com.carne.podcast.ui.screens.player.PlayerScreen
@@ -74,14 +73,19 @@ fun CarneRoot(
         bottomBar = {
             AnimatedVisibility(visible = !isPlayer) {
                 Column {
+                    // When the bottom bar is hidden (a pushed screen like Settings),
+                    // the mini-player itself sits at the very bottom and must clear
+                    // the system navigation bar; the NavigationBar handles that inset
+                    // otherwise.
                     MiniPlayer(
                         state = playerState,
                         onPlayPause = playerViewModel::playPause,
                         onForward = playerViewModel::seekForward,
                         onClick = { navController.navigate(Routes.PLAYER) },
+                        modifier = if (isTopLevel) Modifier else Modifier.navigationBarsPadding(),
                     )
                     if (isTopLevel) {
-                        BottomBar(navController, currentRoute)
+                        BottomBar(navController, backStackEntry?.destination)
                     }
                 }
             }
@@ -102,6 +106,7 @@ fun CarneRoot(
                 HomeScreen(
                     onOpenPlayer = { navController.navigate(Routes.PLAYER) },
                     onBrowse = openSearch,
+                    onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                     contentPadding = innerPadding,
                 )
             }
@@ -115,6 +120,7 @@ fun CarneRoot(
             composable(Routes.LIBRARY) {
                 LibraryScreen(
                     onOpenPodcast = { navController.navigate(Routes.podcast(it)) },
+                    onOpenPlayer = { navController.navigate(Routes.PLAYER) },
                     onBrowse = openSearch,
                     contentPadding = innerPadding,
                 )
@@ -122,14 +128,11 @@ fun CarneRoot(
             composable(Routes.SEARCH) {
                 SearchScreen(contentPadding = innerPadding)
             }
-            composable(Routes.DOWNLOADS) {
-                DownloadsScreen(
-                    onOpenPlayer = { navController.navigate(Routes.PLAYER) },
+            composable(Routes.SETTINGS) {
+                SettingsScreen(
+                    onBack = { navController.popBackStack() },
                     contentPadding = innerPadding,
                 )
-            }
-            composable(Routes.SETTINGS) {
-                SettingsScreen(contentPadding = innerPadding)
             }
             composable(Routes.PODCAST) {
                 PodcastScreen(
@@ -152,11 +155,11 @@ fun CarneRoot(
 @Composable
 private fun BottomBar(
     navController: androidx.navigation.NavHostController,
-    currentRoute: String?,
+    currentDestination: androidx.navigation.NavDestination?,
 ) {
     NavigationBar {
         TopLevelDestination.entries.forEach { dest ->
-            val selected = currentRoute == dest.route
+            val selected = currentDestination?.hierarchy?.any { it.route == dest.route } == true
             NavigationBarItem(
                 selected = selected,
                 onClick = {

@@ -128,6 +128,13 @@ fun EpisodeRow(
                 overflow = TextOverflow.Ellipsis,
             )
             Spacer(Modifier.height(4.dp))
+            val inProgress = episode.positionMs > 0 && !episode.isFinished && episode.durationMs > 0
+            val timeLeft = if (inProgress) {
+                stringResource(
+                    R.string.time_left,
+                    formatDurationLabel(episode.durationMs - episode.positionMs),
+                )
+            } else ""
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (episode.isFinished) {
                     Icon(
@@ -141,8 +148,12 @@ fun EpisodeRow(
                 Text(
                     text = buildString {
                         append(formatDate(episode.pubDate))
-                        val dur = formatDurationLabel(episode.durationMs)
-                        if (dur.isNotEmpty()) append("  ·  $dur")
+                        if (inProgress) {
+                            append("  ·  $timeLeft")
+                        } else {
+                            val dur = formatDurationLabel(episode.durationMs)
+                            if (dur.isNotEmpty()) append("  ·  $dur")
+                        }
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
