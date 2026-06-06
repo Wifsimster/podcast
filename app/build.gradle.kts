@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +8,15 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
+
+// Release signing is driven by a gitignored keystore.properties (see
+// keystore.properties.example). When it's absent — e.g. on CI — the build falls
+// back to the debug key so it still produces an installable artifact.
+val keystorePropsFile = rootProject.file("keystore.properties")
+val keystoreProps = Properties().apply {
+    if (keystorePropsFile.exists()) FileInputStream(keystorePropsFile).use { load(it) }
+}
+val hasUploadKeystore = keystoreProps.getProperty("storeFile") != null
 
 // Single source of truth for the app version. `VERSION_NAME` lives in
 // gradle.properties and is bumped automatically by semantic-release on each
@@ -30,6 +42,17 @@ android {
         vectorDrawables { useSupportLibrary = true }
     }
 
+    signingConfigs {
+        if (hasUploadKeystore) {
+            create("release") {
+                storeFile = file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -42,10 +65,14 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Sign release with the debug keystore so CI can produce an
-            // installable APK without managing secrets. Replace with a real
-            // keystore for store distribution.
-            signingConfig = signingConfigs.getByName("debug")
+            // Sign with the real upload key when keystore.properties is present
+            // (Play distribution); otherwise fall back to the debug key so CI
+            // still produces an installable APK.
+            signingConfig = if (hasUploadKeystore) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 

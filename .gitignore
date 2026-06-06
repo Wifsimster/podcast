@@ -17,3 +17,7 @@ captures/
 
 # OS
 .DS_Store
+
+# Signing secrets
+keystore.properties
+upload-keystore.jks
