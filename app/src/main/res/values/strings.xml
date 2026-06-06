@@ -66,6 +66,7 @@
     <string name="search_error_none">No podcasts found</string>
     <string name="search_subscribed">Subscribed</string>
     <string name="search_feed_error">Couldn\'t load that feed</string>
+    <string name="search_failed">Couldn\'t search. Check your connection and try again. 🌶️</string>
     <string name="clear_search">Clear search</string>
 
     <!-- Podcast detail -->

@@ -173,8 +173,14 @@ class PodcastRepository @Inject constructor(
         }.getOrDefault(emptyList())
     }
 
-    suspend fun search(term: String): List<PodcastSearchResult> = withContext(Dispatchers.IO) {
-        runCatching { searchService.search(term) }.getOrDefault(emptyList())
+    /**
+     * Search results wrapped in a [Result] so callers can tell a thrown error
+     * (offline / API failure — retryable) apart from a successful-but-empty
+     * response (genuinely no matches). Collapsing both to an empty list made
+     * offline look like "no podcasts found".
+     */
+    suspend fun search(term: String): Result<List<PodcastSearchResult>> = withContext(Dispatchers.IO) {
+        runCatching { searchService.search(term) }
     }
 
     /** Top shows for a theme (iTunes genre id), to propose on the Discover screen. */

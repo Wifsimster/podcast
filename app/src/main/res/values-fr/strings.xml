@@ -66,6 +66,7 @@
     <string name="search_error_none">Aucun podcast trouvé</string>
     <string name="search_subscribed">Abonné</string>
     <string name="search_feed_error">Impossible de charger ce flux</string>
+    <string name="search_failed">Recherche impossible. Vérifiez votre connexion et réessayez. 🌶️</string>
     <string name="clear_search">Effacer la recherche</string>
 
     <!-- Détail du podcast -->
