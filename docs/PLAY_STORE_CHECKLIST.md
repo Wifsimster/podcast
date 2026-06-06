@@ -14,8 +14,8 @@ Legend: ✅ done · 🟡 partially done / needs action · ⬜ not started ·
 | # | Item | Status | Notes |
 |---|------|--------|-------|
 | 1.1 | Release signing config reads an **upload key** from `keystore.properties` / CI env vars, falls back to debug key when absent | ✅ | `app/build.gradle.kts`. See `keystore.properties.example`. |
-| 1.2 | Generate the real **upload keystore** and store it safely (1Password / secret manager) | ⬜ | `keytool -genkeypair -v -keystore upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload`. **Never commit it.** Losing it = no more updates (unless on Play App Signing). |
-| 1.3 | Add CI secrets: `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` | ⬜ | `base64 -w0 upload-keystore.jks` → `KEYSTORE_BASE64`. Repo → Settings → Secrets → Actions. |
+| 1.2 | Generate the real **upload keystore** and store it safely (1Password / secret manager) | ⬜ | Run `./scripts/setup-upload-keystore.sh`. Full walkthrough: [`docs/SIGNING_SETUP.md`](SIGNING_SETUP.md). **Never commit it.** |
+| 1.3 | Add CI secrets: `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` | ⬜ | The setup script prints the exact `gh secret set` commands. See [`docs/SIGNING_SETUP.md`](SIGNING_SETUP.md) §3. |
 | 1.4 | Build the **Android App Bundle (.aab)** — Play requires AAB, not APK | ✅ | `./gradlew bundleRelease` → `app/build/outputs/bundle/release/app-release.aab`. CI uploads `carne-release-aab`. |
 | 1.5 | `targetSdk` meets Play's current minimum for new apps | ✅ | `targetSdk = 36` (Android 16), `compileSdk = 36`. |
 | 1.6 | **16 KB page size** compliance (required for new apps/updates on Android 15+) | 🟡 | Media3/ExoPlayer ship native `.so`. Verify with the bundle: extract `.aab`, check `.so` alignment, or use the Play Console pre-launch report. Bump Media3 + AGP if flagged. |
