@@ -13,6 +13,11 @@ permissions:
   issues: write
   pull-requests: write
 
+# Run JavaScript-based actions on Node.js 24 (the current LTS runtime) rather
+# than the deprecated Node 20.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 concurrency:
   group: release
   cancel-in-progress: false
@@ -39,7 +44,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "lts/*"
 
       - name: Grant execute permissions
         run: chmod +x ./gradlew scripts/set-version.sh

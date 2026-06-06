@@ -8,6 +8,12 @@ on:
 permissions:
   contents: write
 
+# Run JavaScript-based actions on Node.js 24 (the current LTS runtime) rather
+# than the deprecated Node 20. Node 24 becomes the runner default in mid-2026;
+# setting it explicitly puts CI on LTS now and clears the deprecation warning.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
