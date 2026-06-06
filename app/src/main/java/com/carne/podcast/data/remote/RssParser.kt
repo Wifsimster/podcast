@@ -55,6 +55,7 @@ class RssParser @Inject constructor(
         var iImage = ""
         var iPub = 0L
         var iDuration = 0L
+        var iChapters = ""
 
         while (event != XmlPullParser.END_DOCUMENT) {
             when (event) {
@@ -65,6 +66,7 @@ class RssParser @Inject constructor(
                             insideItem = true
                             iTitle = ""; iDesc = ""; iGuid = ""
                             iAudio = ""; iImage = ""; iPub = 0L; iDuration = 0L
+                            iChapters = ""
                         }
                         name == "image" && !insideItem -> insideImage = true
                         insideItem -> readItemTag(parser, name).let { r ->
@@ -77,6 +79,7 @@ class RssParser @Inject constructor(
                                 "duration" -> iDuration = parseDuration(r.second)
                                 "audio" -> iAudio = r.second
                                 "image" -> iImage = r.second
+                                "chaptersurl" -> iChapters = r.second
                             }
                         }
                         insideImage -> {
@@ -109,6 +112,7 @@ class RssParser @Inject constructor(
                                     imageUrl = iImage,
                                     pubDate = iPub,
                                     durationMs = iDuration,
+                                    chaptersUrl = iChapters,
                                 )
                             }
                             insideItem = false
@@ -145,6 +149,10 @@ class RssParser @Inject constructor(
         "itunes:image" -> {
             val href = parser.getAttributeValue(null, "href")?.trim().orEmpty()
             if (href.isNotEmpty()) "image" to href else null
+        }
+        "podcast:chapters" -> {
+            val url = parser.getAttributeValue(null, "url")?.trim().orEmpty()
+            if (url.isNotEmpty()) "chaptersurl" to url else null
         }
         else -> null
     }

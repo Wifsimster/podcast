@@ -5,6 +5,7 @@ import com.carne.podcast.data.local.EpisodeDao
 import com.carne.podcast.data.local.EpisodeEntity
 import com.carne.podcast.data.local.PodcastDao
 import com.carne.podcast.data.local.PodcastEntity
+import com.carne.podcast.data.local.Chapter
 import com.carne.podcast.data.local.QueueDao
 import com.carne.podcast.data.local.QueueItemEntity
 import com.carne.podcast.data.remote.ParsedFeed
@@ -15,6 +16,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,6 +39,7 @@ class PodcastRepository @Inject constructor(
     private val queueDao: QueueDao,
     private val rssParser: RssParser,
     private val searchService: PodcastSearchService,
+    private val httpClient: OkHttpClient,
 ) {
     fun observeSubscriptions(): Flow<List<PodcastEntity>> = podcastDao.observeSubscribed()
     fun observePodcast(feedUrl: String): Flow<PodcastEntity?> = podcastDao.observePodcast(feedUrl)
@@ -96,11 +101,16 @@ class PodcastRepository @Inject constructor(
                     imageUrl = e.imageUrl.ifEmpty { fallbackImage },
                     pubDate = e.pubDate,
                     durationMs = e.durationMs,
+                    chaptersUrl = e.chaptersUrl.ifEmpty { null },
                 )
             }
             // INSERT IGNORE keeps existing playback state for known episodes; a
             // rowId of -1 marks a row that already existed and was skipped.
             val rowIds = episodeDao.insertNew(rows)
+            // Backfill chapters for episodes that pre-date this field.
+            rows.forEach { row ->
+                row.chaptersUrl?.let { episodeDao.updateChaptersUrl(row.id, it) }
+            }
             rows.filterIndexed { index, _ -> rowIds.getOrElse(index) { -1L } != -1L }
         }
 
@@ -126,6 +136,33 @@ class PodcastRepository @Inject constructor(
             val title = podcastDao.getPodcast(podcast.feedUrl)?.title ?: podcast.title
             NewEpisodeBatch(podcast.feedUrl, title, newEpisodes)
         }
+    }
+
+    /**
+     * Fetch and parse Podcasting 2.0 chapters for an episode, if it advertises a
+     * chapters JSON URL. Network + JSON happen off the main thread; failures
+     * (offline, malformed) yield an empty list rather than throwing.
+     */
+    suspend fun chaptersFor(episode: EpisodeEntity): List<Chapter> = withContext(Dispatchers.IO) {
+        val url = episode.chaptersUrl?.takeIf { it.isNotBlank() } ?: return@withContext emptyList()
+        runCatching {
+            val request = Request.Builder().url(url).build()
+            httpClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@use emptyList<Chapter>()
+                val body = response.body?.string().orEmpty()
+                val array = JSONObject(body).optJSONArray("chapters") ?: return@use emptyList()
+                (0 until array.length()).mapNotNull { i ->
+                    val o = array.getJSONObject(i)
+                    val start = o.optDouble("startTime", -1.0)
+                    if (start < 0) return@mapNotNull null
+                    Chapter(
+                        startMs = (start * 1000).toLong(),
+                        title = o.optString("title").ifBlank { "—" },
+                        imageUrl = o.optString("img").ifBlank { null },
+                    )
+                }.sortedBy { it.startMs }
+            }
+        }.getOrDefault(emptyList())
     }
 
     suspend fun search(term: String): List<PodcastSearchResult> = withContext(Dispatchers.IO) {

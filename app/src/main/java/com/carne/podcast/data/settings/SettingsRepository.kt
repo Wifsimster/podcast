@@ -25,6 +25,8 @@ data class CarneSettings(
     val skipForwardMs: Long = 30_000L,
     val defaultSpeed: Float = 1f,
     val autoAdvance: Boolean = true,
+    val skipSilence: Boolean = false,
+    val boostVolume: Boolean = false,
     val wifiOnlyDownloads: Boolean = false,
     val autoDeleteFinished: Boolean = false,
     val backgroundRefresh: Boolean = true,
@@ -49,6 +51,8 @@ class SettingsRepository @Inject constructor(
         val SKIP_FORWARD = longPreferencesKey("skip_forward_ms")
         val DEFAULT_SPEED = floatPreferencesKey("default_speed")
         val AUTO_ADVANCE = booleanPreferencesKey("auto_advance")
+        val SKIP_SILENCE = booleanPreferencesKey("skip_silence")
+        val BOOST_VOLUME = booleanPreferencesKey("boost_volume")
         val WIFI_ONLY = booleanPreferencesKey("wifi_only_downloads")
         val AUTO_DELETE = booleanPreferencesKey("auto_delete_finished")
         val BACKGROUND_REFRESH = booleanPreferencesKey("background_refresh")
@@ -64,6 +68,8 @@ class SettingsRepository @Inject constructor(
             skipForwardMs = p[Keys.SKIP_FORWARD] ?: defaults.skipForwardMs,
             defaultSpeed = p[Keys.DEFAULT_SPEED] ?: defaults.defaultSpeed,
             autoAdvance = p[Keys.AUTO_ADVANCE] ?: defaults.autoAdvance,
+            skipSilence = p[Keys.SKIP_SILENCE] ?: defaults.skipSilence,
+            boostVolume = p[Keys.BOOST_VOLUME] ?: defaults.boostVolume,
             wifiOnlyDownloads = p[Keys.WIFI_ONLY] ?: defaults.wifiOnlyDownloads,
             autoDeleteFinished = p[Keys.AUTO_DELETE] ?: defaults.autoDeleteFinished,
             backgroundRefresh = p[Keys.BACKGROUND_REFRESH] ?: defaults.backgroundRefresh,
@@ -78,6 +84,8 @@ class SettingsRepository @Inject constructor(
     suspend fun setSkipForwardMs(value: Long) = edit { it[Keys.SKIP_FORWARD] = value }
     suspend fun setDefaultSpeed(value: Float) = edit { it[Keys.DEFAULT_SPEED] = value }
     suspend fun setAutoAdvance(value: Boolean) = edit { it[Keys.AUTO_ADVANCE] = value }
+    suspend fun setSkipSilence(value: Boolean) = edit { it[Keys.SKIP_SILENCE] = value }
+    suspend fun setBoostVolume(value: Boolean) = edit { it[Keys.BOOST_VOLUME] = value }
     suspend fun setWifiOnlyDownloads(value: Boolean) = edit { it[Keys.WIFI_ONLY] = value }
     suspend fun setAutoDeleteFinished(value: Boolean) = edit { it[Keys.AUTO_DELETE] = value }
     suspend fun setBackgroundRefresh(value: Boolean) = edit { it[Keys.BACKGROUND_REFRESH] = value }
@@ -95,6 +103,8 @@ class SettingsRepository @Inject constructor(
         it[Keys.SKIP_FORWARD] = s.skipForwardMs
         it[Keys.DEFAULT_SPEED] = s.defaultSpeed
         it[Keys.AUTO_ADVANCE] = s.autoAdvance
+        it[Keys.SKIP_SILENCE] = s.skipSilence
+        it[Keys.BOOST_VOLUME] = s.boostVolume
         it[Keys.WIFI_ONLY] = s.wifiOnlyDownloads
         it[Keys.AUTO_DELETE] = s.autoDeleteFinished
         it[Keys.BACKGROUND_REFRESH] = s.backgroundRefresh

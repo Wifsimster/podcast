@@ -1,5 +1,6 @@
 package com.carne.podcast.playback
 
+import android.media.audiofx.LoudnessEnhancer
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -60,6 +61,10 @@ class PlaybackService : MediaLibraryService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var positionSaver: Job? = null
 
+    /** Volume-boost effect, (re)bound to the player's current audio session. */
+    private var loudnessEnhancer: LoudnessEnhancer? = null
+    private var loudnessSessionId: Int = C.AUDIO_SESSION_ID_UNSET
+
     /** Latest settings snapshot, kept current for auto-delete decisions. */
     @Volatile private var settings: CarneSettings = CarneSettings()
 
@@ -73,7 +78,12 @@ class PlaybackService : MediaLibraryService() {
         // Read the persisted settings once so the notification / Android Auto
         // skip buttons honour the user's chosen intervals from launch.
         settings = runBlocking { settingsRepository.settings.first() }
-        scope.launch { settingsRepository.settings.collect { settings = it } }
+        scope.launch {
+            settingsRepository.settings.collect {
+                settings = it
+                applyAudioEffects()
+            }
+        }
 
         val audioAttributes = AudioAttributes.Builder()
             .setUsage(C.USAGE_MEDIA)
@@ -108,9 +118,36 @@ class PlaybackService : MediaLibraryService() {
             override fun onPlaybackStateChanged(state: Int) {
                 if (state == Player.STATE_ENDED) markCurrentFinished()
             }
+
+            override fun onAudioSessionIdChanged(audioSessionId: Int) {
+                applyAudioEffects()
+            }
         })
 
+        applyAudioEffects()
         mediaSession = MediaLibrarySession.Builder(this, player, LibraryCallback()).build()
+    }
+
+    /** Apply the user's skip-silence and volume-boost preferences to the player. */
+    private fun applyAudioEffects() {
+        if (!::player.isInitialized) return
+        player.skipSilenceEnabled = settings.skipSilence
+
+        val sessionId = player.audioSessionId
+        if (sessionId == C.AUDIO_SESSION_ID_UNSET) return
+        try {
+            if (loudnessEnhancer == null || loudnessSessionId != sessionId) {
+                loudnessEnhancer?.release()
+                loudnessEnhancer = LoudnessEnhancer(sessionId)
+                loudnessSessionId = sessionId
+            }
+            loudnessEnhancer?.apply {
+                setTargetGain(if (settings.boostVolume) BOOST_GAIN_MB else 0)
+                setEnabled(settings.boostVolume)
+            }
+        } catch (t: Throwable) {
+            Log.w(TAG, "LoudnessEnhancer unavailable for session $sessionId", t)
+        }
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? {
@@ -130,6 +167,8 @@ class PlaybackService : MediaLibraryService() {
         persistPosition()
         positionSaver?.cancel()
         scope.cancel()
+        loudnessEnhancer?.release()
+        loudnessEnhancer = null
         mediaSession?.run {
             player.release()
             release()
@@ -408,6 +447,9 @@ class PlaybackService : MediaLibraryService() {
         private const val TAG = "CarneAuto"
 
         private const val POSITION_SAVE_INTERVAL_MS = 5_000L
+
+        /** Volume-boost gain in millibels (~10 dB) when "Boost volume" is on. */
+        private const val BOOST_GAIN_MB = 1_000
 
         // Browse-tree node ids.
         private const val ROOT_ID = "[root]"

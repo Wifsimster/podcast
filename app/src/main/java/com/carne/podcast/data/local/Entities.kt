@@ -37,6 +37,14 @@ data class EpisodeEntity(
     val downloadState: DownloadState = DownloadState.NONE,
     val localFilePath: String? = null,
     val downloadProgress: Int = 0,         // 0..100
+    val chaptersUrl: String? = null,       // Podcasting 2.0 chapters JSON URL
+)
+
+/** A single chapter marker within an episode. */
+data class Chapter(
+    val startMs: Long,
+    val title: String,
+    val imageUrl: String? = null,
 )
 
 /** Episode joined with its parent podcast, for list rows. */

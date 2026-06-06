@@ -42,8 +42,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.carne.podcast.R
 import com.carne.podcast.ui.components.EpisodeRow
+import com.carne.podcast.ui.components.HtmlText
 import com.carne.podcast.ui.components.PodcastArtwork
-import com.carne.podcast.ui.components.stripHtml
 import com.carne.podcast.ui.theme.CarneTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -148,8 +148,8 @@ fun PodcastScreen(
                     }
                     podcast?.description?.takeIf { it.isNotBlank() }?.let { desc ->
                         Spacer(Modifier.height(16.dp))
-                        Text(
-                            stripHtml(desc),
+                        HtmlText(
+                            html = desc,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 5,

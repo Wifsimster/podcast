@@ -37,7 +37,7 @@ object AppModule {
         Room.databaseBuilder(context, CarneDatabase::class.java, "carne.db")
             // Real migrations preserve the user's library & listening history
             // across schema bumps; destructive fallback is only a last resort.
-            .addMigrations(MIGRATION_1_2)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
             .fallbackToDestructiveMigration()
             .build()
 
@@ -59,6 +59,13 @@ object AppModule {
                     "`sortIndex` INTEGER NOT NULL, " +
                     "PRIMARY KEY(`episodeId`))"
             )
+        }
+    }
+
+    /** v3 adds a nullable chapters-JSON URL to episodes (Podcasting 2.0 chapters). */
+    private val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `episodes` ADD COLUMN `chaptersUrl` TEXT")
         }
     }
 }

@@ -42,6 +42,8 @@ class SettingsViewModel @Inject constructor(
     fun setSkipBack(ms: Long) = update { settingsRepository.setSkipBackMs(ms) }
     fun setSkipForward(ms: Long) = update { settingsRepository.setSkipForwardMs(ms) }
     fun setAutoAdvance(value: Boolean) = update { settingsRepository.setAutoAdvance(value) }
+    fun setSkipSilence(value: Boolean) = update { settingsRepository.setSkipSilence(value) }
+    fun setBoostVolume(value: Boolean) = update { settingsRepository.setBoostVolume(value) }
     fun setWifiOnlyDownloads(value: Boolean) =
         update { settingsRepository.setWifiOnlyDownloads(value) }
     fun setAutoDeleteFinished(value: Boolean) =

@@ -85,6 +85,8 @@
     <string name="end_of_episode">End of episode</string>
     <string name="cancel_timer">Cancel timer</string>
     <string name="open_player">Open player</string>
+    <string name="chapters">Chapters</string>
+    <string name="chapter">Chapter</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
@@ -94,6 +96,10 @@
     <string name="seconds_short">%1$ds</string>
     <string name="autoplay_next_title">Auto-play next episode</string>
     <string name="autoplay_next_subtitle">Continue to the next episode when one finishes</string>
+    <string name="skip_silence_title">Skip silence</string>
+    <string name="skip_silence_subtitle">Trim silent gaps for faster speech playback</string>
+    <string name="boost_volume_title">Boost volume</string>
+    <string name="boost_volume_subtitle">Louder, clearer voices over background noise</string>
     <string name="settings_downloads">Downloads</string>
     <string name="wifi_only_title">Download over Wi-Fi only</string>
     <string name="wifi_only_subtitle">Never use mobile data for downloads</string>

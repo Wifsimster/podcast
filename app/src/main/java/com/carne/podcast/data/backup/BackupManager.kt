@@ -136,6 +136,8 @@ class BackupManager @Inject constructor(
         .put("skipForwardMs", s.skipForwardMs)
         .put("defaultSpeed", s.defaultSpeed.toDouble())
         .put("autoAdvance", s.autoAdvance)
+        .put("skipSilence", s.skipSilence)
+        .put("boostVolume", s.boostVolume)
         .put("wifiOnlyDownloads", s.wifiOnlyDownloads)
         .put("autoDeleteFinished", s.autoDeleteFinished)
         .put("backgroundRefresh", s.backgroundRefresh)
@@ -150,6 +152,8 @@ class BackupManager @Inject constructor(
             skipForwardMs = o.optLong("skipForwardMs", defaults.skipForwardMs),
             defaultSpeed = o.optDouble("defaultSpeed", defaults.defaultSpeed.toDouble()).toFloat(),
             autoAdvance = o.optBoolean("autoAdvance", defaults.autoAdvance),
+            skipSilence = o.optBoolean("skipSilence", defaults.skipSilence),
+            boostVolume = o.optBoolean("boostVolume", defaults.boostVolume),
             wifiOnlyDownloads = o.optBoolean("wifiOnlyDownloads", defaults.wifiOnlyDownloads),
             autoDeleteFinished = o.optBoolean("autoDeleteFinished", defaults.autoDeleteFinished),
             backgroundRefresh = o.optBoolean("backgroundRefresh", defaults.backgroundRefresh),

@@ -17,6 +17,8 @@ data class ParsedEpisode(
     val imageUrl: String,
     val pubDate: Long,
     val durationMs: Long,
+    /** Podcasting 2.0 `<podcast:chapters>` JSON URL, if the feed provides one. */
+    val chaptersUrl: String = "",
 )
 
 /** A podcast returned by the search service (iTunes). */
