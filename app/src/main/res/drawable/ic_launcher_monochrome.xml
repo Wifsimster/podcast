@@ -1,26 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Single-colour chili silhouette for Android 13+ themed icons; the system
-     applies its own tint, so the fill colour here is just a placeholder. -->
+<!-- Single-colour sound-wave silhouette for Android 13+ themed icons; the
+     system applies its own tint, so the stroke colour here is a placeholder. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <group
-        android:name="chili"
-        android:pivotX="54"
-        android:pivotY="54"
-        android:scaleX="0.86"
-        android:scaleY="0.86"
-        android:translateY="1">
-        <path
-            android:strokeColor="#FF000000"
-            android:strokeWidth="6"
-            android:strokeLineCap="round"
-            android:strokeLineJoin="round"
-            android:pathData="M52,33 C50,26 52,21 58,20 C56,24 58,28 62,29" />
-        <path
-            android:fillColor="#FF000000"
-            android:pathData="M60,32 C73,37 79,53 73,68 C68,80 57,87 47,85 C41,84 38,79 40,74 C42,70 47,70 51,69 C61,66 66,55 63,44 C61,38 58,35 56,33 Z" />
+    <group android:name="waves">
+        <path android:strokeColor="#FF000000" android:strokeWidth="8"
+            android:strokeLineCap="round" android:pathData="M28,42 L28,66" />
+        <path android:strokeColor="#FF000000" android:strokeWidth="8"
+            android:strokeLineCap="round" android:pathData="M41,34 L41,74" />
+        <path android:strokeColor="#FF000000" android:strokeWidth="8"
+            android:strokeLineCap="round" android:pathData="M54,26 L54,82" />
+        <path android:strokeColor="#FF000000" android:strokeWidth="8"
+            android:strokeLineCap="round" android:pathData="M67,34 L67,74" />
+        <path android:strokeColor="#FF000000" android:strokeWidth="8"
+            android:strokeLineCap="round" android:pathData="M80,42 L80,66" />
     </group>
 </vector>
