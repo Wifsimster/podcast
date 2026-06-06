@@ -84,6 +84,14 @@ jobs:
           path: app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
 
+      # Fail the build if any bundled native library is not 16 KB page-aligned,
+      # which Google Play requires for new apps/updates on Android 15+. Runs
+      # after upload so the .aab is still downloadable for diagnosis on failure.
+      - name: Verify 16 KB native-lib alignment
+        run: |
+          chmod +x scripts/check-16kb-alignment.sh
+          ./scripts/check-16kb-alignment.sh app/build/outputs/bundle/release/app-release.aab
+
       - name: Publish rolling release (main only)
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2

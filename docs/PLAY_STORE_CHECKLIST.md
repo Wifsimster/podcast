@@ -18,7 +18,7 @@ Legend: ✅ done · 🟡 partially done / needs action · ⬜ not started ·
 | 1.3 | Add CI secrets: `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` | ⬜ | The setup script prints the exact `gh secret set` commands. See [`docs/SIGNING_SETUP.md`](SIGNING_SETUP.md) §3. |
 | 1.4 | Build the **Android App Bundle (.aab)** — Play requires AAB, not APK | ✅ | `./gradlew bundleRelease` → `app/build/outputs/bundle/release/app-release.aab`. CI uploads `carne-release-aab`. |
 | 1.5 | `targetSdk` meets Play's current minimum for new apps | ✅ | `targetSdk = 36` (Android 16), `compileSdk = 36`. |
-| 1.6 | **16 KB page size** compliance (required for new apps/updates on Android 15+) | 🟡 | Media3/ExoPlayer ship native `.so`. Verify with the bundle: extract `.aab`, check `.so` alignment, or use the Play Console pre-launch report. Bump Media3 + AGP if flagged. |
+| 1.6 | **16 KB page size** compliance (required for new apps/updates on Android 15+) | ✅ | Enforced in CI: `scripts/check-16kb-alignment.sh` inspects every `.so` in the AAB and fails the build if any LOAD segment isn't 16 KB-aligned (passes trivially if there are no native libs). Run locally on any `.aab`/`.apk` too. |
 | 1.7 | `versionCode` strictly increases on every upload | ✅ | Derived from semver in `app/build.gradle.kts` (major*10000 + minor*100 + patch). v1.4.0 → `10400`. |
 | 1.8 | Backup / data-extraction rules declared (Android 12+) | ✅ | `data_extraction_rules.xml` + `backup_rules.xml` referenced in the manifest. |
 | 1.9 | R8/ProGuard release build verified (no crash from stripped classes) | 🟡 | Smoke-test the release AAB on a device before submitting. |
