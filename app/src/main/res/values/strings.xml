@@ -92,6 +92,10 @@
     <string name="now_playing">Now Playing</string>
     <string name="back_10">Back 10 seconds</string>
     <string name="forward_30">Forward 30 seconds</string>
+    <string name="skip_back_secs">Back %1$d seconds</string>
+    <string name="skip_forward_secs">Forward %1$d seconds</string>
+    <string name="previous_episode">Previous episode</string>
+    <string name="next_episode">Next episode</string>
     <string name="play_or_pause">Play or pause</string>
     <string name="playback_position">Playback position</string>
     <string name="position_of_duration">%1$s of %2$s</string>

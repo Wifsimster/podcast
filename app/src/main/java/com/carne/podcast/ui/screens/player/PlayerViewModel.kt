@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.carne.podcast.data.local.Chapter
 import com.carne.podcast.data.local.EpisodeEntity
 import com.carne.podcast.data.repository.PodcastRepository
+import com.carne.podcast.data.settings.SettingsRepository
 import com.carne.podcast.playback.PlaybackConnection
 import com.carne.podcast.playback.PlayerUiState
 import com.carne.podcast.playback.SleepTimer
@@ -27,10 +28,23 @@ class PlayerViewModel @Inject constructor(
     private val connection: PlaybackConnection,
     private val sleepTimer: SleepTimer,
     private val repository: PodcastRepository,
+    settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     val playerState: StateFlow<PlayerUiState> = connection.state
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PlayerUiState())
+
+    /** The user-curated up-next queue, shown in the player's queue sheet. */
+    val queue: StateFlow<List<EpisodeEntity>> = repository.observeQueue()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** Configured skip intervals (seconds) so the UI labels/icons match settings. */
+    val skipBackSeconds: StateFlow<Int> = settingsRepository.settings
+        .map { (it.skipBackMs / 1000).toInt() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 10)
+    val skipForwardSeconds: StateFlow<Int> = settingsRepository.settings
+        .map { (it.skipForwardMs / 1000).toInt() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 30)
 
     /** Full episode entity for the currently loaded item (rich now-playing UI). */
     val currentEpisode: StateFlow<EpisodeEntity?> = connection.state
@@ -55,7 +69,12 @@ class PlayerViewModel @Inject constructor(
     fun seekTo(ms: Long) = connection.seekTo(ms)
     fun seekBack() = connection.seekBack()
     fun seekForward() = connection.seekForward()
+    fun next() = connection.next()
+    fun previous() = connection.previous()
     fun setSpeed(speed: Float) = connection.setSpeed(speed)
+
+    /** Start playback from the given position in the user's queue. */
+    fun playQueueItem(index: Int) = connection.playFromQueue(queue.value, index)
 
     fun startSleepTimer(minutes: Int) = sleepTimer.start(minutes * 60_000L)
     fun startSleepAtEpisodeEnd() = sleepTimer.startEndOfEpisode()

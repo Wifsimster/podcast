@@ -92,6 +92,10 @@
     <string name="now_playing">En cours de lecture</string>
     <string name="back_10">Reculer de 10 secondes</string>
     <string name="forward_30">Avancer de 30 secondes</string>
+    <string name="skip_back_secs">Reculer de %1$d secondes</string>
+    <string name="skip_forward_secs">Avancer de %1$d secondes</string>
+    <string name="previous_episode">Épisode précédent</string>
+    <string name="next_episode">Épisode suivant</string>
     <string name="play_or_pause">Lire ou mettre en pause</string>
     <string name="playback_position">Position de lecture</string>
     <string name="position_of_duration">%1$s sur %2$s</string>
