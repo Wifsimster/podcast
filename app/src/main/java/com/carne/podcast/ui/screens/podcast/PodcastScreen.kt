@@ -20,6 +20,7 @@ import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,6 +35,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,6 +72,7 @@ fun PodcastScreen(
     val filteredEpisodes by viewModel.filteredEpisodes.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
     val playerState by viewModel.playerState.collectAsStateWithLifecycle()
+    val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -90,20 +93,28 @@ fun PodcastScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = viewModel::refresh) {
-                        Icon(
-                            Icons.Rounded.Refresh,
-                            contentDescription = stringResource(R.string.refresh),
-                        )
+                    IconButton(onClick = viewModel::refresh, enabled = !refreshing) {
+                        if (refreshing) {
+                            CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(
+                                Icons.Rounded.Refresh,
+                                contentDescription = stringResource(R.string.refresh),
+                            )
+                        }
                     }
                 },
             )
         },
     ) { padding ->
+        PullToRefreshBox(
+            isRefreshing = refreshing,
+            onRefresh = viewModel::refresh,
+            modifier = Modifier.padding(top = padding.calculateTopPadding()),
+        ) {
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(
-                top = padding.calculateTopPadding(),
                 bottom = padding.calculateBottomPadding(),
             ),
         ) {
@@ -230,6 +241,7 @@ fun PodcastScreen(
                 )
                 HorizontalDivider(Modifier.padding(start = CarneTheme.spacing.lg))
             }
+        }
         }
     }
 }

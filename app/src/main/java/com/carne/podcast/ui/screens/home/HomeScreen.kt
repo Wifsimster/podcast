@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -51,6 +52,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val playerState by viewModel.playerState.collectAsStateWithLifecycle()
+    val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -69,10 +71,6 @@ fun HomeScreen(
     ) { padding ->
         // Top inset comes from this screen's app bar; the bottom inset (nav bar +
         // mini-player) comes from the root scaffold's contentPadding.
-        val listPadding = PaddingValues(
-            top = padding.calculateTopPadding(),
-            bottom = contentPadding.calculateBottomPadding(),
-        )
         when {
             uiState.loading -> Box(
                 Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()),
@@ -103,9 +101,14 @@ fun HomeScreen(
                 )
             }
 
-            else -> LazyColumn(
+            else -> PullToRefreshBox(
+                isRefreshing = refreshing,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()),
+            ) {
+                LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = listPadding,
+                contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
             ) {
                 if (uiState.inProgress.isNotEmpty()) {
                     item { SectionHeader(stringResource(R.string.continue_listening)) }
@@ -145,6 +148,7 @@ fun HomeScreen(
                 )
                 HorizontalDivider(Modifier.padding(start = EpisodeRowDividerStartInset))
                 }
+            }
             }
         }
     }
