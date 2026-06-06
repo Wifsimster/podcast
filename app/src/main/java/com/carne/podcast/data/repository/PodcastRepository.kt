@@ -5,6 +5,7 @@ import com.carne.podcast.data.local.EpisodeDao
 import com.carne.podcast.data.local.EpisodeEntity
 import com.carne.podcast.data.local.PodcastDao
 import com.carne.podcast.data.local.PodcastEntity
+import com.carne.podcast.data.local.PodcastWithCount
 import com.carne.podcast.data.local.Chapter
 import com.carne.podcast.data.local.QueueDao
 import com.carne.podcast.data.local.QueueItemEntity
@@ -42,6 +43,8 @@ class PodcastRepository @Inject constructor(
     private val httpClient: OkHttpClient,
 ) {
     fun observeSubscriptions(): Flow<List<PodcastEntity>> = podcastDao.observeSubscribed()
+    fun observeSubscriptionsWithCounts(): Flow<List<PodcastWithCount>> =
+        podcastDao.observeSubscribedWithCounts()
     fun observePodcast(feedUrl: String): Flow<PodcastEntity?> = podcastDao.observePodcast(feedUrl)
     fun observeEpisodes(feedUrl: String): Flow<List<EpisodeEntity>> = episodeDao.observeForFeed(feedUrl)
     fun observeEpisode(id: String): Flow<EpisodeEntity?> = episodeDao.observeEpisode(id)
@@ -173,8 +176,14 @@ class PodcastRepository @Inject constructor(
         }.getOrDefault(emptyList())
     }
 
-    suspend fun search(term: String): List<PodcastSearchResult> = withContext(Dispatchers.IO) {
-        runCatching { searchService.search(term) }.getOrDefault(emptyList())
+    /**
+     * Search results wrapped in a [Result] so callers can tell a thrown error
+     * (offline / API failure — retryable) apart from a successful-but-empty
+     * response (genuinely no matches). Collapsing both to an empty list made
+     * offline look like "no podcasts found".
+     */
+    suspend fun search(term: String): Result<List<PodcastSearchResult>> = withContext(Dispatchers.IO) {
+        runCatching { searchService.search(term) }
     }
 
     /** Top shows for a theme (iTunes genre id), to propose on the Discover screen. */

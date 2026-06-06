@@ -1,5 +1,6 @@
 package com.carne.podcast.ui.screens.search
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -30,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,9 +55,15 @@ import com.carne.podcast.ui.theme.CarneTheme
 @Composable
 fun SearchScreen(
     contentPadding: PaddingValues,
+    onOpenPodcast: (String) -> Unit,
     viewModel: SearchViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    // Open the show after a successful paste-a-URL subscribe.
+    LaunchedEffect(Unit) {
+        viewModel.openPodcast.collect(onOpenPodcast)
+    }
 
     Column(
         modifier = Modifier
@@ -100,6 +108,7 @@ fun SearchScreen(
                         result = result,
                         subscribed = result.feedUrl in state.subscribedFeeds,
                         onSubscribe = { viewModel.subscribe(result) },
+                        onClick = { onOpenPodcast(result.feedUrl) },
                         modifier = Modifier.animateItem(),
                     )
                 }
@@ -118,6 +127,7 @@ fun SearchScreen(
                 state = state,
                 onSelectTheme = viewModel::selectTheme,
                 onSubscribe = viewModel::subscribe,
+                onOpenPodcast = onOpenPodcast,
             )
 
             else -> CarneEmptyState(
@@ -139,6 +149,7 @@ private fun BrowseByTheme(
     state: SearchUiState,
     onSelectTheme: (PodcastTheme) -> Unit,
     onSubscribe: (PodcastSearchResult) -> Unit,
+    onOpenPodcast: (String) -> Unit,
 ) {
     Column(Modifier.fillMaxSize()) {
         Text(
@@ -191,6 +202,7 @@ private fun BrowseByTheme(
                         result = result,
                         subscribed = result.feedUrl in state.subscribedFeeds,
                         onSubscribe = { onSubscribe(result) },
+                        onClick = { onOpenPodcast(result.feedUrl) },
                         modifier = Modifier.animateItem(),
                     )
                 }
@@ -205,11 +217,13 @@ private fun PodcastResultRow(
     result: PodcastSearchResult,
     subscribed: Boolean,
     onSubscribe: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
             .padding(
                 horizontal = CarneTheme.spacing.lg,
                 vertical = CarneTheme.spacing.sm,

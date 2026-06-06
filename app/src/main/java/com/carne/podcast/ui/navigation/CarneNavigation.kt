@@ -126,7 +126,10 @@ fun CarneRoot(
                 )
             }
             composable(Routes.SEARCH) {
-                SearchScreen(contentPadding = innerPadding)
+                SearchScreen(
+                    contentPadding = innerPadding,
+                    onOpenPodcast = { navController.navigate(Routes.podcast(it)) },
+                )
             }
             composable(Routes.SETTINGS) {
                 SettingsScreen(

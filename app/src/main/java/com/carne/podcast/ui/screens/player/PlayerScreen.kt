@@ -21,12 +21,21 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bedtime
+import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.FormatListBulleted
+import androidx.compose.material.icons.rounded.Forward10
 import androidx.compose.material.icons.rounded.Forward30
+import androidx.compose.material.icons.rounded.Forward5
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.QueueMusic
+import androidx.compose.material.icons.rounded.Replay
 import androidx.compose.material.icons.rounded.Replay10
+import androidx.compose.material.icons.rounded.Replay30
+import androidx.compose.material.icons.rounded.Replay5
+import androidx.compose.material.icons.rounded.SkipNext
+import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -58,6 +67,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.carne.podcast.R
 import com.carne.podcast.data.local.Chapter
+import com.carne.podcast.data.local.EpisodeEntity
 import com.carne.podcast.ui.components.HtmlText
 import com.carne.podcast.ui.components.PlayPauseIcon
 import com.carne.podcast.ui.components.PodcastArtwork
@@ -75,7 +85,11 @@ fun PlayerScreen(
     val sleepRemaining by viewModel.sleepRemainingMs.collectAsStateWithLifecycle()
     val sleepEndOfEpisode by viewModel.sleepEndOfEpisode.collectAsStateWithLifecycle()
     val chapters by viewModel.chapters.collectAsStateWithLifecycle()
+    val queue by viewModel.queue.collectAsStateWithLifecycle()
+    val skipBackSeconds by viewModel.skipBackSeconds.collectAsStateWithLifecycle()
+    val skipForwardSeconds by viewModel.skipForwardSeconds.collectAsStateWithLifecycle()
     var showChapters by remember { mutableStateOf(false) }
+    var showQueue by remember { mutableStateOf(false) }
 
     // Local scrub state so the thumb tracks the finger without fighting ticks.
     var scrubbing by remember { mutableStateOf(false) }
@@ -167,10 +181,21 @@ fun PlayerScreen(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            IconButton(
+                onClick = viewModel::previous,
+                enabled = state.hasPrevious,
+                modifier = Modifier.size(48.dp),
+            ) {
+                Icon(
+                    Icons.Rounded.SkipPrevious,
+                    stringResource(R.string.previous_episode),
+                    Modifier.size(30.dp),
+                )
+            }
             IconButton(onClick = viewModel::seekBack, modifier = Modifier.size(56.dp)) {
                 Icon(
-                    Icons.Rounded.Replay10,
-                    stringResource(R.string.back_10),
+                    skipBackIcon(skipBackSeconds),
+                    stringResource(R.string.skip_back_secs, skipBackSeconds),
                     Modifier.size(38.dp),
                 )
             }
@@ -196,9 +221,20 @@ fun PlayerScreen(
             }
             IconButton(onClick = viewModel::seekForward, modifier = Modifier.size(56.dp)) {
                 Icon(
-                    Icons.Rounded.Forward30,
-                    stringResource(R.string.forward_30),
+                    skipForwardIcon(skipForwardSeconds),
+                    stringResource(R.string.skip_forward_secs, skipForwardSeconds),
                     Modifier.size(38.dp),
+                )
+            }
+            IconButton(
+                onClick = viewModel::next,
+                enabled = state.hasNext,
+                modifier = Modifier.size(48.dp),
+            ) {
+                Icon(
+                    Icons.Rounded.SkipNext,
+                    stringResource(R.string.next_episode),
+                    Modifier.size(30.dp),
                 )
             }
         }
@@ -220,6 +256,17 @@ fun PlayerScreen(
                     Text(stringResource(R.string.chapters))
                 }
             }
+            if (queue.isNotEmpty()) {
+                TextButton(onClick = { showQueue = true }) {
+                    Icon(
+                        Icons.Rounded.QueueMusic,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                    )
+                    Spacer(Modifier.size(6.dp))
+                    Text(stringResource(R.string.nav_queue))
+                }
+            }
             SleepControl(
                 remainingMs = sleepRemaining,
                 endOfEpisode = sleepEndOfEpisode,
@@ -235,6 +282,15 @@ fun PlayerScreen(
                 currentPositionMs = state.positionMs,
                 onSelect = { viewModel.seekTo(it); showChapters = false },
                 onDismiss = { showChapters = false },
+            )
+        }
+
+        if (showQueue) {
+            QueueSheet(
+                queue = queue,
+                currentEpisodeId = state.currentEpisodeId,
+                onSelect = { viewModel.playQueueItem(it); showQueue = false },
+                onDismiss = { showQueue = false },
             )
         }
 
@@ -378,6 +434,76 @@ private fun ChaptersSheet(
         }
         Spacer(Modifier.height(CarneTheme.spacing.xl))
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun QueueSheet(
+    queue: List<EpisodeEntity>,
+    currentEpisodeId: String?,
+    onSelect: (Int) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Text(
+            text = stringResource(R.string.queue_title),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(
+                start = CarneTheme.spacing.xl,
+                end = CarneTheme.spacing.xl,
+                bottom = CarneTheme.spacing.sm,
+            ),
+        )
+        LazyColumn(Modifier.fillMaxWidth()) {
+            itemsIndexed(queue, key = { _, e -> e.id }) { index, episode ->
+                val isCurrent = episode.id == currentEpisodeId
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onSelect(index) }
+                        .padding(
+                            horizontal = CarneTheme.spacing.xl,
+                            vertical = CarneTheme.spacing.md,
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    PodcastArtwork(
+                        url = episode.imageUrl,
+                        modifier = Modifier.size(44.dp),
+                        shape = CarneTheme.shapes.artworkSmall,
+                    )
+                    Spacer(Modifier.width(CarneTheme.spacing.md))
+                    Text(
+                        text = episode.title,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (isCurrent) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                HorizontalDivider(Modifier.padding(start = CarneTheme.spacing.xl))
+            }
+        }
+        Spacer(Modifier.height(CarneTheme.spacing.xl))
+    }
+}
+
+/** Pick the closest matching rewind glyph; fall back to a plain replay icon. */
+private fun skipBackIcon(seconds: Int) = when (seconds) {
+    5 -> Icons.Rounded.Replay5
+    10 -> Icons.Rounded.Replay10
+    30 -> Icons.Rounded.Replay30
+    else -> Icons.Rounded.Replay
+}
+
+/** Pick the closest matching fast-forward glyph; fall back to a plain forward icon. */
+private fun skipForwardIcon(seconds: Int) = when (seconds) {
+    5 -> Icons.Rounded.Forward5
+    10 -> Icons.Rounded.Forward10
+    30 -> Icons.Rounded.Forward30
+    else -> Icons.Rounded.FastForward
 }
 
 private fun trimSpeed(speed: Float): String =

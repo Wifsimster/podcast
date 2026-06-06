@@ -40,10 +40,19 @@ class PodcastViewModel @Inject constructor(
     private val _query = MutableStateFlow("")
     val query = _query.asStateFlow()
 
-    /** Episodes filtered by the title search box (#10). */
-    val filteredEpisodes: StateFlow<List<EpisodeEntity>> = combine(episodes, _query) { list, q ->
-        if (q.isBlank()) list else list.filter { it.title.contains(q.trim(), ignoreCase = true) }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    private val _unplayedOnly = MutableStateFlow(false)
+    val unplayedOnly = _unplayedOnly.asStateFlow()
+
+    /** Episodes filtered by the title search box (#10) and the unplayed-only toggle. */
+    val filteredEpisodes: StateFlow<List<EpisodeEntity>> =
+        combine(episodes, _query, _unplayedOnly) { list, q, unplayedOnly ->
+            list
+                .let { items ->
+                    if (q.isBlank()) items
+                    else items.filter { it.title.contains(q.trim(), ignoreCase = true) }
+                }
+                .let { items -> if (unplayedOnly) items.filterNot { it.isFinished } else items }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val playerState: StateFlow<PlayerUiState> = connection.state
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PlayerUiState())
@@ -54,6 +63,10 @@ class PodcastViewModel @Inject constructor(
     fun onQueryChange(value: String) { _query.value = value }
 
     init { refresh() }
+
+    fun toggleUnplayedOnly() {
+        _unplayedOnly.value = !_unplayedOnly.value
+    }
 
     fun refresh() {
         viewModelScope.launch(Dispatchers.IO) {

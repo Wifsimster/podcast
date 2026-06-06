@@ -1,12 +1,19 @@
 package com.carne.podcast.data.local
 
 import androidx.room.Dao
+import androidx.room.Embedded
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+
+/** A subscribed podcast plus its count of not-yet-finished episodes. */
+data class PodcastWithCount(
+    @Embedded val podcast: PodcastEntity,
+    val unplayedCount: Int,
+)
 
 @Dao
 interface PodcastDao {
@@ -15,6 +22,20 @@ interface PodcastDao {
 
     @Query("SELECT * FROM podcasts WHERE subscribed = 1 ORDER BY title COLLATE NOCASE ASC")
     fun observeSubscribed(): Flow<List<PodcastEntity>>
+
+    /** Subscriptions with an unplayed-episode count, for library badges & sorting. */
+    @Query(
+        """
+        SELECT p.*, (
+            SELECT COUNT(*) FROM episodes e
+            WHERE e.feedUrl = p.feedUrl AND e.isFinished = 0
+        ) AS unplayedCount
+        FROM podcasts p
+        WHERE p.subscribed = 1
+        ORDER BY p.title COLLATE NOCASE ASC
+        """
+    )
+    fun observeSubscribedWithCounts(): Flow<List<PodcastWithCount>>
 
     @Query("SELECT * FROM podcasts WHERE feedUrl = :feedUrl")
     fun observePodcast(feedUrl: String): Flow<PodcastEntity?>

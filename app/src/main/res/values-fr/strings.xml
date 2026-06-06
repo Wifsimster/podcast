@@ -47,6 +47,15 @@
     <string name="browse_podcasts">Parcourir les podcasts</string>
     <string name="library_tab_podcasts">Podcasts</string>
     <string name="library_version">🌶️ Carne v%1$s</string>
+    <string name="sort_library">Trier</string>
+    <string name="sort_recent">Récemment mis à jour</string>
+    <string name="sort_alphabetical">Alphabétique</string>
+    <string name="sort_unplayed">Non écoutés d\'abord</string>
+    <string name="filter_unplayed_only">Non écoutés uniquement</string>
+    <plurals name="unplayed_count">
+        <item quantity="one">%1$d non écouté</item>
+        <item quantity="other">%1$d non écoutés</item>
+    </plurals>
 
     <!-- Téléchargements -->
     <string name="downloads_empty_title">Aucun téléchargement</string>
@@ -66,6 +75,7 @@
     <string name="search_error_none">Aucun podcast trouvé</string>
     <string name="search_subscribed">Abonné</string>
     <string name="search_feed_error">Impossible de charger ce flux</string>
+    <string name="search_failed">Recherche impossible. Vérifiez votre connexion et réessayez. 🌶️</string>
     <string name="clear_search">Effacer la recherche</string>
 
     <!-- Détail du podcast -->
@@ -82,6 +92,10 @@
     <string name="now_playing">En cours de lecture</string>
     <string name="back_10">Reculer de 10 secondes</string>
     <string name="forward_30">Avancer de 30 secondes</string>
+    <string name="skip_back_secs">Reculer de %1$d secondes</string>
+    <string name="skip_forward_secs">Avancer de %1$d secondes</string>
+    <string name="previous_episode">Épisode précédent</string>
+    <string name="next_episode">Épisode suivant</string>
     <string name="play_or_pause">Lire ou mettre en pause</string>
     <string name="playback_position">Position de lecture</string>
     <string name="position_of_duration">%1$s sur %2$s</string>

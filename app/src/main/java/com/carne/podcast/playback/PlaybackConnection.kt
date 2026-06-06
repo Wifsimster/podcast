@@ -39,6 +39,8 @@ data class PlayerUiState(
     val positionMs: Long = 0L,
     val durationMs: Long = 0L,
     val speed: Float = 1f,
+    val hasNext: Boolean = false,
+    val hasPrevious: Boolean = false,
 )
 
 /**
@@ -114,6 +116,8 @@ class PlaybackConnection @Inject constructor(
             positionMs = c.currentPosition.coerceAtLeast(0),
             durationMs = c.duration.let { if (it == C.TIME_UNSET) 0L else it },
             speed = c.playbackParameters.speed,
+            hasNext = c.hasNextMediaItem(),
+            hasPrevious = c.hasPreviousMediaItem(),
         )
     }
 
@@ -211,6 +215,18 @@ class PlaybackConnection @Inject constructor(
         val target = c.currentPosition + settings.skipForwardMs
         val duration = c.duration
         c.seekTo(if (duration > 0) target.coerceAtMost(duration) else target)
+    }
+
+    /** Advance to the next loaded item (e.g. the next queued episode). */
+    fun next() {
+        val c = controller ?: return
+        if (c.hasNextMediaItem()) c.seekToNextMediaItem()
+    }
+
+    /** Go to the previous loaded item, or restart the current one. */
+    fun previous() {
+        val c = controller ?: return
+        if (c.hasPreviousMediaItem()) c.seekToPreviousMediaItem() else c.seekTo(0)
     }
 
     fun setSpeed(speed: Float) {

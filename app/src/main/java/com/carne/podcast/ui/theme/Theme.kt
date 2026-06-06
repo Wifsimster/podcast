@@ -72,8 +72,18 @@ fun CarneTheme(
 ) {
     val context = LocalContext.current
     val colorScheme: ColorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            // Keep Material You's wallpaper-derived palette, but pin the primary
+            // role to the chili-red brand so Material components (buttons, switches,
+            // the nav indicator) match the CarneColors brand tokens instead of
+            // showing a second, competing accent.
+            val dynamic = if (darkTheme) dynamicDarkColorScheme(context)
+            else dynamicLightColorScheme(context)
+            dynamic.copy(
+                primary = if (darkTheme) ChiliRedLight else ChiliRed,
+                onPrimary = if (darkTheme) Color(0xFF3A0A06) else Color.White,
+            )
+        }
         darkTheme -> DarkColors
         else -> LightColors
     }

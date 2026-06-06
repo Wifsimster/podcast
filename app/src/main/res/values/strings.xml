@@ -47,6 +47,15 @@
     <string name="browse_podcasts">Browse podcasts</string>
     <string name="library_tab_podcasts">Podcasts</string>
     <string name="library_version">🌶️ Carne v%1$s</string>
+    <string name="sort_library">Sort</string>
+    <string name="sort_recent">Recently updated</string>
+    <string name="sort_alphabetical">Alphabetical</string>
+    <string name="sort_unplayed">Unplayed first</string>
+    <string name="filter_unplayed_only">Unplayed only</string>
+    <plurals name="unplayed_count">
+        <item quantity="one">%1$d unplayed</item>
+        <item quantity="other">%1$d unplayed</item>
+    </plurals>
 
     <!-- Downloads -->
     <string name="downloads_empty_title">Nothing downloaded yet</string>
@@ -66,6 +75,7 @@
     <string name="search_error_none">No podcasts found</string>
     <string name="search_subscribed">Subscribed</string>
     <string name="search_feed_error">Couldn\'t load that feed</string>
+    <string name="search_failed">Couldn\'t search. Check your connection and try again. 🌶️</string>
     <string name="clear_search">Clear search</string>
 
     <!-- Podcast detail -->
@@ -82,6 +92,10 @@
     <string name="now_playing">Now Playing</string>
     <string name="back_10">Back 10 seconds</string>
     <string name="forward_30">Forward 30 seconds</string>
+    <string name="skip_back_secs">Back %1$d seconds</string>
+    <string name="skip_forward_secs">Forward %1$d seconds</string>
+    <string name="previous_episode">Previous episode</string>
+    <string name="next_episode">Next episode</string>
     <string name="play_or_pause">Play or pause</string>
     <string name="playback_position">Playback position</string>
     <string name="position_of_duration">%1$s of %2$s</string>
