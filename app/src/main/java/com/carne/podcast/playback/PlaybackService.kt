@@ -37,6 +37,7 @@ import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import javax.inject.Inject
 
@@ -76,8 +77,13 @@ class PlaybackService : MediaLibraryService() {
         Log.i(TAG, "onCreate: media service starting")
 
         // Read the persisted settings once so the notification / Android Auto
-        // skip buttons honour the user's chosen intervals from launch.
-        settings = runBlocking { settingsRepository.settings.first() }
+        // skip buttons honour the user's chosen intervals from launch. Bounded by
+        // a timeout so a slow DataStore read can never block onCreate (and the main
+        // thread the browse callbacks would otherwise queue behind) indefinitely —
+        // falling back to defaults, which the collector below promptly corrects.
+        settings = runBlocking {
+            withTimeoutOrNull(SETTINGS_LOAD_TIMEOUT_MS) { settingsRepository.settings.first() }
+        } ?: CarneSettings()
         scope.launch {
             settingsRepository.settings.collect {
                 settings = it
@@ -187,7 +193,7 @@ class PlaybackService : MediaLibraryService() {
             session: MediaLibrarySession,
             browser: MediaSession.ControllerInfo,
             params: LibraryParams?,
-        ): ListenableFuture<LibraryResult<MediaItem>> = scope.future {
+        ): ListenableFuture<LibraryResult<MediaItem>> = scope.future(Dispatchers.IO) {
             Log.i(
                 TAG,
                 "onGetLibraryRoot: caller='${browser.packageName}' " +
@@ -195,7 +201,11 @@ class PlaybackService : MediaLibraryService() {
                     "offline=${params?.isOffline}",
             )
             try {
-                LibraryResult.ofItem(rootItem(), rootParams())
+                // Android Auto asks for a "recent" root to populate the resume /
+                // now-playing card. Hand back a dedicated root whose single child is
+                // the most recent in-progress episode so the car can offer "resume".
+                val root = if (params?.isRecent == true) recentRootItem() else rootItem()
+                LibraryResult.ofItem(root, rootParams())
             } catch (t: Throwable) {
                 Log.e(TAG, "onGetLibraryRoot failed", t)
                 LibraryResult.ofError(SessionResult.RESULT_ERROR_UNKNOWN)
@@ -206,11 +216,12 @@ class PlaybackService : MediaLibraryService() {
             session: MediaLibrarySession,
             browser: MediaSession.ControllerInfo,
             mediaId: String,
-        ): ListenableFuture<LibraryResult<MediaItem>> = scope.future {
+        ): ListenableFuture<LibraryResult<MediaItem>> = scope.future(Dispatchers.IO) {
             Log.i(TAG, "onGetItem: mediaId='$mediaId' caller='${browser.packageName}'")
             try {
                 val item = when (mediaId) {
                     ROOT_ID -> rootItem()
+                    RECENT_ROOT_ID -> recentRootItem()
                     CONTINUE_ID -> folderItem(CONTINUE_ID, getString(R.string.continue_listening))
                     SUBSCRIPTIONS_ID ->
                         folderItem(SUBSCRIPTIONS_ID, getString(R.string.subscriptions_title))
@@ -238,7 +249,7 @@ class PlaybackService : MediaLibraryService() {
             page: Int,
             pageSize: Int,
             params: LibraryParams?,
-        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = scope.future {
+        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = scope.future(Dispatchers.IO) {
             Log.i(
                 TAG,
                 "onGetChildren: parent='$parentId' page=$page pageSize=$pageSize " +
@@ -250,6 +261,13 @@ class PlaybackService : MediaLibraryService() {
                         folderItem(CONTINUE_ID, getString(R.string.continue_listening)),
                         folderItem(SUBSCRIPTIONS_ID, getString(R.string.subscriptions_title)),
                         folderItem(DOWNLOADS_ID, getString(R.string.nav_downloads)),
+                    )
+                    // Resume card: the single most recent in-progress episode, or the
+                    // newest episode if nothing is part-way through.
+                    RECENT_ROOT_ID -> listOfNotNull(
+                        (repository.getInProgressOnce().firstOrNull()
+                            ?: repository.getLatestOnce().firstOrNull())
+                            ?.let(::episodeBrowseItem),
                     )
                     CONTINUE_ID -> repository.getInProgressOnce().map(::episodeBrowseItem)
                     DOWNLOADS_ID -> repository.getDownloadedOnce().map(::episodeBrowseItem)
@@ -279,7 +297,7 @@ class PlaybackService : MediaLibraryService() {
             mediaSession: MediaSession,
             controller: MediaSession.ControllerInfo,
             mediaItems: List<MediaItem>,
-        ): ListenableFuture<List<MediaItem>> = scope.future {
+        ): ListenableFuture<List<MediaItem>> = scope.future(Dispatchers.IO) {
             resolve(mediaItems)
         }
 
@@ -289,7 +307,7 @@ class PlaybackService : MediaLibraryService() {
             mediaItems: List<MediaItem>,
             startIndex: Int,
             startPositionMs: Long,
-        ): ListenableFuture<MediaItemsWithStartPosition> = scope.future {
+        ): ListenableFuture<MediaItemsWithStartPosition> = scope.future(Dispatchers.IO) {
             val resolved = resolve(mediaItems)
             if (resolved.isEmpty()) {
                 return@future MediaItemsWithStartPosition(emptyList(), 0, 0L)
@@ -323,6 +341,9 @@ class PlaybackService : MediaLibraryService() {
     // ---------------------------------------------------------------------
 
     private fun rootItem(): MediaItem = folderItem(ROOT_ID, getString(R.string.app_name))
+
+    /** Root requested by Android Auto for the resume / now-playing card. */
+    private fun recentRootItem(): MediaItem = folderItem(RECENT_ROOT_ID, getString(R.string.app_name))
 
     private fun rootParams(): LibraryParams = LibraryParams.Builder()
         .setExtras(
@@ -448,11 +469,15 @@ class PlaybackService : MediaLibraryService() {
 
         private const val POSITION_SAVE_INTERVAL_MS = 5_000L
 
+        /** Upper bound on the blocking settings read in onCreate. */
+        private const val SETTINGS_LOAD_TIMEOUT_MS = 2_000L
+
         /** Volume-boost gain in millibels (~10 dB) when "Boost volume" is on. */
         private const val BOOST_GAIN_MB = 1_000
 
         // Browse-tree node ids.
         private const val ROOT_ID = "[root]"
+        private const val RECENT_ROOT_ID = "[recent]"
         private const val CONTINUE_ID = "[continue]"
         private const val SUBSCRIPTIONS_ID = "[subscriptions]"
         private const val DOWNLOADS_ID = "[downloads]"
