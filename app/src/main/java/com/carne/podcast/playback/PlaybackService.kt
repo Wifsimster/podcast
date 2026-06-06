@@ -195,7 +195,11 @@ class PlaybackService : MediaLibraryService() {
                     "offline=${params?.isOffline}",
             )
             try {
-                LibraryResult.ofItem(rootItem(), rootParams())
+                // Android Auto asks for a "recent" root to populate the resume /
+                // now-playing card. Hand back a dedicated root whose single child is
+                // the most recent in-progress episode so the car can offer "resume".
+                val root = if (params?.isRecent == true) recentRootItem() else rootItem()
+                LibraryResult.ofItem(root, rootParams())
             } catch (t: Throwable) {
                 Log.e(TAG, "onGetLibraryRoot failed", t)
                 LibraryResult.ofError(SessionResult.RESULT_ERROR_UNKNOWN)
@@ -211,6 +215,7 @@ class PlaybackService : MediaLibraryService() {
             try {
                 val item = when (mediaId) {
                     ROOT_ID -> rootItem()
+                    RECENT_ROOT_ID -> recentRootItem()
                     CONTINUE_ID -> folderItem(CONTINUE_ID, getString(R.string.continue_listening))
                     SUBSCRIPTIONS_ID ->
                         folderItem(SUBSCRIPTIONS_ID, getString(R.string.subscriptions_title))
@@ -250,6 +255,13 @@ class PlaybackService : MediaLibraryService() {
                         folderItem(CONTINUE_ID, getString(R.string.continue_listening)),
                         folderItem(SUBSCRIPTIONS_ID, getString(R.string.subscriptions_title)),
                         folderItem(DOWNLOADS_ID, getString(R.string.nav_downloads)),
+                    )
+                    // Resume card: the single most recent in-progress episode, or the
+                    // newest episode if nothing is part-way through.
+                    RECENT_ROOT_ID -> listOfNotNull(
+                        (repository.getInProgressOnce().firstOrNull()
+                            ?: repository.getLatestOnce().firstOrNull())
+                            ?.let(::episodeBrowseItem),
                     )
                     CONTINUE_ID -> repository.getInProgressOnce().map(::episodeBrowseItem)
                     DOWNLOADS_ID -> repository.getDownloadedOnce().map(::episodeBrowseItem)
@@ -323,6 +335,9 @@ class PlaybackService : MediaLibraryService() {
     // ---------------------------------------------------------------------
 
     private fun rootItem(): MediaItem = folderItem(ROOT_ID, getString(R.string.app_name))
+
+    /** Root requested by Android Auto for the resume / now-playing card. */
+    private fun recentRootItem(): MediaItem = folderItem(RECENT_ROOT_ID, getString(R.string.app_name))
 
     private fun rootParams(): LibraryParams = LibraryParams.Builder()
         .setExtras(
@@ -453,6 +468,7 @@ class PlaybackService : MediaLibraryService() {
 
         // Browse-tree node ids.
         private const val ROOT_ID = "[root]"
+        private const val RECENT_ROOT_ID = "[recent]"
         private const val CONTINUE_ID = "[continue]"
         private const val SUBSCRIPTIONS_ID = "[subscriptions]"
         private const val DOWNLOADS_ID = "[downloads]"

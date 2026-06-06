@@ -67,6 +67,7 @@ class PodcastRepository @Inject constructor(
     suspend fun getEpisodesOnce(feedUrl: String): List<EpisodeEntity> = observeEpisodes(feedUrl).first()
     suspend fun getInProgressOnce(): List<EpisodeEntity> = observeInProgress().first()
     suspend fun getDownloadedOnce(): List<EpisodeEntity> = observeDownloaded().first()
+    suspend fun getLatestOnce(): List<EpisodeEntity> = observeLatest().first()
 
     /** Subscribe to a feed by URL, fetching its content. Returns the feed URL. */
     suspend fun subscribe(feedUrl: String): Result<String> = withContext(Dispatchers.IO) {
