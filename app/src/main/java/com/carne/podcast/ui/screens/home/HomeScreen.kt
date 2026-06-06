@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
@@ -27,6 +28,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.carne.podcast.R
 import com.carne.podcast.ui.components.CarneEmptyState
 import com.carne.podcast.ui.components.EpisodeRow
 import com.carne.podcast.ui.components.EpisodeRowDividerStartInset
@@ -51,7 +53,7 @@ fun HomeScreen(
                 ContainedLoadingIndicator()
                 Spacer(Modifier.height(CarneTheme.spacing.lg))
                 Text(
-                    "Loading your podcasts…",
+                    stringResource(R.string.loading_podcasts),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -59,9 +61,9 @@ fun HomeScreen(
 
         uiState.inProgress.isEmpty() && uiState.latest.isEmpty() -> CarneEmptyState(
             icon = Icons.Rounded.Whatshot,
-            title = "Welcome to Carne 🌶️",
-            message = "Subscribe to a few shows and your latest episodes will show up right here.",
-            actionLabel = "Find podcasts",
+            title = stringResource(R.string.home_welcome_title),
+            message = stringResource(R.string.home_welcome_message),
+            actionLabel = stringResource(R.string.find_podcasts),
             onAction = onBrowse,
         )
 
@@ -70,7 +72,7 @@ fun HomeScreen(
             contentPadding = contentPadding,
         ) {
             if (uiState.inProgress.isNotEmpty()) {
-                item { SectionHeader("Continue listening") }
+                item { SectionHeader(stringResource(R.string.continue_listening)) }
                 items(uiState.inProgress, key = { "ip_${it.id}" }) { episode ->
                     EpisodeRow(
                         episode = episode,
@@ -81,6 +83,8 @@ fun HomeScreen(
                         onDownload = { viewModel.download(episode) },
                         onDeleteDownload = { viewModel.deleteDownload(episode) },
                         onTogglePlayed = { viewModel.markPlayed(episode, !episode.isFinished) },
+                        onPlayNext = { viewModel.playNext(episode) },
+                        onAddToQueue = { viewModel.addToQueue(episode) },
                         modifier = Modifier.animateItem(),
                     )
                     HorizontalDivider(Modifier.padding(start = EpisodeRowDividerStartInset))
@@ -88,7 +92,7 @@ fun HomeScreen(
                 item { Spacer(Modifier.height(CarneTheme.spacing.sm)) }
             }
 
-            item { SectionHeader("Latest episodes") }
+            item { SectionHeader(stringResource(R.string.latest_episodes)) }
             items(uiState.latest, key = { "lt_${it.id}" }) { episode ->
                 EpisodeRow(
                     episode = episode,
@@ -99,6 +103,8 @@ fun HomeScreen(
                     onDownload = { viewModel.download(episode) },
                     onDeleteDownload = { viewModel.deleteDownload(episode) },
                     onTogglePlayed = { viewModel.markPlayed(episode, !episode.isFinished) },
+                    onPlayNext = { viewModel.playNext(episode) },
+                    onAddToQueue = { viewModel.addToQueue(episode) },
                     modifier = Modifier.animateItem(),
                 )
                 HorizontalDivider(Modifier.padding(start = EpisodeRowDividerStartInset))

@@ -20,7 +20,10 @@ Carlos Diaz, is pre-subscribed on first launch.
 - ✅ Auto mark-as-played, "Continue listening" on the home screen
 - 🔍 **Discover** podcasts (iTunes search) or paste any RSS feed URL
 - 📚 Subscriptions library with pull-to-refresh
-- ⚙️ **Settings** for playback, downloads, updates and appearance
+- 🧾 **Up-Next queue** — a persistent, reorderable play queue ("Play next" / "Add to queue")
+- 💼 **Own your data** — OPML import/export and a full local backup/restore (subscriptions, progress & settings), all on-device
+- 🌍 **Localized** — English & French (`fr`)
+- ⚙️ **Settings** for playback, downloads, updates, your data and appearance
 - 🎨 **Material You** dynamic theming, light/dark/system theme, edge-to-edge
 - 🚫 No ads, no analytics, no login
 
@@ -64,7 +67,7 @@ keystore in `app/build.gradle.kts` for store distribution.
 
 ```
 app/src/main/java/com/carne/podcast/
-├─ data/        Room (local) · RSS + iTunes (remote) · repository · settings (DataStore)
+├─ data/        Room (local) · RSS + iTunes (remote) · repository · settings (DataStore) · opml + backup (data ownership)
 ├─ playback/    Media3 service, controller bridge, sleep timer
 ├─ download/    WorkManager episode downloader
 ├─ sync/        Periodic feed refresh worker + new-episode notifications

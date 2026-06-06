@@ -23,12 +23,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.carne.podcast.R
 import com.carne.podcast.playback.PlayerUiState
 import com.carne.podcast.ui.theme.CarneTheme
 
@@ -66,7 +68,7 @@ fun MiniPlayer(
             )
             Row(
                 modifier = Modifier
-                    .clickable(onClick = onClick, onClickLabel = "Open player")
+                    .clickable(onClick = onClick, onClickLabel = stringResource(R.string.open_player))
                     .padding(horizontal = CarneTheme.spacing.sm, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -76,9 +78,12 @@ fun MiniPlayer(
                     shape = CarneTheme.shapes.artworkSmall,
                 )
                 Spacer(Modifier.width(CarneTheme.spacing.md))
+                val playingLabel = stringResource(R.string.playing)
+                val pausedLabel = stringResource(R.string.paused)
+                val playPauseLabel = stringResource(R.string.play_or_pause)
                 Box(Modifier.weight(1f)) {
                     Text(
-                        text = state.title.ifEmpty { "Playing" },
+                        text = state.title.ifEmpty { playingLabel },
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -88,8 +93,8 @@ fun MiniPlayer(
                 IconButton(
                     onClick = onPlayPause,
                     modifier = Modifier.semantics {
-                        contentDescription = "Play or pause"
-                        stateDescription = if (state.isPlaying) "Playing" else "Paused"
+                        contentDescription = playPauseLabel
+                        stateDescription = if (state.isPlaying) playingLabel else pausedLabel
                     },
                 ) {
                     PlayPauseIcon(
@@ -102,7 +107,7 @@ fun MiniPlayer(
                 IconButton(onClick = onForward) {
                     Icon(
                         Icons.Rounded.Forward30,
-                        contentDescription = "Forward 30 seconds",
+                        contentDescription = stringResource(R.string.forward_30),
                         modifier = Modifier.size(26.dp),
                     )
                 }

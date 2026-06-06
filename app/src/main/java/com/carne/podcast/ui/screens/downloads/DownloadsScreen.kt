@@ -11,8 +11,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.carne.podcast.R
 import com.carne.podcast.ui.components.CarneEmptyState
 import com.carne.podcast.ui.components.EpisodeRow
 import com.carne.podcast.ui.components.EpisodeRowDividerStartInset
@@ -29,8 +31,8 @@ fun DownloadsScreen(
     if (downloads.isEmpty()) {
         CarneEmptyState(
             icon = Icons.Rounded.DownloadForOffline,
-            title = "Nothing downloaded yet",
-            message = "Tap the download icon on any episode to keep it offline — perfect for flights and dead zones.",
+            title = stringResource(R.string.downloads_empty_title),
+            message = stringResource(R.string.downloads_empty_message),
         )
         return
     }
@@ -49,6 +51,8 @@ fun DownloadsScreen(
                 onDownload = {},
                 onDeleteDownload = { viewModel.deleteDownload(episode) },
                 onTogglePlayed = { viewModel.markPlayed(episode, !episode.isFinished) },
+                onPlayNext = { viewModel.playNext(episode) },
+                onAddToQueue = { viewModel.addToQueue(episode) },
                 modifier = Modifier.animateItem(),
             )
             HorizontalDivider(Modifier.padding(start = EpisodeRowDividerStartInset))

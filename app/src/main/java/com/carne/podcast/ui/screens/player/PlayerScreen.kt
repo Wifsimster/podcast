@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -46,6 +47,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.carne.podcast.R
 import com.carne.podcast.ui.components.PlayPauseIcon
 import com.carne.podcast.ui.components.PodcastArtwork
 import com.carne.podcast.ui.components.formatTime
@@ -83,10 +85,13 @@ fun PlayerScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onClose) {
-                Icon(Icons.Rounded.KeyboardArrowDown, contentDescription = "Close")
+                Icon(
+                    Icons.Rounded.KeyboardArrowDown,
+                    contentDescription = stringResource(R.string.close),
+                )
             }
             Text(
-                text = "Now Playing",
+                text = stringResource(R.string.now_playing),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -97,7 +102,10 @@ fun PlayerScreen(
             url = state.artworkUri ?: episode?.imageUrl,
             modifier = Modifier.fillMaxWidth().aspectRatio(1f),
             shape = CarneTheme.shapes.artworkLarge,
-            contentDescription = "Artwork for ${state.title.ifEmpty { episode?.title.orEmpty() }}",
+            contentDescription = stringResource(
+                R.string.artwork_for,
+                state.title.ifEmpty { episode?.title.orEmpty() },
+            ),
         )
 
         Spacer(Modifier.height(CarneTheme.spacing.xl))
@@ -111,6 +119,12 @@ fun PlayerScreen(
         )
 
         Spacer(Modifier.height(CarneTheme.spacing.xl))
+        val positionLabel = stringResource(R.string.playback_position)
+        val positionState = stringResource(
+            R.string.position_of_duration,
+            formatTime(sliderPosition.toLong()),
+            formatTime(duration),
+        )
         Slider(
             value = sliderPosition,
             onValueChange = { scrubbing = true; scrubValue = it },
@@ -121,8 +135,8 @@ fun PlayerScreen(
             valueRange = 0f..maxValue,
             enabled = duration > 0,
             modifier = Modifier.semantics {
-                contentDescription = "Playback position"
-                stateDescription = "${formatTime(sliderPosition.toLong())} of ${formatTime(duration)}"
+                contentDescription = positionLabel
+                stateDescription = positionState
             },
         )
         Row(
@@ -140,15 +154,22 @@ fun PlayerScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = viewModel::seekBack, modifier = Modifier.size(56.dp)) {
-                Icon(Icons.Rounded.Replay10, "Back 10 seconds", Modifier.size(38.dp))
+                Icon(
+                    Icons.Rounded.Replay10,
+                    stringResource(R.string.back_10),
+                    Modifier.size(38.dp),
+                )
             }
+            val playPauseLabel = stringResource(R.string.play_or_pause)
+            val playingLabel = stringResource(R.string.playing)
+            val pausedLabel = stringResource(R.string.paused)
             IconButton(
                 onClick = viewModel::playPause,
                 modifier = Modifier
                     .size(80.dp)
                     .semantics {
-                        contentDescription = "Play or pause"
-                        stateDescription = if (state.isPlaying) "Playing" else "Paused"
+                        contentDescription = playPauseLabel
+                        stateDescription = if (state.isPlaying) playingLabel else pausedLabel
                     },
             ) {
                 PlayPauseIcon(
@@ -160,7 +181,11 @@ fun PlayerScreen(
                 )
             }
             IconButton(onClick = viewModel::seekForward, modifier = Modifier.size(56.dp)) {
-                Icon(Icons.Rounded.Forward30, "Forward 30 seconds", Modifier.size(38.dp))
+                Icon(
+                    Icons.Rounded.Forward30,
+                    stringResource(R.string.forward_30),
+                    Modifier.size(38.dp),
+                )
             }
         }
 
@@ -182,7 +207,7 @@ fun PlayerScreen(
         episode?.description?.takeIf { it.isNotBlank() }?.let { desc ->
             Spacer(Modifier.height(CarneTheme.spacing.xl))
             Text(
-                "Show notes",
+                stringResource(R.string.show_notes),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.semantics { heading() },
             )
@@ -236,25 +261,25 @@ private fun SleepControl(
             Text(
                 when {
                     remainingMs > 0 -> formatTime(remainingMs)
-                    endOfEpisode -> "End"
-                    else -> "Sleep"
+                    endOfEpisode -> stringResource(R.string.sleep_end)
+                    else -> stringResource(R.string.sleep)
                 }
             )
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             options.forEach { minutes ->
                 DropdownMenuItem(
-                    text = { Text("$minutes min") },
+                    text = { Text(stringResource(R.string.minutes_short, minutes)) },
                     onClick = { onSelect(minutes); open = false },
                 )
             }
             DropdownMenuItem(
-                text = { Text("End of episode") },
+                text = { Text(stringResource(R.string.end_of_episode)) },
                 onClick = { onSelectEndOfEpisode(); open = false },
             )
             if (active) {
                 DropdownMenuItem(
-                    text = { Text("Cancel timer") },
+                    text = { Text(stringResource(R.string.cancel_timer)) },
                     onClick = { onCancel(); open = false },
                 )
             }

@@ -34,10 +34,10 @@ object NewEpisodeNotifier {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "New episodes",
+            context.getString(R.string.notif_channel_name),
             NotificationManager.IMPORTANCE_DEFAULT,
         ).apply {
-            description = "Alerts when your subscriptions publish new episodes"
+            description = context.getString(R.string.notif_channel_desc)
         }
         context.getSystemService(NotificationManager::class.java)
             ?.createNotificationChannel(channel)
@@ -58,15 +58,19 @@ object NewEpisodeNotifier {
 
     private fun buildPodcastNotification(context: Context, batch: NewEpisodeBatch): Notification {
         val episodes = batch.episodes
-        val title = batch.podcastTitle.ifBlank { "New episodes" }
+        val title = batch.podcastTitle.ifBlank { context.getString(R.string.notif_channel_name) }
         val text = if (episodes.size == 1) {
             episodes.first().title
         } else {
-            "${episodes.size} new episodes"
+            context.resources.getQuantityString(
+                R.plurals.new_episodes_count, episodes.size, episodes.size,
+            )
         }
         val style = NotificationCompat.InboxStyle().setBigContentTitle(title)
         episodes.take(MAX_LINES).forEach { style.addLine(it.title) }
-        if (episodes.size > MAX_LINES) style.setSummaryText("+${episodes.size - MAX_LINES} more")
+        if (episodes.size > MAX_LINES) {
+            style.setSummaryText(context.getString(R.string.notif_more, episodes.size - MAX_LINES))
+        }
 
         return NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
@@ -82,15 +86,21 @@ object NewEpisodeNotifier {
 
     private fun buildSummary(context: Context, batches: List<NewEpisodeBatch>): Notification {
         val total = batches.sumOf { it.episodes.size }
-        val title = if (total == 1) "New episode" else "$total new episodes"
+        val title = context.resources.getQuantityString(
+            R.plurals.new_episodes_count, total, total,
+        )
         val style = NotificationCompat.InboxStyle().setBigContentTitle(title)
         batches.forEach { batch ->
-            val line = if (batch.episodes.size == 1) {
-                "${batch.podcastTitle}: ${batch.episodes.first().title}"
+            val detail = if (batch.episodes.size == 1) {
+                batch.episodes.first().title
             } else {
-                "${batch.podcastTitle}: ${batch.episodes.size} new episodes"
+                context.resources.getQuantityString(
+                    R.plurals.new_episodes_count, batch.episodes.size, batch.episodes.size,
+                )
             }
-            style.addLine(line)
+            style.addLine(
+                context.getString(R.string.notif_podcast_line, batch.podcastTitle, detail)
+            )
         }
         return NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)

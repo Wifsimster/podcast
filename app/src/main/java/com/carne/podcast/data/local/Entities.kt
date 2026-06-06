@@ -45,3 +45,14 @@ data class EpisodeWithPodcast(
     val podcastTitle: String,
     val podcastImageUrl: String,
 )
+
+/**
+ * One entry in the user-curated "Up Next" queue. [sortIndex] orders the queue
+ * (smaller plays first); gaps are left between entries so "Play next" can splice
+ * an item in front without renumbering the whole list.
+ */
+@Entity(tableName = "queue")
+data class QueueItemEntity(
+    @PrimaryKey val episodeId: String,
+    val sortIndex: Long,
+)

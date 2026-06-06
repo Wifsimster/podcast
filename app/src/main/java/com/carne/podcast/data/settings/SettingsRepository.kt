@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -84,6 +85,23 @@ class SettingsRepository @Inject constructor(
         edit { it[Keys.NEW_EPISODE_NOTIFS] = value }
     suspend fun setThemeMode(value: ThemeMode) = edit { it[Keys.THEME_MODE] = value.name }
     suspend fun setDynamicColor(value: Boolean) = edit { it[Keys.DYNAMIC_COLOR] = value }
+
+    /** A one-shot snapshot of the current settings, for backup. */
+    suspend fun snapshot(): CarneSettings = settings.first()
+
+    /** Overwrite every preference from a restored snapshot. */
+    suspend fun restore(s: CarneSettings) = edit {
+        it[Keys.SKIP_BACK] = s.skipBackMs
+        it[Keys.SKIP_FORWARD] = s.skipForwardMs
+        it[Keys.DEFAULT_SPEED] = s.defaultSpeed
+        it[Keys.AUTO_ADVANCE] = s.autoAdvance
+        it[Keys.WIFI_ONLY] = s.wifiOnlyDownloads
+        it[Keys.AUTO_DELETE] = s.autoDeleteFinished
+        it[Keys.BACKGROUND_REFRESH] = s.backgroundRefresh
+        it[Keys.NEW_EPISODE_NOTIFS] = s.newEpisodeNotifications
+        it[Keys.THEME_MODE] = s.themeMode.name
+        it[Keys.DYNAMIC_COLOR] = s.dynamicColor
+    }
 
     private suspend fun edit(
         block: suspend (androidx.datastore.preferences.core.MutablePreferences) -> Unit,

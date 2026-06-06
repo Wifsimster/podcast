@@ -29,6 +29,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -38,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.carne.podcast.R
 import com.carne.podcast.ui.components.EpisodeRow
 import com.carne.podcast.ui.components.PodcastArtwork
 import com.carne.podcast.ui.components.stripHtml
@@ -66,12 +69,18 @@ fun PodcastScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = viewModel::refresh) {
-                        Icon(Icons.Rounded.Refresh, contentDescription = "Refresh")
+                        Icon(
+                            Icons.Rounded.Refresh,
+                            contentDescription = stringResource(R.string.refresh),
+                        )
                     }
                 },
             )
@@ -91,7 +100,8 @@ fun PodcastScreen(
                             url = podcast?.imageUrl,
                             modifier = Modifier.size(110.dp),
                             shape = CarneTheme.shapes.artworkMedium,
-                            contentDescription = podcast?.title?.let { "Artwork for $it" },
+                            contentDescription = podcast?.title
+                                ?.let { stringResource(R.string.artwork_for, it) },
                         )
                         Spacer(Modifier.width(16.dp))
                         Column {
@@ -111,23 +121,27 @@ fun PodcastScreen(
                             )
                             Spacer(Modifier.height(12.dp))
                             val subscribed = podcast?.subscribed == true
+                            val subscribeLabel = stringResource(R.string.subscribe)
+                            val subscribedState = stringResource(R.string.subscribed_label)
+                            val notSubscribedState = stringResource(R.string.not_subscribed)
                             val subscribeSemantics = Modifier.semantics {
-                                contentDescription = "Subscribe"
-                                stateDescription = if (subscribed) "Subscribed" else "Not subscribed"
+                                contentDescription = subscribeLabel
+                                stateDescription =
+                                    if (subscribed) subscribedState else notSubscribedState
                             }
                             if (subscribed) {
                                 OutlinedButton(
                                     onClick = viewModel::toggleSubscribe,
                                     modifier = subscribeSemantics,
                                 ) {
-                                    Text("Subscribed")
+                                    Text(stringResource(R.string.subscribed_label))
                                 }
                             } else {
                                 Button(
                                     onClick = viewModel::toggleSubscribe,
                                     modifier = subscribeSemantics,
                                 ) {
-                                    Text("Subscribe")
+                                    Text(stringResource(R.string.subscribe))
                                 }
                             }
                         }
@@ -144,7 +158,9 @@ fun PodcastScreen(
                     }
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        "${episodes.size} episodes",
+                        pluralStringResource(
+                            R.plurals.episodes_count, episodes.size, episodes.size,
+                        ),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )
@@ -162,6 +178,8 @@ fun PodcastScreen(
                     onDownload = { viewModel.download(episode) },
                     onDeleteDownload = { viewModel.deleteDownload(episode) },
                     onTogglePlayed = { viewModel.markPlayed(episode, !episode.isFinished) },
+                    onPlayNext = { viewModel.playNext(episode) },
+                    onAddToQueue = { viewModel.addToQueue(episode) },
                     showArtwork = false,
                     modifier = Modifier.animateItem(),
                 )

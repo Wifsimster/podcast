@@ -2,6 +2,7 @@ package com.carne.podcast.playback
 
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -15,6 +16,7 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import androidx.media3.session.MediaConstants
 import androidx.media3.session.SessionResult
+import com.carne.podcast.R
 import com.carne.podcast.data.local.EpisodeEntity
 import com.carne.podcast.data.repository.PodcastRepository
 import com.carne.podcast.data.settings.CarneSettings
@@ -66,6 +68,7 @@ class PlaybackService : MediaLibraryService() {
 
     override fun onCreate() {
         super.onCreate()
+        Log.i(TAG, "onCreate: media service starting")
 
         // Read the persisted settings once so the notification / Android Auto
         // skip buttons honour the user's chosen intervals from launch.
@@ -110,8 +113,10 @@ class PlaybackService : MediaLibraryService() {
         mediaSession = MediaLibrarySession.Builder(this, player, LibraryCallback()).build()
     }
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? =
-        mediaSession
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? {
+        Log.i(TAG, "onGetSession: controller='${controllerInfo.packageName}' uid=${controllerInfo.uid} session=${mediaSession != null}")
+        return mediaSession
+    }
 
     override fun onTaskRemoved(rootIntent: android.content.Intent?) {
         // Keep playing in the background if media is active; otherwise stop.
@@ -121,6 +126,7 @@ class PlaybackService : MediaLibraryService() {
     }
 
     override fun onDestroy() {
+        Log.i(TAG, "onDestroy: media service stopping")
         persistPosition()
         positionSaver?.cancel()
         scope.cancel()
@@ -143,7 +149,18 @@ class PlaybackService : MediaLibraryService() {
             browser: MediaSession.ControllerInfo,
             params: LibraryParams?,
         ): ListenableFuture<LibraryResult<MediaItem>> = scope.future {
-            LibraryResult.ofItem(rootItem(), rootParams())
+            Log.i(
+                TAG,
+                "onGetLibraryRoot: caller='${browser.packageName}' " +
+                    "recent=${params?.isRecent} suggested=${params?.isSuggested} " +
+                    "offline=${params?.isOffline}",
+            )
+            try {
+                LibraryResult.ofItem(rootItem(), rootParams())
+            } catch (t: Throwable) {
+                Log.e(TAG, "onGetLibraryRoot failed", t)
+                LibraryResult.ofError(SessionResult.RESULT_ERROR_UNKNOWN)
+            }
         }
 
         override fun onGetItem(
@@ -151,21 +168,28 @@ class PlaybackService : MediaLibraryService() {
             browser: MediaSession.ControllerInfo,
             mediaId: String,
         ): ListenableFuture<LibraryResult<MediaItem>> = scope.future {
-            val item = when (mediaId) {
-                ROOT_ID -> rootItem()
-                CONTINUE_ID -> folderItem(CONTINUE_ID, CONTINUE_TITLE)
-                SUBSCRIPTIONS_ID -> folderItem(SUBSCRIPTIONS_ID, SUBSCRIPTIONS_TITLE)
-                DOWNLOADS_ID -> folderItem(DOWNLOADS_ID, DOWNLOADS_TITLE)
-                else -> when {
-                    mediaId.startsWith(PODCAST_PREFIX) ->
-                        repository.getSubscriptionsOnce()
-                            .firstOrNull { PODCAST_PREFIX + it.feedUrl == mediaId }
-                            ?.let { podcastItem(it.feedUrl, it.title, it.imageUrl) }
-                    else -> repository.getEpisode(mediaId)?.let(::episodeBrowseItem)
+            Log.i(TAG, "onGetItem: mediaId='$mediaId' caller='${browser.packageName}'")
+            try {
+                val item = when (mediaId) {
+                    ROOT_ID -> rootItem()
+                    CONTINUE_ID -> folderItem(CONTINUE_ID, getString(R.string.continue_listening))
+                    SUBSCRIPTIONS_ID ->
+                        folderItem(SUBSCRIPTIONS_ID, getString(R.string.subscriptions_title))
+                    DOWNLOADS_ID -> folderItem(DOWNLOADS_ID, getString(R.string.nav_downloads))
+                    else -> when {
+                        mediaId.startsWith(PODCAST_PREFIX) ->
+                            repository.getSubscriptionsOnce()
+                                .firstOrNull { PODCAST_PREFIX + it.feedUrl == mediaId }
+                                ?.let { podcastItem(it.feedUrl, it.title, it.imageUrl) }
+                        else -> repository.getEpisode(mediaId)?.let(::episodeBrowseItem)
+                    }
                 }
+                if (item != null) LibraryResult.ofItem(item, null)
+                else LibraryResult.ofError(SessionResult.RESULT_ERROR_BAD_VALUE)
+            } catch (t: Throwable) {
+                Log.e(TAG, "onGetItem failed for '$mediaId'", t)
+                LibraryResult.ofError(SessionResult.RESULT_ERROR_UNKNOWN)
             }
-            if (item != null) LibraryResult.ofItem(item, null)
-            else LibraryResult.ofError(SessionResult.RESULT_ERROR_BAD_VALUE)
         }
 
         override fun onGetChildren(
@@ -176,24 +200,35 @@ class PlaybackService : MediaLibraryService() {
             pageSize: Int,
             params: LibraryParams?,
         ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = scope.future {
-            val children: List<MediaItem> = when (parentId) {
-                ROOT_ID -> listOf(
-                    folderItem(CONTINUE_ID, CONTINUE_TITLE),
-                    folderItem(SUBSCRIPTIONS_ID, SUBSCRIPTIONS_TITLE),
-                    folderItem(DOWNLOADS_ID, DOWNLOADS_TITLE),
-                )
-                CONTINUE_ID -> repository.getInProgressOnce().map(::episodeBrowseItem)
-                DOWNLOADS_ID -> repository.getDownloadedOnce().map(::episodeBrowseItem)
-                SUBSCRIPTIONS_ID -> repository.getSubscriptionsOnce()
-                    .map { podcastItem(it.feedUrl, it.title, it.imageUrl) }
-                else -> if (parentId.startsWith(PODCAST_PREFIX)) {
-                    val feedUrl = parentId.removePrefix(PODCAST_PREFIX)
-                    repository.getEpisodesOnce(feedUrl).map(::episodeBrowseItem)
-                } else {
-                    emptyList()
+            Log.i(
+                TAG,
+                "onGetChildren: parent='$parentId' page=$page pageSize=$pageSize " +
+                    "caller='${browser.packageName}'",
+            )
+            try {
+                val children: List<MediaItem> = when (parentId) {
+                    ROOT_ID -> listOf(
+                        folderItem(CONTINUE_ID, getString(R.string.continue_listening)),
+                        folderItem(SUBSCRIPTIONS_ID, getString(R.string.subscriptions_title)),
+                        folderItem(DOWNLOADS_ID, getString(R.string.nav_downloads)),
+                    )
+                    CONTINUE_ID -> repository.getInProgressOnce().map(::episodeBrowseItem)
+                    DOWNLOADS_ID -> repository.getDownloadedOnce().map(::episodeBrowseItem)
+                    SUBSCRIPTIONS_ID -> repository.getSubscriptionsOnce()
+                        .map { podcastItem(it.feedUrl, it.title, it.imageUrl) }
+                    else -> if (parentId.startsWith(PODCAST_PREFIX)) {
+                        val feedUrl = parentId.removePrefix(PODCAST_PREFIX)
+                        repository.getEpisodesOnce(feedUrl).map(::episodeBrowseItem)
+                    } else {
+                        emptyList()
+                    }
                 }
+                Log.i(TAG, "onGetChildren: parent='$parentId' -> ${children.size} items")
+                LibraryResult.ofItemList(ImmutableList.copyOf(children), null)
+            } catch (t: Throwable) {
+                Log.e(TAG, "onGetChildren failed for '$parentId'", t)
+                LibraryResult.ofItemList(ImmutableList.of<MediaItem>(), null)
             }
-            LibraryResult.ofItemList(ImmutableList.copyOf(children), null)
         }
 
         /**
@@ -234,18 +269,21 @@ class PlaybackService : MediaLibraryService() {
         }
     }
 
-    private suspend fun resolve(items: List<MediaItem>): List<MediaItem> =
-        items.mapNotNull { item ->
+    private suspend fun resolve(items: List<MediaItem>): List<MediaItem> {
+        val resolved = items.mapNotNull { item ->
             // Already complete (has a URI) — keep as-is.
             if (item.localConfiguration != null) return@mapNotNull item
             repository.getEpisode(item.mediaId)?.let(::playableItem)
         }
+        Log.i(TAG, "resolve: ${items.size} requested -> ${resolved.size} playable")
+        return resolved
+    }
 
     // ---------------------------------------------------------------------
     // MediaItem builders
     // ---------------------------------------------------------------------
 
-    private fun rootItem(): MediaItem = folderItem(ROOT_ID, ROOT_TITLE)
+    private fun rootItem(): MediaItem = folderItem(ROOT_ID, getString(R.string.app_name))
 
     private fun rootParams(): LibraryParams = LibraryParams.Builder()
         .setExtras(
@@ -355,6 +393,8 @@ class PlaybackService : MediaLibraryService() {
         if (id.isBlank()) return
         scope.launch(Dispatchers.IO) {
             repository.setPlayed(id, true)
+            // A finished episode leaves the Up-Next queue so it stays current.
+            repository.removeFromQueue(id)
             if (settings.autoDeleteFinished) {
                 repository.getEpisode(id)?.let { episode ->
                     downloadManager.deleteDownload(episode.id, episode.localFilePath)
@@ -364,6 +404,9 @@ class PlaybackService : MediaLibraryService() {
     }
 
     companion object {
+        /** Logcat tag for Android Auto / MediaBrowser diagnostics: `adb logcat -s CarneAuto`. */
+        private const val TAG = "CarneAuto"
+
         private const val POSITION_SAVE_INTERVAL_MS = 5_000L
 
         // Browse-tree node ids.
@@ -372,10 +415,5 @@ class PlaybackService : MediaLibraryService() {
         private const val SUBSCRIPTIONS_ID = "[subscriptions]"
         private const val DOWNLOADS_ID = "[downloads]"
         private const val PODCAST_PREFIX = "[podcast]"
-
-        private const val ROOT_TITLE = "Carne"
-        private const val CONTINUE_TITLE = "Continue listening"
-        private const val SUBSCRIPTIONS_TITLE = "Subscriptions"
-        private const val DOWNLOADS_TITLE = "Downloads"
     }
 }

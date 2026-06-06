@@ -15,12 +15,13 @@ class Converters {
 }
 
 @Database(
-    entities = [PodcastEntity::class, EpisodeEntity::class],
-    version = 1,
+    entities = [PodcastEntity::class, EpisodeEntity::class, QueueItemEntity::class],
+    version = 2,
     exportSchema = false,
 )
 @TypeConverters(Converters::class)
 abstract class CarneDatabase : RoomDatabase() {
     abstract fun podcastDao(): PodcastDao
     abstract fun episodeDao(): EpisodeDao
+    abstract fun queueDao(): QueueDao
 }

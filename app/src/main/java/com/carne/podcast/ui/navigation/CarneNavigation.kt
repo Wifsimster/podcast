@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -32,6 +33,7 @@ import com.carne.podcast.ui.screens.library.LibraryScreen
 import com.carne.podcast.ui.screens.player.PlayerScreen
 import com.carne.podcast.ui.screens.player.PlayerViewModel
 import com.carne.podcast.ui.screens.podcast.PodcastScreen
+import com.carne.podcast.ui.screens.queue.QueueScreen
 import com.carne.podcast.ui.screens.search.SearchScreen
 import com.carne.podcast.ui.screens.settings.SettingsScreen
 
@@ -103,6 +105,13 @@ fun CarneRoot(
                     contentPadding = innerPadding,
                 )
             }
+            composable(Routes.QUEUE) {
+                QueueScreen(
+                    onOpenPlayer = { navController.navigate(Routes.PLAYER) },
+                    onBrowse = openSearch,
+                    contentPadding = innerPadding,
+                )
+            }
             composable(Routes.LIBRARY) {
                 LibraryScreen(
                     onOpenPodcast = { navController.navigate(Routes.podcast(it)) },
@@ -163,7 +172,7 @@ private fun BottomBar(
                 },
                 // Label is shown as text below; null avoids TalkBack reading it twice.
                 icon = { Icon(dest.icon, contentDescription = null) },
-                label = { Text(dest.label) },
+                label = { Text(stringResource(dest.labelRes)) },
             )
         }
     }

@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
@@ -39,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.carne.podcast.R
 import com.carne.podcast.data.remote.PodcastSearchResult
 import com.carne.podcast.data.remote.PodcastTheme
 import com.carne.podcast.ui.components.CarneEmptyState
@@ -64,7 +66,7 @@ fun SearchScreen(
             value = state.query,
             onValueChange = viewModel::onQueryChange,
             modifier = Modifier.fillMaxWidth().padding(CarneTheme.spacing.lg),
-            placeholder = { Text("Search podcasts or paste a feed URL") },
+            placeholder = { Text(stringResource(R.string.search_placeholder)) },
             leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -91,9 +93,9 @@ fun SearchScreen(
 
             state.error != null -> CarneEmptyState(
                 icon = Icons.Rounded.SearchOff,
-                title = "No luck there",
+                title = stringResource(R.string.search_no_luck_title),
                 message = state.error.orEmpty(),
-                actionLabel = "Try again",
+                actionLabel = stringResource(R.string.try_again),
                 onAction = viewModel::search,
             )
 
@@ -106,8 +108,8 @@ fun SearchScreen(
 
             else -> CarneEmptyState(
                 icon = Icons.Rounded.SearchOff,
-                title = "No matches",
-                message = "Spice up the spelling, or try another show.",
+                title = stringResource(R.string.search_no_matches_title),
+                message = stringResource(R.string.search_no_matches_message),
             )
         }
     }
@@ -126,7 +128,7 @@ private fun BrowseByTheme(
 ) {
     Column(Modifier.fillMaxSize()) {
         Text(
-            text = "Browse by theme",
+            text = stringResource(R.string.browse_by_theme),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(
                 start = CarneTheme.spacing.lg,
@@ -162,9 +164,11 @@ private fun BrowseByTheme(
 
             state.themeResults.isEmpty() -> CarneEmptyState(
                 icon = Icons.Rounded.SearchOff,
-                title = "Nothing to show",
-                message = "Couldn't load top shows for ${state.selectedTheme?.label.orEmpty()}. " +
-                    "Check your connection and try another theme. 🌶️",
+                title = stringResource(R.string.nothing_to_show_title),
+                message = stringResource(
+                    R.string.theme_load_error,
+                    state.selectedTheme?.label.orEmpty(),
+                ),
             )
 
             else -> LazyColumn(Modifier.fillMaxSize()) {
@@ -220,16 +224,19 @@ private fun PodcastResultRow(
             )
         }
         Spacer(Modifier.width(CarneTheme.spacing.sm))
+        val subscribedCd = stringResource(R.string.subscribed_to, result.title)
+        val subscribeCd = stringResource(R.string.subscribe_to, result.title)
         Button(
             onClick = onSubscribe,
             enabled = !subscribed,
             modifier = Modifier.semantics {
-                contentDescription =
-                    if (subscribed) "Subscribed to ${result.title}"
-                    else "Subscribe to ${result.title}"
+                contentDescription = if (subscribed) subscribedCd else subscribeCd
             },
         ) {
-            Text(if (subscribed) "Added" else "Subscribe")
+            Text(
+                if (subscribed) stringResource(R.string.subscribed_added)
+                else stringResource(R.string.subscribe)
+            )
         }
     }
 }
