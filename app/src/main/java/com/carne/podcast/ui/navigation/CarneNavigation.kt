@@ -14,6 +14,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -35,10 +36,20 @@ import com.carne.podcast.ui.screens.search.SearchScreen
 import com.carne.podcast.ui.screens.settings.SettingsScreen
 
 @Composable
-fun CarneRoot() {
+fun CarneRoot(
+    deepLinkFeedUrl: String? = null,
+    onDeepLinkConsumed: () -> Unit = {},
+) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
+
+    // Open the show page when launched from a "new episode" notification.
+    LaunchedEffect(deepLinkFeedUrl) {
+        val feedUrl = deepLinkFeedUrl ?: return@LaunchedEffect
+        navController.navigate(Routes.podcast(feedUrl)) { launchSingleTop = true }
+        onDeepLinkConsumed()
+    }
 
     val isPlayer = currentRoute == Routes.PLAYER
     val isTopLevel = TopLevelDestination.entries.any { it.route == currentRoute }

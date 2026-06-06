@@ -16,6 +16,16 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * A subscription plus the episodes that were newly published in the latest
+ * refresh, so callers can post one notification per podcast (named, grouped).
+ */
+data class NewEpisodeBatch(
+    val feedUrl: String,
+    val podcastTitle: String,
+    val episodes: List<EpisodeEntity>,
+)
+
 @Singleton
 class PodcastRepository @Inject constructor(
     private val podcastDao: PodcastDao,
@@ -100,14 +110,18 @@ class PodcastRepository @Inject constructor(
      * skipping a podcast's first-ever fetch so an initial subscribe doesn't
      * spam a notification for the whole back catalogue.
      */
-    suspend fun refreshSubscriptionsForNew(): List<EpisodeEntity> = withContext(Dispatchers.IO) {
+    suspend fun refreshSubscriptionsForNew(): List<NewEpisodeBatch> = withContext(Dispatchers.IO) {
         val subscriptions = getSubscriptionsOnce()
-        subscriptions.flatMap { podcast ->
+        subscriptions.mapNotNull { podcast ->
             val firstFetch = podcast.lastUpdated == 0L
-            runCatching { refreshFeed(podcast.feedUrl) }
+            val newEpisodes = runCatching { refreshFeed(podcast.feedUrl) }
                 .getOrDefault(emptyList())
                 .takeUnless { firstFetch }
                 ?: emptyList()
+            if (newEpisodes.isEmpty()) return@mapNotNull null
+            // Re-read so the notification shows the freshly-refreshed title.
+            val title = podcastDao.getPodcast(podcast.feedUrl)?.title ?: podcast.title
+            NewEpisodeBatch(podcast.feedUrl, title, newEpisodes)
         }
     }
 
