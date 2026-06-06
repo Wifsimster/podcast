@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Carne</string>
+    <string name="app_name">Ondes</string>
 
     <!-- Bottom navigation -->
     <string name="nav_home">Home</string>
@@ -41,7 +41,7 @@
 
     <!-- Home -->
     <string name="loading_podcasts">Loading your podcasts…</string>
-    <string name="home_welcome_title">Welcome to Carne 🌶️</string>
+    <string name="home_welcome_title">Welcome to Ondes</string>
     <string name="home_welcome_message">Subscribe to a few shows and your latest episodes will show up right here.</string>
     <string name="find_podcasts">Find podcasts</string>
     <string name="continue_listening">Continue listening</string>
@@ -154,7 +154,7 @@
     <string name="export_backup_title">Back up everything</string>
     <string name="export_backup_subtitle">Subscriptions, progress and settings to a file</string>
     <string name="import_backup_title">Restore from backup</string>
-    <string name="import_backup_subtitle">Bring back data from a Carne backup file</string>
+    <string name="import_backup_subtitle">Bring back data from an Ondes backup file</string>
     <string name="export_opml_done">Exported %1$d subscriptions</string>
     <string name="import_opml_done">Imported %1$d subscriptions</string>
     <string name="backup_done">Backup saved</string>

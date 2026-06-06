@@ -1,10 +1,7 @@
-# 🌶️ Carne — a modern Android podcast player
+# 📻 Ondes — a modern Android podcast player
 
-A clean, ad-free, tracker-free podcast player for Android. Built to install
-directly on your phone (sideload the APK — no Play Store, no account).
-
-Your favorite show, **[Silicon Carne](https://siliconcarne.substack.com/)** by
-Carlos Diaz, is pre-subscribed on first launch.
+A clean, ad-free, tracker-free podcast player for Android. Discover shows via
+search, paste any RSS feed, or import your OPML — then listen anywhere.
 
 ## Screenshots
 
@@ -87,13 +84,13 @@ app/src/main/java/com/carne/podcast/
 ├─ sync/        Periodic feed refresh worker + new-episode notifications
 ├─ ui/          Compose screens, theme, navigation, components
 ├─ di/          Hilt modules
-├─ CarneApp     Application — seeds Silicon Carne on first run
+├─ CarneApp     Application — WorkManager + notification channel setup
 └─ MainActivity
 ```
 
 ## Notes
 
-- Silicon Carne feed: `https://feed.ausha.co/vVW80F6lQwAm` (seeded in
-  `CarneApp.SILICON_CARNE_FEED`).
-- This is an independent player; it streams the publicly published RSS feed and
-  is not affiliated with the show.
+- Ondes is an independent player. It streams the publicly published RSS feeds
+  you subscribe to and is not affiliated with any podcast or publisher.
+- The internal package/applicationId remains `com.carne.podcast` for
+  historical reasons; the user-facing name is **Ondes**.

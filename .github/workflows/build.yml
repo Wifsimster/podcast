@@ -58,6 +58,32 @@ jobs:
           path: app/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
+      # Android App Bundle — the artifact uploaded to the Play Store. Signed
+      # with the upload key when the signing secrets are present; otherwise it
+      # falls back to the debug key and is suitable for inspection only, not
+      # for Play submission. Configure repo secrets KEYSTORE_BASE64 (the .jks
+      # base64-encoded), KEYSTORE_PASSWORD, KEY_ALIAS and KEY_PASSWORD.
+      - name: Build release AAB (App Bundle)
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "${{ github.workspace }}/upload-keystore.jks"
+            export KEYSTORE_FILE="${{ github.workspace }}/upload-keystore.jks"
+          else
+            echo "No KEYSTORE_BASE64 secret set — AAB will be debug-signed (not store-ready)."
+          fi
+          ./gradlew bundleRelease --stacktrace
+
+      - name: Upload release AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: carne-release-aab
+          path: app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+
       - name: Publish rolling release (main only)
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2

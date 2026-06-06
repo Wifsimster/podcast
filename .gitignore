@@ -11,9 +11,10 @@ captures/
 .externalNativeBuild/
 .cxx/
 
-# Keystores (keep out of VCS)
+# Keystores & signing secrets (keep out of VCS)
 *.jks
 *.keystore
+keystore.properties
 
 # OS
 .DS_Store

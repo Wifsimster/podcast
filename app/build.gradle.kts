@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +7,22 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
+
+// Release signing. The upload key is supplied either via a local, untracked
+// `keystore.properties` (developer machines — see keystore.properties.example)
+// or via environment variables (CI). Neither the keystore nor its passwords are
+// ever committed. When no upload key is configured we fall back to the debug
+// key so local and CI APK builds still produce an installable artifact — but a
+// Play-Store-bound AAB MUST be built with the real upload key.
+val keystorePropsFile = rootProject.file("keystore.properties")
+val keystoreProps = Properties().apply {
+    if (keystorePropsFile.exists()) keystorePropsFile.inputStream().use { load(it) }
+}
+fun signingValue(propKey: String, envKey: String): String? =
+    (keystoreProps.getProperty(propKey) ?: System.getenv(envKey))?.takeIf { it.isNotBlank() }
+
+val releaseStoreFile: String? = signingValue("storeFile", "KEYSTORE_FILE")
+val hasReleaseSigning: Boolean = releaseStoreFile != null
 
 // Single source of truth for the app version. `VERSION_NAME` lives in
 // gradle.properties and is bumped automatically by semantic-release on each
@@ -30,6 +48,17 @@ android {
         vectorDrawables { useSupportLibrary = true }
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(releaseStoreFile!!)
+                storePassword = signingValue("storePassword", "KEYSTORE_PASSWORD")
+                keyAlias = signingValue("keyAlias", "KEY_ALIAS")
+                keyPassword = signingValue("keyPassword", "KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -42,10 +71,14 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Sign release with the debug keystore so CI can produce an
-            // installable APK without managing secrets. Replace with a real
-            // keystore for store distribution.
-            signingConfig = signingConfigs.getByName("debug")
+            // Use the dedicated upload key when configured (keystore.properties
+            // or CI env vars); otherwise fall back to the debug key so local
+            // and CI APK builds still produce an installable artifact.
+            signingConfig = if (hasReleaseSigning) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 

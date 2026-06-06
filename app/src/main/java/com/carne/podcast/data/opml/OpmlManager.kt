@@ -34,7 +34,7 @@ class OpmlManager @Inject constructor(
 
         serializer.startTag(null, "head")
         serializer.startTag(null, "title")
-        serializer.text("Carne subscriptions")
+        serializer.text("Ondes subscriptions")
         serializer.endTag(null, "title")
         serializer.endTag(null, "head")
 

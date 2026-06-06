@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Backup & device-transfer rules for Android 12+ (API 31). Carne keeps all data
+  on-device (Room DB, DataStore settings, downloads), so we allow the full app
+  data set to be carried over by both cloud backup and device-to-device
+  transfer. Mirrors backup_rules.xml used on older API levels.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="root" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="root" path="." />
+    </device-transfer>
+</data-extraction-rules>
