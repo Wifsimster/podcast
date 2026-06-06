@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Carne</string>
+    <string name="app_name">Ondes</string>
 
     <!-- Navigation -->
     <string name="nav_home">Accueil</string>
@@ -41,7 +41,7 @@
 
     <!-- Accueil -->
     <string name="loading_podcasts">Chargement de vos podcasts…</string>
-    <string name="home_welcome_title">Bienvenue dans Carne 🌶️</string>
+    <string name="home_welcome_title">Bienvenue dans Ondes</string>
     <string name="home_welcome_message">Abonnez-vous à quelques émissions et vos derniers épisodes apparaîtront ici.</string>
     <string name="find_podcasts">Trouver des podcasts</string>
     <string name="continue_listening">Reprendre l\'écoute</string>
@@ -52,7 +52,7 @@
     <string name="library_empty_message">Abonnez-vous à des émissions et elles apparaîtront ici, prêtes quand vous l\'êtes. À table. 🌶️</string>
     <string name="browse_podcasts">Parcourir les podcasts</string>
     <string name="library_tab_podcasts">Podcasts</string>
-    <string name="library_version">🌶️ Carne v%1$s</string>
+    <string name="library_version">Ondes v%1$s</string>
     <string name="sort_library">Trier</string>
     <string name="sort_recent">Récemment mis à jour</string>
     <string name="sort_alphabetical">Alphabétique</string>
@@ -155,7 +155,7 @@
     <string name="export_backup_title">Tout sauvegarder</string>
     <string name="export_backup_subtitle">Abonnements, progression et réglages dans un fichier</string>
     <string name="import_backup_title">Restaurer une sauvegarde</string>
-    <string name="import_backup_subtitle">Restaurer les données depuis une sauvegarde Carne</string>
+    <string name="import_backup_subtitle">Restaurer les données depuis une sauvegarde Ondes</string>
     <string name="export_opml_done">%1$d abonnements exportés</string>
     <string name="import_opml_done">%1$d abonnements importés</string>
     <string name="backup_done">Sauvegarde enregistrée</string>

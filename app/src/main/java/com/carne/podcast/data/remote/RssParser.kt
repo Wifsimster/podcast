@@ -186,7 +186,7 @@ class RssParser @Inject constructor(
     }
 
     companion object {
-        private const val USER_AGENT = "Carne/1.0 (Android podcast app)"
+        private const val USER_AGENT = "Ondes/1.0 (Android podcast app)"
         private val DATE_FORMATS = listOf(
             "EEE, dd MMM yyyy HH:mm:ss Z",
             "EEE, dd MMM yyyy HH:mm:ss zzz",

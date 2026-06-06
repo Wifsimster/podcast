@@ -51,7 +51,7 @@ Legend: ✅ done · 🟡 partially done / needs action · ⬜ not started ·
 
 | # | Item | Status | Notes |
 |---|------|--------|-------|
-| 4.1 | App name (≤30 chars) | 🟡 | "Carne" — see §5 branding risk before locking it in. |
+| 4.1 | App name (≤30 chars) | ✅ | Renamed to **"Ondes"** (display name); see §5. |
 | 4.2 | Short description (≤80) + full description (≤4000) | ⬜ | Reuse README feature list. EN + FR (app is localized). |
 | 4.3 | **Hi-res icon 512×512 PNG** (32-bit, alpha) | ⬜ | App only ships adaptive/vector icons; export a 512² PNG for the listing. |
 | 4.4 | **Feature graphic 1024×500 PNG/JPG** | ⬜ | |
@@ -59,20 +59,25 @@ Legend: ✅ done · 🟡 partially done / needs action · ⬜ not started ·
 | 4.6 | (Optional) tablet / Android Auto / 7"+10" screenshots | ⬜ | App supports Android Auto — consider a car screenshot. |
 | 4.7 | Contact email + (optional) website | 🟡 | Email available; decide on a public support contact. |
 
-## 5. ⚠️ Branding / legal risk — read before submitting
+## 5. Branding / legal risk — ✅ resolved
 
-Carne is named after, themed around, and **pre-subscribes** the third-party
-podcast **"Silicon Carne"** by Carlos Diaz, with no affiliation (per the
-README). On Google Play this can trip the **Impersonation** and
-**Intellectual Property** policies (app name + auto-seeded show implying an
-official relationship).
+The app was previously named **"Carne"**, themed around, and **auto-subscribed**
+the third-party podcast **"Silicon Carne"** by Carlos Diaz with no affiliation —
+which risked tripping Google Play's **Impersonation** and **Intellectual
+Property** policies.
 
-**Options (pick one before publishing):**
-- ⬜ Obtain **written permission** from Carlos Diaz / Silicon Carne to use the
-  name & seed the feed, and add a clear "unofficial / fan-made" disclaimer.
-- ⬜ **Neutralize the branding**: rename the app to something generic, remove
-  the auto-seeded Silicon Carne feed (or make it just one suggestion among
-  many in the interest picker), and adjust store copy.
+**Mitigation applied in this branch:**
+- ✅ Renamed the user-facing app to **"Ondes"** (`app_name`, onboarding/home
+  copy, OPML export title, HTTP User-Agent).
+- ✅ Removed the first-launch auto-subscription of the Silicon Carne feed
+  (`CarneApp.bootstrapDefaultSubscription` and `SILICON_CARNE_FEED` deleted).
+  Users now add shows themselves via search / RSS / OPML.
+- ✅ Updated README to drop the Silicon Carne references.
+
+Note: the internal `applicationId`/package stays `com.carne.podcast` (not
+user-visible, generic word, not infringing) to avoid a permanent ID change and
+a large package refactor. Revisit only if you want a fully on-brand store URL
+**before** the first publish (the ID is immutable once published).
 
 This is the single most likely reason for a **rejection or takedown**, so
 resolve it deliberately.
