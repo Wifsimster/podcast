@@ -1,12 +1,16 @@
 package com.carne.podcast.ui.screens.queue
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.carne.podcast.R
+import com.carne.podcast.common.SnackbarController
 import com.carne.podcast.data.local.EpisodeEntity
 import com.carne.podcast.data.repository.PodcastRepository
 import com.carne.podcast.playback.PlaybackConnection
 import com.carne.podcast.playback.PlayerUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -15,8 +19,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class QueueViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val repository: PodcastRepository,
     private val connection: PlaybackConnection,
+    private val snackbar: SnackbarController,
 ) : ViewModel() {
 
     val queue: StateFlow<List<EpisodeEntity>> = repository.observeQueue()
@@ -42,7 +48,18 @@ class QueueViewModel @Inject constructor(
     }
 
     fun remove(episode: EpisodeEntity) {
-        viewModelScope.launch { repository.removeFromQueue(episode.id) }
+        // Snapshot the order first so "Undo" can re-insert at the same position.
+        val previousOrder = queue.value.map { it.id }
+        viewModelScope.launch {
+            repository.removeFromQueue(episode.id)
+            snackbar.show(
+                text = context.getString(R.string.removed_from_queue),
+                actionLabel = context.getString(R.string.undo),
+                onAction = {
+                    viewModelScope.launch { repository.setQueueOrder(previousOrder) }
+                },
+            )
+        }
     }
 
     fun clear() {

@@ -12,10 +12,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -59,6 +64,22 @@ fun CarneRoot(
     val playerViewModel: PlayerViewModel = hiltViewModel()
     val playerState by playerViewModel.playerState.collectAsStateWithLifecycle()
 
+    // A single shared snackbar host renders transient messages — including the
+    // "Undo" actions behind reversible deletes — from anywhere in the app.
+    val rootViewModel: CarneRootViewModel = hiltViewModel()
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(Unit) {
+        rootViewModel.snackbar.messages.collect { message ->
+            val result = snackbarHostState.showSnackbar(
+                message = message.text,
+                actionLabel = message.actionLabel,
+                duration = SnackbarDuration.Short,
+                withDismissAction = message.actionLabel == null,
+            )
+            if (result == SnackbarResult.ActionPerformed) message.onAction?.invoke()
+        }
+    }
+
     // Switch to the Search tab (used by empty-state "browse" CTAs), reusing the
     // same back-stack behaviour as a bottom-bar tap.
     val openSearch: () -> Unit = {
@@ -70,6 +91,7 @@ fun CarneRoot(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             AnimatedVisibility(visible = !isPlayer) {
                 Column {

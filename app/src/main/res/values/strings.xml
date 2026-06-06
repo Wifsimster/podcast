@@ -18,6 +18,12 @@
     <string name="refresh">Refresh</string>
     <string name="close">Close</string>
     <string name="cancel">Cancel</string>
+    <string name="undo">Undo</string>
+    <string name="download_deleted">Download deleted</string>
+    <string name="removed_from_queue">Removed from queue</string>
+    <string name="unsubscribed">Unsubscribed</string>
+    <string name="clear_queue_title">Clear queue?</string>
+    <string name="clear_queue_message">This removes every episode from your queue.</string>
 
     <!-- Episode row -->
     <string name="played">Played</string>

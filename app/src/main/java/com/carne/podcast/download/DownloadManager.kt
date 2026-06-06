@@ -7,6 +7,8 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.carne.podcast.R
+import com.carne.podcast.common.SnackbarController
 import com.carne.podcast.data.local.DownloadState
 import com.carne.podcast.data.repository.PodcastRepository
 import com.carne.podcast.data.settings.SettingsRepository
@@ -23,6 +25,7 @@ import javax.inject.Singleton
 class DownloadManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val repository: PodcastRepository,
+    private val snackbar: SnackbarController,
     settingsRepository: SettingsRepository,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -51,9 +54,22 @@ class DownloadManager @Inject constructor(
         scope.launch { repository.updateDownload(episodeId, DownloadState.NONE, 0, null) }
     }
 
-    fun deleteDownload(episodeId: String, localPath: String?) {
+    /**
+     * Delete the local file for an episode. [showUndo] offers a re-download via a
+     * snackbar for user-initiated deletes; automatic delete-when-finished passes
+     * false so it stays silent.
+     */
+    fun deleteDownload(episodeId: String, localPath: String?, showUndo: Boolean = true) {
         localPath?.let { runCatching { File(it).delete() } }
         scope.launch { repository.updateDownload(episodeId, DownloadState.NONE, 0, null) }
+        if (showUndo) {
+            // Deleting only removes the local file; "Undo" simply re-downloads it.
+            snackbar.show(
+                text = context.getString(R.string.download_deleted),
+                actionLabel = context.getString(R.string.undo),
+                onAction = { enqueue(episodeId) },
+            )
+        }
     }
 
     private fun workName(episodeId: String) = "download_$episodeId"
