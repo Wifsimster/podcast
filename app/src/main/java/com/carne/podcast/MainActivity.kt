@@ -23,6 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.carne.podcast.data.settings.ThemeMode
 import com.carne.podcast.sync.NewEpisodeNotifier
 import com.carne.podcast.ui.navigation.CarneRoot
+import com.carne.podcast.ui.screens.onboarding.OnboardingScreen
 import com.carne.podcast.ui.theme.CarneTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -49,15 +50,21 @@ class MainActivity : ComponentActivity() {
                 ThemeMode.LIGHT -> false
                 ThemeMode.DARK -> true
             }
+            val showOnboarding by mainViewModel.showOnboarding.collectAsStateWithLifecycle()
             CarneTheme(darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    CarneRoot(
-                        deepLinkFeedUrl = pendingFeedUrl,
-                        onDeepLinkConsumed = { pendingFeedUrl = null },
-                    )
+                    when (showOnboarding) {
+                        // null = preference still loading; show nothing briefly.
+                        null -> Unit
+                        true -> OnboardingScreen()
+                        false -> CarneRoot(
+                            deepLinkFeedUrl = pendingFeedUrl,
+                            onDeepLinkConsumed = { pendingFeedUrl = null },
+                        )
+                    }
                 }
             }
         }

@@ -12,6 +12,7 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.carne.podcast.data.local.EpisodeEntity
+import com.carne.podcast.data.repository.PodcastRepository
 import com.carne.podcast.data.settings.CarneSettings
 import com.carne.podcast.data.settings.SettingsRepository
 import com.google.common.util.concurrent.ListenableFuture
@@ -49,6 +50,7 @@ data class PlayerUiState(
 class PlaybackConnection @Inject constructor(
     @ApplicationContext private val context: Context,
     private val settingsRepository: SettingsRepository,
+    private val repository: PodcastRepository,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val _state = MutableStateFlow(PlayerUiState())
@@ -137,8 +139,17 @@ class PlaybackConnection @Inject constructor(
 
         c.setMediaItems(items, /* startIndex = */ 0, episode.positionMs.coerceAtLeast(0))
         c.playbackParameters = PlaybackParameters(settings.defaultSpeed)
+        applySpeedFor(episode.feedUrl)
         c.prepare()
         c.play()
+    }
+
+    /** Resolve the per-podcast speed override (falling back to the global default). */
+    private fun applySpeedFor(feedUrl: String) {
+        scope.launch {
+            val speed = repository.getPodcastOnce(feedUrl)?.overrideSpeed ?: settings.defaultSpeed
+            controller?.playbackParameters = PlaybackParameters(speed)
+        }
     }
 
     /**
@@ -155,6 +166,7 @@ class PlaybackConnection @Inject constructor(
         val items = queue.drop(startIndex).map(::mediaItemFor)
         c.setMediaItems(items, /* startIndex = */ 0, start.positionMs.coerceAtLeast(0))
         c.playbackParameters = PlaybackParameters(settings.defaultSpeed)
+        applySpeedFor(start.feedUrl)
         c.prepare()
         c.play()
     }

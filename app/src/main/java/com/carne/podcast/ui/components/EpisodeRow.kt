@@ -36,7 +36,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
@@ -72,6 +74,30 @@ fun EpisodeRow(
     val playOrPauseLabel = stringResource(R.string.play_or_pause_episode)
     val playingLabel = stringResource(R.string.playing)
     val pausedLabel = stringResource(R.string.paused)
+
+    // Surface the long-press menu actions to TalkBack via the item's actions menu,
+    // so screen-reader and motor-impaired users can reach them too (#10).
+    val markLabel = stringResource(
+        if (episode.isFinished) R.string.mark_as_unplayed else R.string.mark_as_played,
+    )
+    val playNextLabel = stringResource(R.string.play_next)
+    val addToQueueLabel = stringResource(R.string.add_to_queue)
+    val downloadLabel = stringResource(R.string.download)
+    val deleteDownloadLabel = stringResource(R.string.delete_download)
+    val rowActions = buildList {
+        add(CustomAccessibilityAction(markLabel) { onTogglePlayed(); true })
+        if (onPlayNext != null) add(CustomAccessibilityAction(playNextLabel) { onPlayNext(); true })
+        if (onAddToQueue != null) {
+            add(CustomAccessibilityAction(addToQueueLabel) { onAddToQueue(); true })
+        }
+        when (episode.downloadState) {
+            DownloadState.DOWNLOADED ->
+                add(CustomAccessibilityAction(deleteDownloadLabel) { onDeleteDownload(); true })
+            DownloadState.DOWNLOADING, DownloadState.QUEUED -> Unit
+            else -> add(CustomAccessibilityAction(downloadLabel) { onDownload(); true })
+        }
+    }
+
     Box(modifier) {
         Row(
             modifier = Modifier
@@ -80,6 +106,7 @@ fun EpisodeRow(
                     onClick = onClick,
                     onLongClick = { menuExpanded = true },
                 )
+                .semantics { customActions = rowActions }
                 .padding(horizontal = CarneTheme.spacing.lg, vertical = CarneTheme.spacing.md),
             verticalAlignment = Alignment.Top,
         ) {
@@ -91,7 +118,7 @@ fun EpisodeRow(
             )
             Spacer(Modifier.width(CarneTheme.spacing.md))
         }
-        Column(Modifier.weight(1f)) {
+        Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
             Text(
                 text = episode.title,
                 style = MaterialTheme.typography.titleSmall,

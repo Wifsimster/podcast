@@ -22,17 +22,18 @@ Carlos Diaz, is pre-subscribed on first launch.
 - 🚗 **Android Auto** — browse Continue listening / Subscriptions / Downloads and play hands-free in the car
 - ⏯️ Play / pause, **configurable skip intervals**, scrub
 - ▶️ **Auto-play the next episode** — continuous playback through your list
-- ⏩ **Variable speed** (0.8×–3×), remembered as your default
+- ⏩ **Variable speed** (0.8×–3×), remembered as your default, with **per-podcast speed** overrides
 - 🤫 **Skip silence** & **volume boost** for clearer speech over road/train noise
 - 🔖 **Chapters** — tap to jump (Podcasting 2.0 `podcast:chapters`)
 - 📝 **Rich show notes** — formatted HTML with tappable links & `mm:ss` timestamps that seek
 - 😴 **Sleep timer** — fixed durations or **stop at end of episode**
 - 💾 **Offline downloads** (WorkManager — survives app being closed), optional **Wi-Fi-only** and **auto-delete when finished**
-- 🔄 **Background refresh + new-episode notifications** for your subscriptions
+- 🔄 **Background refresh + new-episode notifications** for your subscriptions, with optional **per-podcast auto-download**
 - 🔖 **Resume where you left off** — playback positions saved per episode
 - ✅ Auto mark-as-played, "Continue listening" on the home screen
-- 🔍 **Discover** podcasts (iTunes search) or paste any RSS feed URL
-- 📚 Subscriptions library with pull-to-refresh
+- 🔍 **Discover** podcasts (iTunes search) or paste any RSS feed URL, with a first-run **interest picker**
+- 📚 Subscriptions library with pull-to-refresh, plus **filter episodes** within a show
+- ♿ **Accessibility** — merged TalkBack list items with custom actions for every episode operation
 - 🧾 **Up-Next queue** — a persistent, reorderable play queue ("Play next" / "Add to queue")
 - 💼 **Own your data** — OPML import/export and a full local backup/restore (subscriptions, progress & settings), all on-device
 - 🌍 **Localized** — English & French (`fr`)

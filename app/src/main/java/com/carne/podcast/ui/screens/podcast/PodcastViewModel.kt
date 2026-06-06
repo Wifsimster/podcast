@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -36,11 +37,21 @@ class PodcastViewModel @Inject constructor(
     val episodes: StateFlow<List<EpisodeEntity>> = repository.observeEpisodes(feedUrl)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    private val _query = MutableStateFlow("")
+    val query = _query.asStateFlow()
+
+    /** Episodes filtered by the title search box (#10). */
+    val filteredEpisodes: StateFlow<List<EpisodeEntity>> = combine(episodes, _query) { list, q ->
+        if (q.isBlank()) list else list.filter { it.title.contains(q.trim(), ignoreCase = true) }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val playerState: StateFlow<PlayerUiState> = connection.state
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PlayerUiState())
 
     private val _refreshing = MutableStateFlow(false)
     val refreshing = _refreshing.asStateFlow()
+
+    fun onQueryChange(value: String) { _query.value = value }
 
     init { refresh() }
 
@@ -83,5 +94,14 @@ class PodcastViewModel @Inject constructor(
 
     fun addToQueue(episode: EpisodeEntity) {
         viewModelScope.launch { repository.addToQueueEnd(episode.id) }
+    }
+
+    /** Per-podcast playback speed; null restores the global default (#7). */
+    fun setSpeed(speed: Float?) {
+        viewModelScope.launch { repository.setPodcastSpeed(feedUrl, speed) }
+    }
+
+    fun setAutoDownload(enabled: Boolean) {
+        viewModelScope.launch { repository.setPodcastAutoDownload(feedUrl, enabled) }
     }
 }

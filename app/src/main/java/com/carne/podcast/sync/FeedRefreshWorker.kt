@@ -6,6 +6,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.carne.podcast.data.repository.PodcastRepository
 import com.carne.podcast.data.settings.SettingsRepository
+import com.carne.podcast.download.DownloadManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
@@ -20,6 +21,7 @@ class FeedRefreshWorker @AssistedInject constructor(
     @Assisted params: WorkerParameters,
     private val repository: PodcastRepository,
     private val settingsRepository: SettingsRepository,
+    private val downloadManager: DownloadManager,
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
@@ -28,6 +30,13 @@ class FeedRefreshWorker @AssistedInject constructor(
 
         return try {
             val newEpisodes = repository.refreshSubscriptionsForNew()
+            // Auto-download fresh episodes for subscriptions that opted in
+            // (DownloadManager already honours the Wi-Fi-only constraint).
+            newEpisodes.forEach { batch ->
+                if (repository.getPodcastOnce(batch.feedUrl)?.autoDownload == true) {
+                    batch.episodes.forEach { downloadManager.enqueue(it.id) }
+                }
+            }
             if (settings.newEpisodeNotifications) {
                 NewEpisodeNotifier.notify(appContext, batches = newEpisodes)
             }
