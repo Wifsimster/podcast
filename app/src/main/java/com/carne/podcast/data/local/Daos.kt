@@ -25,6 +25,12 @@ interface PodcastDao {
     @Query("UPDATE podcasts SET subscribed = :subscribed WHERE feedUrl = :feedUrl")
     suspend fun setSubscribed(feedUrl: String, subscribed: Boolean)
 
+    @Query("UPDATE podcasts SET overrideSpeed = :speed WHERE feedUrl = :feedUrl")
+    suspend fun setOverrideSpeed(feedUrl: String, speed: Float?)
+
+    @Query("UPDATE podcasts SET autoDownload = :enabled WHERE feedUrl = :feedUrl")
+    suspend fun setAutoDownload(feedUrl: String, enabled: Boolean)
+
     @Query("DELETE FROM podcasts WHERE feedUrl = :feedUrl")
     suspend fun delete(feedUrl: String)
 

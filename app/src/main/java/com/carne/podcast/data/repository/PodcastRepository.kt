@@ -50,6 +50,14 @@ class PodcastRepository @Inject constructor(
     fun observeDownloaded(): Flow<List<EpisodeEntity>> = episodeDao.observeDownloaded()
 
     suspend fun getEpisode(id: String): EpisodeEntity? = episodeDao.getEpisode(id)
+    suspend fun getPodcastOnce(feedUrl: String): PodcastEntity? = podcastDao.getPodcast(feedUrl)
+
+    /** Per-podcast playback-speed override (null clears it, falling back to global). */
+    suspend fun setPodcastSpeed(feedUrl: String, speed: Float?) =
+        podcastDao.setOverrideSpeed(feedUrl, speed)
+
+    suspend fun setPodcastAutoDownload(feedUrl: String, enabled: Boolean) =
+        podcastDao.setAutoDownload(feedUrl, enabled)
 
     // --- one-shot snapshots, used to build the Android Auto browse tree ---
     suspend fun getSubscriptionsOnce(): List<PodcastEntity> = observeSubscriptions().first()

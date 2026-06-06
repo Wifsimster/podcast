@@ -33,6 +33,7 @@ data class CarneSettings(
     val newEpisodeNotifications: Boolean = true,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,
+    val onboardingDone: Boolean = false,
 )
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "carne_settings")
@@ -59,6 +60,7 @@ class SettingsRepository @Inject constructor(
         val NEW_EPISODE_NOTIFS = booleanPreferencesKey("new_episode_notifications")
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
+        val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
     }
 
     val settings: Flow<CarneSettings> = context.dataStore.data.map { p ->
@@ -77,6 +79,7 @@ class SettingsRepository @Inject constructor(
             themeMode = p[Keys.THEME_MODE]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
                 ?: defaults.themeMode,
             dynamicColor = p[Keys.DYNAMIC_COLOR] ?: defaults.dynamicColor,
+            onboardingDone = p[Keys.ONBOARDING_DONE] ?: defaults.onboardingDone,
         )
     }
 
@@ -93,6 +96,7 @@ class SettingsRepository @Inject constructor(
         edit { it[Keys.NEW_EPISODE_NOTIFS] = value }
     suspend fun setThemeMode(value: ThemeMode) = edit { it[Keys.THEME_MODE] = value.name }
     suspend fun setDynamicColor(value: Boolean) = edit { it[Keys.DYNAMIC_COLOR] = value }
+    suspend fun setOnboardingDone(value: Boolean) = edit { it[Keys.ONBOARDING_DONE] = value }
 
     /** A one-shot snapshot of the current settings, for backup. */
     suspend fun snapshot(): CarneSettings = settings.first()

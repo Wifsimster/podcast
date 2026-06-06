@@ -1,6 +1,8 @@
 package com.carne.podcast.ui.screens.podcast
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,19 +17,29 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -55,6 +67,8 @@ fun PodcastScreen(
 ) {
     val podcast by viewModel.podcast.collectAsStateWithLifecycle()
     val episodes by viewModel.episodes.collectAsStateWithLifecycle()
+    val filteredEpisodes by viewModel.filteredEpisodes.collectAsStateWithLifecycle()
+    val query by viewModel.query.collectAsStateWithLifecycle()
     val playerState by viewModel.playerState.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -156,6 +170,14 @@ fun PodcastScreen(
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
+                    if (podcast?.subscribed == true) {
+                        Spacer(Modifier.height(8.dp))
+                        SpeedRow(current = podcast?.overrideSpeed, onSelect = viewModel::setSpeed)
+                        AutoDownloadRow(
+                            checked = podcast?.autoDownload == true,
+                            onChange = viewModel::setAutoDownload,
+                        )
+                    }
                     Spacer(Modifier.height(8.dp))
                     Text(
                         pluralStringResource(
@@ -164,11 +186,22 @@ fun PodcastScreen(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )
+                    if (episodes.size > 8) {
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = query,
+                            onValueChange = viewModel::onQueryChange,
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text(stringResource(R.string.filter_episodes)) },
+                            leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
+                            singleLine = true,
+                        )
+                    }
                 }
                 HorizontalDivider()
             }
 
-            items(episodes, key = { it.id }) { episode ->
+            items(filteredEpisodes, key = { it.id }) { episode ->
                 EpisodeRow(
                     episode = episode,
                     isCurrent = playerState.currentEpisodeId == episode.id,
@@ -188,3 +221,55 @@ fun PodcastScreen(
         }
     }
 }
+
+@Composable
+private fun SpeedRow(current: Float?, onSelect: (Float?) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    val options: List<Float?> = listOf(null, 0.8f, 1.0f, 1.2f, 1.5f, 1.8f, 2.0f, 3.0f)
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(stringResource(R.string.playback_speed), style = MaterialTheme.typography.bodyLarge)
+        Box {
+            TextButton(onClick = { open = true }) { Text(speedLabel(current)) }
+            DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+                options.forEach { speed ->
+                    DropdownMenuItem(
+                        text = { Text(speedLabel(speed)) },
+                        onClick = { onSelect(speed); open = false },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AutoDownloadRow(checked: Boolean, onChange: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onChange(!checked) }
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            stringResource(R.string.auto_download_title),
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        Spacer(Modifier.width(12.dp))
+        Switch(checked = checked, onCheckedChange = onChange)
+    }
+}
+
+@Composable
+private fun speedLabel(speed: Float?): String =
+    if (speed == null) {
+        stringResource(R.string.speed_default)
+    } else {
+        val n = if (speed == speed.toLong().toFloat()) speed.toLong().toString() else speed.toString()
+        "${n}×"
+    }

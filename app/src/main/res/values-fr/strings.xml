@@ -157,4 +157,22 @@
     </plurals>
     <string name="notif_more">+%1$d de plus</string>
     <string name="notif_podcast_line">%1$s : %2$s</string>
+
+    <!-- Profil de lecture par podcast (#7) -->
+    <string name="playback_speed">Vitesse de lecture</string>
+    <string name="speed_default">Par défaut</string>
+
+    <!-- Téléchargement auto (#8) -->
+    <string name="auto_download_title">Télécharger auto les nouveaux épisodes</string>
+    <string name="auto_download_subtitle">Garder les nouveaux épisodes prêts hors ligne</string>
+
+    <!-- Filtre d\'épisodes (#10) -->
+    <string name="filter_episodes">Filtrer les épisodes</string>
+    <string name="delete_download">Supprimer le téléchargement</string>
+
+    <!-- Onboarding (#9) -->
+    <string name="onboarding_title">Pimentons votre fil 🌶️</string>
+    <string name="onboarding_subtitle">Choisissez quelques thèmes et on vous propose de bonnes émissions.</string>
+    <string name="onboarding_continue">Continuer</string>
+    <string name="skip">Passer</string>
 </resources>

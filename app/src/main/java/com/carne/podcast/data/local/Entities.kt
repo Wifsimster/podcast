@@ -1,5 +1,6 @@
 package com.carne.podcast.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -16,6 +17,10 @@ data class PodcastEntity(
     val link: String,
     val subscribed: Boolean = true,
     val lastUpdated: Long = 0L,
+    /** Per-podcast playback speed override; null = use the global default. */
+    val overrideSpeed: Float? = null,
+    /** Auto-download newly published episodes for this subscription. */
+    @ColumnInfo(defaultValue = "0") val autoDownload: Boolean = false,
 )
 
 @Entity(
