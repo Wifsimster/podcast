@@ -52,7 +52,6 @@
     <string name="library_empty_message">Abonnez-vous à des émissions et elles apparaîtront ici, prêtes quand vous l\'êtes. À table. 🌶️</string>
     <string name="browse_podcasts">Parcourir les podcasts</string>
     <string name="library_tab_podcasts">Podcasts</string>
-    <string name="library_version">Ondes v%1$s</string>
     <string name="sort_library">Trier</string>
     <string name="sort_recent">Récemment mis à jour</string>
     <string name="sort_alphabetical">Alphabétique</string>

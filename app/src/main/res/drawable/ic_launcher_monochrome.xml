@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Carne brand mark: a chili pepper (🌶️), centred within the adaptive-icon
-     safe zone. This is the colour foreground; a separate monochrome layer
-     drives themed icons. -->
+<!-- Single-colour chili silhouette for Android 13+ themed icons; the system
+     applies its own tint, so the fill colour here is just a placeholder. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
@@ -14,23 +13,14 @@
         android:scaleX="0.86"
         android:scaleY="0.86"
         android:translateY="1">
-        <!-- Stem -->
         <path
-            android:strokeColor="#43B05C"
-            android:strokeWidth="5.5"
+            android:strokeColor="#FF000000"
+            android:strokeWidth="6"
             android:strokeLineCap="round"
             android:strokeLineJoin="round"
             android:pathData="M52,33 C50,26 52,21 58,20 C56,24 58,28 62,29" />
-        <!-- Pepper body -->
         <path
-            android:fillColor="#FFFFFFFF"
+            android:fillColor="#FF000000"
             android:pathData="M60,32 C73,37 79,53 73,68 C68,80 57,87 47,85 C41,84 38,79 40,74 C42,70 47,70 51,69 C61,66 66,55 63,44 C61,38 58,35 56,33 Z" />
-        <!-- Subtle highlight -->
-        <path
-            android:strokeColor="#B4231C"
-            android:strokeAlpha="0.18"
-            android:strokeWidth="2.5"
-            android:strokeLineCap="round"
-            android:pathData="M64,44 C67,50 66,58 62,64" />
     </group>
 </vector>

@@ -52,7 +52,6 @@
     <string name="library_empty_message">Subscribe to shows and they\'ll live here, ready when you are. Let\'s get cooking. 🌶️</string>
     <string name="browse_podcasts">Browse podcasts</string>
     <string name="library_tab_podcasts">Podcasts</string>
-    <string name="library_version">Ondes v%1$s</string>
     <string name="sort_library">Sort</string>
     <string name="sort_recent">Recently updated</string>
     <string name="sort_alphabetical">Alphabetical</string>
