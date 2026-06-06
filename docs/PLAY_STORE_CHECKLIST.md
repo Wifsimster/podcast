@@ -27,7 +27,7 @@ Legend: ✅ done · 🟡 partially done / needs action · ⬜ not started ·
 
 | # | Item | Status | Notes |
 |---|------|--------|-------|
-| 2.1 | Developer account ($25 one-time) + **identity verification** | ⬜ | Personal accounts now require identity verification before publishing. |
+| 2.1 | Developer account ($25 one-time) + **identity verification** | ⬜ | Registering as an **organization** (see business details below) → requires a **D-U-N-S number** (free via Dun & Bradstreet, ~1–4 weeks) and matching legal name/address. Plan this lead time. A sole trader may alternatively register as an individual. |
 | 2.2 | **Closed testing** before production | ⬜ | New personal accounts must run a closed test with **≥12 testers for ≥14 days** to unlock production. Plan this lead time. |
 | 2.3 | Create the app, choose **Music & Audio** category, free | ⬜ | |
 | 2.4 | Enroll in **Play App Signing** | ⬜ | Recommended — Google manages the app signing key; you keep the upload key. |
@@ -52,12 +52,12 @@ Legend: ✅ done · 🟡 partially done / needs action · ⬜ not started ·
 | # | Item | Status | Notes |
 |---|------|--------|-------|
 | 4.1 | App name (≤30 chars) | ✅ | Renamed to **"Ondes"** (display name); see §5. |
-| 4.2 | Short description (≤80) + full description (≤4000) | ⬜ | Reuse README feature list. EN + FR (app is localized). |
+| 4.2 | Short description (≤80) + full description (≤4000) | 🟡 | Drafted EN + FR in [`docs/store-listing.md`](store-listing.md) (§8). |
 | 4.3 | **Hi-res icon 512×512 PNG** (32-bit, alpha) | ⬜ | App only ships adaptive/vector icons; export a 512² PNG for the listing. |
 | 4.4 | **Feature graphic 1024×500 PNG/JPG** | ⬜ | |
 | 4.5 | Phone screenshots (2–8, min 320px, 16:9 or 9:16) | 🟡 | 5 exist in `docs/screenshots/`. Verify resolution meets Play minimums. |
 | 4.6 | (Optional) tablet / Android Auto / 7"+10" screenshots | ⬜ | App supports Android Auto — consider a car screenshot. |
-| 4.7 | Contact email + (optional) website | 🟡 | Email available; decide on a public support contact. |
+| 4.7 | Contact email + (optional) website | ✅ | battistella@proton.me (see §7). |
 
 ## 5. Branding / legal risk — ✅ resolved
 
@@ -79,34 +79,47 @@ user-visible, generic word, not infringing) to avoid a permanent ID change and
 a large package refactor. Revisit only if you want a fully on-brand store URL
 **before** the first publish (the ID is immutable once published).
 
-This is the single most likely reason for a **rejection or takedown**, so
-resolve it deliberately.
+## 6. Privacy policy
 
-## 6. Privacy policy (draft to host)
+A ready-to-host policy lives at [`docs/privacy-policy.md`](privacy-policy.md).
+Publish it at a stable public URL (GitHub Pages works) and paste that URL into
+the Play Console "Privacy policy" field. It already references the legal entity
+and contact below.
 
-A minimal, accurate policy to publish at a public URL (e.g. GitHub Pages):
+## 7. Business / developer details
 
-> **Carne — Privacy Policy.** Carne does not collect, store, or share any
-> personal data. There are no accounts, no analytics, and no advertising. All
-> your data — subscriptions, listening progress, downloads, and settings — is
-> stored only on your device and is never transmitted to us. The app makes
-> direct network requests to: (1) podcast RSS feeds you subscribe to, (2) the
-> Apple iTunes Search API when you search for shows, and (3) episode media/
-> artwork hosts, in order to stream and download content. These third parties
-> receive standard request metadata (such as your IP address) as required to
-> deliver the content; Carne sends them no additional personal information.
-> Uninstalling the app removes all locally stored data. Contact: <email>.
+Used for the Play Console organization account, the privacy policy, and the
+app's legal/imprint info.
+
+| Field | Value |
+|-------|-------|
+| Legal entity (SIREN) | 103 406 161 |
+| Establishment (SIRET) | 103 406 161 00010 |
+| Activity | Programmation informatique |
+| Registered | 2026-04-07, Artigues-près-Bordeaux (France) |
+| Contact email | battistella@proton.me |
+| Country | France |
+
+D-U-N-S: request one matching this legal name/address before starting the
+organization account verification (2.1).
+
+## 8. Store listing copy
+
+Ready-to-paste EN + FR titles, short and full descriptions live at
+[`docs/store-listing.md`](store-listing.md).
 
 ---
 
 ## Suggested order of operations
 
-1. Resolve the **branding decision** (§5) — it may change the app name/assets.
-2. Generate the **upload keystore** (1.2) and add **CI secrets** (1.3).
-3. **Host the privacy policy** (3.1 / §6).
-4. Build the **signed AAB** via CI, smoke-test on a device (1.4, 1.6, 1.9).
-5. Create the Play Console app, fill **all policy forms** (§3) and the
-   **store listing** (§4).
-6. Run **closed testing** (≥12 testers / 14 days) (2.2), watch the
+1. ✅ Branding resolved (§5) — app renamed to "Ondes", Silicon Carne seed removed.
+2. Request a **D-U-N-S number** for the legal entity (§7) — longest lead time.
+3. Generate the **upload keystore** (1.2) and add **CI secrets** (1.3).
+4. **Host the privacy policy** (3.1 / §6 / `docs/privacy-policy.md`).
+5. Build the **signed AAB** via CI, smoke-test on a device (1.4, 1.6, 1.9).
+6. Create the **developer account** + identity verification (2.1).
+7. Create the Play Console app, fill **all policy forms** (§3) and the
+   **store listing** (§4 / §8).
+8. Run **closed testing** (≥12 testers / 14 days) (2.2), watch the
    **pre-launch report**.
-7. Submit for **production** review.
+9. Submit for **production** review.
