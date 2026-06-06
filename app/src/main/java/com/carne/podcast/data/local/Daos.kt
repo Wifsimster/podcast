@@ -65,6 +65,10 @@ interface EpisodeDao {
     @Query("UPDATE episodes SET downloadState = :state, downloadProgress = :progress, localFilePath = :path WHERE id = :id")
     suspend fun updateDownload(id: String, state: DownloadState, progress: Int, path: String?)
 
+    /** Backfill a chapters URL for an already-known episode that didn't have one. */
+    @Query("UPDATE episodes SET chaptersUrl = :url WHERE id = :id AND chaptersUrl IS NULL")
+    suspend fun updateChaptersUrl(id: String, url: String)
+
     /** Continue listening: started-but-not-finished, most recently touched first. */
     @Query(
         """

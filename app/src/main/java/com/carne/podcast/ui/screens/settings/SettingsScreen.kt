@@ -102,6 +102,18 @@ fun SettingsScreen(
             checked = settings.autoAdvance,
             onCheckedChange = viewModel::setAutoAdvance,
         )
+        SwitchRow(
+            title = stringResource(R.string.skip_silence_title),
+            subtitle = stringResource(R.string.skip_silence_subtitle),
+            checked = settings.skipSilence,
+            onCheckedChange = viewModel::setSkipSilence,
+        )
+        SwitchRow(
+            title = stringResource(R.string.boost_volume_title),
+            subtitle = stringResource(R.string.boost_volume_subtitle),
+            checked = settings.boostVolume,
+            onCheckedChange = viewModel::setBoostVolume,
+        )
 
         SectionHeader(stringResource(R.string.settings_downloads))
         SwitchRow(

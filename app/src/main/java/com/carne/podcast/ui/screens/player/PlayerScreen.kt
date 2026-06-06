@@ -11,11 +11,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bedtime
+import androidx.compose.material.icons.rounded.FormatListBulleted
 import androidx.compose.material.icons.rounded.Forward30
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Pause
@@ -24,9 +29,12 @@ import androidx.compose.material.icons.rounded.Replay10
 import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -48,12 +56,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.carne.podcast.R
+import com.carne.podcast.data.local.Chapter
+import com.carne.podcast.ui.components.HtmlText
 import com.carne.podcast.ui.components.PlayPauseIcon
 import com.carne.podcast.ui.components.PodcastArtwork
 import com.carne.podcast.ui.components.formatTime
-import com.carne.podcast.ui.components.stripHtml
 import com.carne.podcast.ui.theme.CarneTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerScreen(
     onClose: () -> Unit,
@@ -63,6 +73,8 @@ fun PlayerScreen(
     val episode by viewModel.currentEpisode.collectAsStateWithLifecycle()
     val sleepRemaining by viewModel.sleepRemainingMs.collectAsStateWithLifecycle()
     val sleepEndOfEpisode by viewModel.sleepEndOfEpisode.collectAsStateWithLifecycle()
+    val chapters by viewModel.chapters.collectAsStateWithLifecycle()
+    var showChapters by remember { mutableStateOf(false) }
 
     // Local scrub state so the thumb tracks the finger without fighting ticks.
     var scrubbing by remember { mutableStateOf(false) }
@@ -195,12 +207,32 @@ fun PlayerScreen(
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
             SpeedControl(current = state.speed, onSelect = viewModel::setSpeed)
+            if (chapters.isNotEmpty()) {
+                TextButton(onClick = { showChapters = true }) {
+                    Icon(
+                        Icons.Rounded.FormatListBulleted,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                    )
+                    Spacer(Modifier.size(6.dp))
+                    Text(stringResource(R.string.chapters))
+                }
+            }
             SleepControl(
                 remainingMs = sleepRemaining,
                 endOfEpisode = sleepEndOfEpisode,
                 onSelect = { viewModel.startSleepTimer(it) },
                 onSelectEndOfEpisode = viewModel::startSleepAtEpisodeEnd,
                 onCancel = viewModel::cancelSleepTimer,
+            )
+        }
+
+        if (showChapters) {
+            ChaptersSheet(
+                chapters = chapters,
+                currentPositionMs = state.positionMs,
+                onSelect = { viewModel.seekTo(it); showChapters = false },
+                onDismiss = { showChapters = false },
             )
         }
 
@@ -212,10 +244,11 @@ fun PlayerScreen(
                 modifier = Modifier.semantics { heading() },
             )
             Spacer(Modifier.height(CarneTheme.spacing.sm))
-            Text(
-                text = stripHtml(desc),
+            HtmlText(
+                html = desc,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                onTimestampClick = viewModel::seekTo,
             )
         }
         Spacer(Modifier.height(CarneTheme.spacing.xxl))
@@ -284,6 +317,64 @@ private fun SleepControl(
                 )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChaptersSheet(
+    chapters: List<Chapter>,
+    currentPositionMs: Long,
+    onSelect: (Long) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    // The active chapter is the last one whose start time is at or before now.
+    val currentIndex = chapters.indexOfLast { it.startMs <= currentPositionMs }
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Text(
+            text = stringResource(R.string.chapters),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(
+                start = CarneTheme.spacing.xl,
+                end = CarneTheme.spacing.xl,
+                bottom = CarneTheme.spacing.sm,
+            ),
+        )
+        LazyColumn(Modifier.fillMaxWidth()) {
+            itemsIndexed(chapters) { index, chapter ->
+                val isCurrent = index == currentIndex
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onSelect(chapter.startMs) }
+                        .padding(
+                            horizontal = CarneTheme.spacing.xl,
+                            vertical = CarneTheme.spacing.md,
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = formatTime(chapter.startMs),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isCurrent) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.width(64.dp),
+                    )
+                    Spacer(Modifier.width(CarneTheme.spacing.sm))
+                    Text(
+                        text = chapter.title,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (isCurrent) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                HorizontalDivider(Modifier.padding(start = CarneTheme.spacing.xl))
+            }
+        }
+        Spacer(Modifier.height(CarneTheme.spacing.xl))
     }
 }
 

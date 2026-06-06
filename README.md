@@ -13,6 +13,9 @@ Carlos Diaz, is pre-subscribed on first launch.
 - ⏯️ Play / pause, **configurable skip intervals**, scrub
 - ▶️ **Auto-play the next episode** — continuous playback through your list
 - ⏩ **Variable speed** (0.8×–3×), remembered as your default
+- 🤫 **Skip silence** & **volume boost** for clearer speech over road/train noise
+- 🔖 **Chapters** — tap to jump (Podcasting 2.0 `podcast:chapters`)
+- 📝 **Rich show notes** — formatted HTML with tappable links & `mm:ss` timestamps that seek
 - 😴 **Sleep timer** — fixed durations or **stop at end of episode**
 - 💾 **Offline downloads** (WorkManager — survives app being closed), optional **Wi-Fi-only** and **auto-delete when finished**
 - 🔄 **Background refresh + new-episode notifications** for your subscriptions

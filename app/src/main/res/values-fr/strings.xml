@@ -85,6 +85,8 @@
     <string name="end_of_episode">Fin de l\'épisode</string>
     <string name="cancel_timer">Annuler le minuteur</string>
     <string name="open_player">Ouvrir le lecteur</string>
+    <string name="chapters">Chapitres</string>
+    <string name="chapter">Chapitre</string>
 
     <!-- Réglages -->
     <string name="settings_title">Réglages</string>
@@ -94,6 +96,10 @@
     <string name="seconds_short">%1$d s</string>
     <string name="autoplay_next_title">Lecture auto de l\'épisode suivant</string>
     <string name="autoplay_next_subtitle">Enchaîner sur l\'épisode suivant à la fin</string>
+    <string name="skip_silence_title">Sauter les silences</string>
+    <string name="skip_silence_subtitle">Couper les blancs pour une écoute plus rapide</string>
+    <string name="boost_volume_title">Amplifier le volume</string>
+    <string name="boost_volume_subtitle">Des voix plus fortes et claires malgré le bruit</string>
     <string name="settings_downloads">Téléchargements</string>
     <string name="wifi_only_title">Télécharger en Wi-Fi uniquement</string>
     <string name="wifi_only_subtitle">Ne jamais utiliser les données mobiles pour les téléchargements</string>
