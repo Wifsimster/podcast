@@ -6,6 +6,16 @@ directly on your phone (sideload the APK — no Play Store, no account).
 Your favorite show, **[Silicon Carne](https://siliconcarne.substack.com/)** by
 Carlos Diaz, is pre-subscribed on first launch.
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/01-home.png" width="19%" alt="Home — latest episodes" />
+  <img src="docs/screenshots/02-player.png" width="19%" alt="Now playing — full-screen player" />
+  <img src="docs/screenshots/03-library.png" width="19%" alt="Subscriptions library" />
+  <img src="docs/screenshots/04-search.png" width="19%" alt="Discover — browse by theme" />
+  <img src="docs/screenshots/05-settings.png" width="19%" alt="Settings" />
+</p>
+
 ## Features
 
 - 🎧 **Background playback** with lock-screen & notification controls (Media3 / ExoPlayer + MediaSession)
