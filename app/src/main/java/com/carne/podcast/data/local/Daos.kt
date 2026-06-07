@@ -86,7 +86,10 @@ interface EpisodeDao {
     @Query("UPDATE episodes SET positionMs = :positionMs, durationMs = CASE WHEN :durationMs > 0 THEN :durationMs ELSE durationMs END WHERE id = :id")
     suspend fun updatePosition(id: String, positionMs: Long, durationMs: Long)
 
-    @Query("UPDATE episodes SET isPlayed = :played, isFinished = :played, positionMs = CASE WHEN :played THEN 0 ELSE positionMs END WHERE id = :id")
+    // Reset the resume position either way: marking played finishes it, marking
+    // unplayed clears progress so an in-progress episode truly starts fresh (and
+    // leaves the "Continue listening" row).
+    @Query("UPDATE episodes SET isPlayed = :played, isFinished = :played, positionMs = 0 WHERE id = :id")
     suspend fun setPlayed(id: String, played: Boolean)
 
     @Query("UPDATE episodes SET downloadState = :state, downloadProgress = :progress, localFilePath = :path WHERE id = :id")
