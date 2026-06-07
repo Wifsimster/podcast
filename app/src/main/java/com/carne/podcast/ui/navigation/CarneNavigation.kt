@@ -104,6 +104,7 @@ fun CarneRoot(
                         onPlayPause = playerViewModel::playPause,
                         onForward = playerViewModel::seekForward,
                         onClick = { navController.navigate(Routes.PLAYER) },
+                        onStop = playerViewModel::stop,
                         modifier = if (isTopLevel) Modifier else Modifier.navigationBarsPadding(),
                     )
                     if (isTopLevel) {
