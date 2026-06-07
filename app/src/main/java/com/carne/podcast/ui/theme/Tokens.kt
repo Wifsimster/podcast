@@ -8,22 +8,23 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * Carne's design-system tokens — the named values the UI is built from.
+ * Ondes' design-system tokens — the named values the UI is built from.
  *
  * Material 3 (via [CarneTheme]) still owns the base color scheme, typography and
- * motion. These three token sets layer the *brand* on top: a fixed chili-red
- * identity, a consistent spacing rhythm and a shared shape vocabulary, so a
- * change here ripples to every screen instead of being re-tuned per call site.
+ * motion. These three token sets layer the *brand* on top: a fixed indigo
+ * identity (matching the launcher icon), a consistent spacing rhythm and a shared
+ * shape vocabulary, so a change here ripples to every screen instead of being
+ * re-tuned per call site.
  */
 
 /** Brand-specific semantic colors that Material's [androidx.compose.material3.ColorScheme] doesn't model. */
 @Immutable
 data class CarneColors(
-    /** The chili-red signature accent — stays constant even under Material You dynamic color. */
+    /** The indigo signature accent — stays constant even under Material You dynamic color. */
     val brand: Color,
     val onBrand: Color,
-    /** Warm secondary accent used for highlights. */
-    val ember: Color,
+    /** Cool secondary accent used for highlights (e.g. the download spinner). */
+    val accent: Color,
     /** "Played / finished" affordance tint. */
     val played: Color,
     /** "Downloaded for offline" affordance tint. */

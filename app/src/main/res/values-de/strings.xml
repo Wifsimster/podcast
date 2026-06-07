@@ -49,7 +49,7 @@
 
     <!-- Library -->
     <string name="library_empty_title">Deine Bibliothek ist leer</string>
-    <string name="library_empty_message">Abonniere Sendungen und sie erscheinen hier, bereit wenn du es bist. 🌶️</string>
+    <string name="library_empty_message">Abonniere Sendungen und sie erscheinen hier, bereit wenn du es bist. 🎧</string>
     <string name="browse_podcasts">Podcasts entdecken</string>
     <string name="library_tab_podcasts">Podcasts</string>
     <string name="sort_library">Sortieren</string>
@@ -74,13 +74,13 @@
     <string name="search_no_matches_message">Prüfe die Schreibweise oder versuche eine andere Sendung.</string>
     <string name="browse_by_theme">Nach Thema entdecken</string>
     <string name="nothing_to_show_title">Nichts anzuzeigen</string>
-    <string name="theme_load_error">Top-Sendungen für %1$s konnten nicht geladen werden. Prüfe deine Verbindung und versuche ein anderes Thema. 🌶️</string>
+    <string name="theme_load_error">Top-Sendungen für %1$s konnten nicht geladen werden. Prüfe deine Verbindung und versuche ein anderes Thema. 🎧</string>
     <string name="subscribe_to">%1$s abonnieren</string>
     <string name="subscribed_to">%1$s abonniert</string>
     <string name="search_error_none">Keine Podcasts gefunden</string>
     <string name="search_subscribed">Abonniert</string>
     <string name="search_feed_error">Dieser Feed konnte nicht geladen werden</string>
-    <string name="search_failed">Suche fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut. 🌶️</string>
+    <string name="search_failed">Suche fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut. 🎧</string>
     <string name="clear_search">Suche löschen</string>
 
     <!-- Podcast detail -->
@@ -196,7 +196,7 @@
     <string name="delete_download">Download löschen</string>
 
     <!-- Onboarding (#9) -->
-    <string name="onboarding_title">Bring Schwung in deinen Feed 🌶️</string>
+    <string name="onboarding_title">Stimm deinen Feed ab 🎧</string>
     <string name="onboarding_subtitle">Wähle ein paar Themen und wir stellen dir tolle Sendungen zusammen.</string>
     <string name="onboarding_continue">Weiter</string>
     <string name="skip">Überspringen</string>

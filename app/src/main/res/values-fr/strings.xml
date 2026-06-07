@@ -49,7 +49,7 @@
 
     <!-- Bibliothèque -->
     <string name="library_empty_title">Votre bibliothèque est vide</string>
-    <string name="library_empty_message">Abonnez-vous à des émissions et elles apparaîtront ici, prêtes quand vous l\'êtes. À table. 🌶️</string>
+    <string name="library_empty_message">Abonnez-vous à des émissions et elles apparaîtront ici, prêtes quand vous l\'êtes. À vos écoutes. 🎧</string>
     <string name="browse_podcasts">Parcourir les podcasts</string>
     <string name="library_tab_podcasts">Podcasts</string>
     <string name="sort_library">Trier</string>
@@ -74,13 +74,13 @@
     <string name="search_no_matches_message">Vérifiez l\'orthographe ou essayez une autre émission.</string>
     <string name="browse_by_theme">Parcourir par thème</string>
     <string name="nothing_to_show_title">Rien à afficher</string>
-    <string name="theme_load_error">Impossible de charger les meilleures émissions pour %1$s. Vérifiez votre connexion et essayez un autre thème. 🌶️</string>
+    <string name="theme_load_error">Impossible de charger les meilleures émissions pour %1$s. Vérifiez votre connexion et essayez un autre thème. 🎧</string>
     <string name="subscribe_to">S\'abonner à %1$s</string>
     <string name="subscribed_to">Abonné à %1$s</string>
     <string name="search_error_none">Aucun podcast trouvé</string>
     <string name="search_subscribed">Abonné</string>
     <string name="search_feed_error">Impossible de charger ce flux</string>
-    <string name="search_failed">Recherche impossible. Vérifiez votre connexion et réessayez. 🌶️</string>
+    <string name="search_failed">Recherche impossible. Vérifiez votre connexion et réessayez. 🎧</string>
     <string name="clear_search">Effacer la recherche</string>
 
     <!-- Détail du podcast -->
@@ -196,7 +196,7 @@
     <string name="delete_download">Supprimer le téléchargement</string>
 
     <!-- Onboarding (#9) -->
-    <string name="onboarding_title">Pimentons votre fil 🌶️</string>
+    <string name="onboarding_title">Réglons vos ondes 🎧</string>
     <string name="onboarding_subtitle">Choisissez quelques thèmes et on vous propose de bonnes émissions.</string>
     <string name="onboarding_continue">Continuer</string>
     <string name="skip">Passer</string>
