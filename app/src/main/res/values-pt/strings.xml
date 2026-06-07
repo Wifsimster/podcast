@@ -1,0 +1,203 @@
+<resources>
+    <string name="app_name">Ondes</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_home">Início</string>
+    <string name="nav_queue">Fila</string>
+    <string name="nav_library">Biblioteca</string>
+    <string name="nav_search">Buscar</string>
+    <string name="nav_downloads">Downloads</string>
+    <string name="nav_settings">Configurações</string>
+
+    <!-- Common -->
+    <string name="subscribe">Inscrever-se</string>
+    <string name="subscribed_added">Adicionado</string>
+    <string name="subscribed_label">Inscrito</string>
+    <string name="not_subscribed">Não inscrito</string>
+    <string name="back">Voltar</string>
+    <string name="refresh">Atualizar</string>
+    <string name="close">Fechar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="undo">Desfazer</string>
+    <string name="download_deleted">Download excluído</string>
+    <string name="removed_from_queue">Removido da fila</string>
+    <string name="unsubscribed">Inscrição cancelada</string>
+    <string name="clear_queue_title">Limpar a fila?</string>
+    <string name="clear_queue_message">Isso remove todos os episódios da sua fila.</string>
+
+    <!-- Episode row -->
+    <string name="played">Reproduzido</string>
+    <string name="mark_as_played">Marcar como reproduzido</string>
+    <string name="mark_as_unplayed">Marcar como não reproduzido</string>
+    <string name="play_or_pause_episode">Reproduzir ou pausar o episódio</string>
+    <string name="playing">Reproduzindo</string>
+    <string name="paused">Pausado</string>
+    <string name="download">Baixar</string>
+    <string name="downloading">Baixando</string>
+    <string name="downloaded_tap_delete">Baixado — toque para excluir</string>
+    <string name="play_next">Reproduzir a seguir</string>
+    <string name="add_to_queue">Adicionar à fila</string>
+    <string name="time_left">%1$s restante</string>
+
+    <!-- Home -->
+    <string name="loading_podcasts">Carregando seus podcasts…</string>
+    <string name="home_welcome_title">Boas-vindas ao Ondes</string>
+    <string name="home_welcome_message">Inscreva-se em alguns programas e seus episódios mais recentes aparecerão aqui.</string>
+    <string name="find_podcasts">Encontrar podcasts</string>
+    <string name="continue_listening">Continuar ouvindo</string>
+    <string name="latest_episodes">Episódios recentes</string>
+
+    <!-- Library -->
+    <string name="library_empty_title">Sua biblioteca está vazia</string>
+    <string name="library_empty_message">Inscreva-se em programas e eles ficarão aqui, prontos quando você quiser. 🌶️</string>
+    <string name="browse_podcasts">Explorar podcasts</string>
+    <string name="library_tab_podcasts">Podcasts</string>
+    <string name="sort_library">Ordenar</string>
+    <string name="sort_recent">Atualizados recentemente</string>
+    <string name="sort_alphabetical">Alfabética</string>
+    <string name="sort_unplayed">Não reproduzidos primeiro</string>
+    <string name="filter_unplayed_only">Apenas não reproduzidos</string>
+    <plurals name="unplayed_count">
+        <item quantity="one">%1$d não reproduzido</item>
+        <item quantity="other">%1$d não reproduzidos</item>
+    </plurals>
+
+    <!-- Downloads -->
+    <string name="downloads_empty_title">Nada baixado ainda</string>
+    <string name="downloads_empty_message">Toque no ícone de download em qualquer episódio para mantê-lo offline — perfeito para voos e áreas sem sinal.</string>
+
+    <!-- Search / Discover -->
+    <string name="search_placeholder">Busque podcasts ou cole a URL de um feed</string>
+    <string name="search_no_luck_title">Sem sorte</string>
+    <string name="try_again">Tentar novamente</string>
+    <string name="search_no_matches_title">Nenhum resultado</string>
+    <string name="search_no_matches_message">Revise a ortografia ou tente outro programa.</string>
+    <string name="browse_by_theme">Explorar por tema</string>
+    <string name="nothing_to_show_title">Nada para mostrar</string>
+    <string name="theme_load_error">Não foi possível carregar os principais programas de %1$s. Verifique sua conexão e tente outro tema. 🌶️</string>
+    <string name="subscribe_to">Inscrever-se em %1$s</string>
+    <string name="subscribed_to">Inscrito em %1$s</string>
+    <string name="search_error_none">Nenhum podcast encontrado</string>
+    <string name="search_subscribed">Inscrito</string>
+    <string name="search_feed_error">Não foi possível carregar esse feed</string>
+    <string name="search_failed">Não foi possível pesquisar. Verifique sua conexão e tente novamente. 🌶️</string>
+    <string name="clear_search">Limpar busca</string>
+
+    <!-- Podcast detail -->
+    <string name="artwork_for">Capa de %1$s</string>
+    <string name="show_notes">Notas do episódio</string>
+    <string name="show_more">Ver mais</string>
+    <string name="show_less">Ver menos</string>
+    <plurals name="episodes_count">
+        <item quantity="one">%1$d episódio</item>
+        <item quantity="other">%1$d episódios</item>
+    </plurals>
+
+    <!-- Player -->
+    <string name="now_playing">Tocando agora</string>
+    <string name="back_10">Voltar 10 segundos</string>
+    <string name="forward_30">Avançar 30 segundos</string>
+    <string name="skip_back_secs">Voltar %1$d segundos</string>
+    <string name="skip_forward_secs">Avançar %1$d segundos</string>
+    <string name="previous_episode">Episódio anterior</string>
+    <string name="next_episode">Próximo episódio</string>
+    <string name="play_or_pause">Reproduzir ou pausar</string>
+    <string name="playback_position">Posição de reprodução</string>
+    <string name="position_of_duration">%1$s de %2$s</string>
+    <string name="sleep">Timer</string>
+    <string name="sleep_end">Fim</string>
+    <string name="minutes_short">%1$d min</string>
+    <string name="end_of_episode">Fim do episódio</string>
+    <string name="cancel_timer">Cancelar timer</string>
+    <string name="open_player">Abrir player</string>
+    <string name="chapters">Capítulos</string>
+    <string name="chapter">Capítulo</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Configurações</string>
+    <string name="settings_playback">Reprodução</string>
+    <string name="skip_back">Voltar</string>
+    <string name="skip_forward">Avançar</string>
+    <string name="seconds_short">%1$ds</string>
+    <string name="autoplay_next_title">Reproduzir próximo automaticamente</string>
+    <string name="autoplay_next_subtitle">Continuar no próximo episódio quando um terminar</string>
+    <string name="skip_silence_title">Pular silêncios</string>
+    <string name="skip_silence_subtitle">Corta trechos em silêncio para uma fala mais rápida</string>
+    <string name="boost_volume_title">Aumentar volume</string>
+    <string name="boost_volume_subtitle">Vozes mais altas e claras sobre o ruído de fundo</string>
+    <string name="settings_downloads">Downloads</string>
+    <string name="wifi_only_title">Baixar somente em Wi-Fi</string>
+    <string name="wifi_only_subtitle">Nunca usar dados móveis para downloads</string>
+    <string name="delete_finished_title">Excluir ao terminar</string>
+    <string name="delete_finished_subtitle">Remover o download quando você termina um episódio</string>
+    <string name="settings_updates">Atualizações</string>
+    <string name="bg_refresh_title">Atualização em segundo plano</string>
+    <string name="bg_refresh_subtitle">Verificar novos episódios periodicamente</string>
+    <string name="new_episode_notifs_title">Notificações de novos episódios</string>
+    <string name="new_episode_notifs_subtitle">Avisar quando minhas inscrições publicarem novos episódios</string>
+    <string name="settings_appearance">Aparência</string>
+    <string name="theme">Tema</string>
+    <string name="dynamic_color_title">Cor dinâmica</string>
+    <string name="dynamic_color_subtitle">Colore o app conforme seu papel de parede (Android 12+)</string>
+    <string name="settings_about">Sobre</string>
+    <string name="version">Versão</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Escuro</string>
+
+    <!-- Settings: data ownership (OPML / backup) -->
+    <string name="settings_data">Seus dados</string>
+    <string name="export_opml_title">Exportar inscrições (OPML)</string>
+    <string name="export_opml_subtitle">Salve seus feeds em um arquivo OPML padrão</string>
+    <string name="import_opml_title">Importar inscrições (OPML)</string>
+    <string name="import_opml_subtitle">Inscreva-se em massa a partir de um arquivo OPML</string>
+    <string name="export_backup_title">Fazer backup de tudo</string>
+    <string name="export_backup_subtitle">Inscrições, progresso e configurações em um arquivo</string>
+    <string name="import_backup_title">Restaurar backup</string>
+    <string name="import_backup_subtitle">Recupere os dados de um arquivo de backup do Ondes</string>
+    <string name="export_opml_done">%1$d inscrições exportadas</string>
+    <string name="import_opml_done">%1$d inscrições importadas</string>
+    <string name="backup_done">Backup salvo</string>
+    <string name="restore_done">Restauração concluída</string>
+    <string name="data_op_failed">Algo deu errado</string>
+
+    <!-- Queue -->
+    <string name="queue_title">Fila</string>
+    <string name="queue_empty_title">Sua fila está vazia</string>
+    <string name="queue_empty_message">Adicione episódios com “Reproduzir a seguir” ou “Adicionar à fila” e eles entrarão na fila aqui.</string>
+    <string name="queue_clear">Limpar</string>
+    <string name="move_up">Mover para cima</string>
+    <string name="move_down">Mover para baixo</string>
+    <string name="remove">Remover</string>
+
+    <!-- Android Auto / browse tree -->
+    <string name="subscriptions_title">Inscrições</string>
+
+    <!-- New-episode notifications -->
+    <string name="notif_channel_name">Novos episódios</string>
+    <string name="notif_channel_desc">Avisos quando suas inscrições publicam novos episódios</string>
+    <plurals name="new_episodes_count">
+        <item quantity="one">%1$d novo episódio</item>
+        <item quantity="other">%1$d novos episódios</item>
+    </plurals>
+    <string name="notif_more">+%1$d mais</string>
+    <string name="notif_podcast_line">%1$s: %2$s</string>
+
+    <!-- Per-podcast playback profile (#7) -->
+    <string name="playback_speed">Velocidade de reprodução</string>
+    <string name="speed_default">Padrão</string>
+
+    <!-- Auto-download (#8) -->
+    <string name="auto_download_title">Baixar novos episódios automaticamente</string>
+    <string name="auto_download_subtitle">Mantenha novos episódios prontos offline</string>
+
+    <!-- Episode filter (#10) -->
+    <string name="filter_episodes">Filtrar episódios</string>
+    <string name="delete_download">Excluir download</string>
+
+    <!-- Onboarding (#9) -->
+    <string name="onboarding_title">Dê um tempero ao seu feed 🌶️</string>
+    <string name="onboarding_subtitle">Escolha alguns temas e vamos selecionar ótimos programas para você.</string>
+    <string name="onboarding_continue">Continuar</string>
+    <string name="skip">Pular</string>
+</resources>
