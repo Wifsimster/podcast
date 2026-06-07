@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Forward30
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -40,6 +41,7 @@ fun MiniPlayer(
     onPlayPause: () -> Unit,
     onForward: () -> Unit,
     onClick: () -> Unit,
+    onStop: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (state.currentEpisodeId == null) return
@@ -109,6 +111,13 @@ fun MiniPlayer(
                         Icons.Rounded.Forward30,
                         contentDescription = stringResource(R.string.forward_30),
                         modifier = Modifier.size(26.dp),
+                    )
+                }
+                IconButton(onClick = onStop) {
+                    Icon(
+                        Icons.Rounded.Close,
+                        contentDescription = stringResource(R.string.stop_playback),
+                        modifier = Modifier.size(22.dp),
                     )
                 }
             }

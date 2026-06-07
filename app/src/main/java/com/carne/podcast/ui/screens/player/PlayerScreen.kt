@@ -37,6 +37,7 @@ import androidx.compose.material.icons.rounded.Replay5
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material.icons.rounded.Speed
+import androidx.compose.material.icons.rounded.Stop
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -122,7 +123,15 @@ fun PlayerScreen(
                 text = stringResource(R.string.now_playing),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
             )
+            // Stop clears the episode and dismisses both the player and mini-player.
+            IconButton(onClick = { viewModel.stop(); onClose() }) {
+                Icon(
+                    Icons.Rounded.Stop,
+                    contentDescription = stringResource(R.string.stop_playback),
+                )
+            }
         }
 
         Spacer(Modifier.height(CarneTheme.spacing.sm))

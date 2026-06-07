@@ -110,6 +110,7 @@
     <string name="end_of_episode">Fim do episódio</string>
     <string name="cancel_timer">Cancelar timer</string>
     <string name="open_player">Abrir player</string>
+    <string name="stop_playback">Parar a reprodução</string>
     <string name="chapters">Capítulos</string>
     <string name="chapter">Capítulo</string>
 

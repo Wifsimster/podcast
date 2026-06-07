@@ -73,6 +73,9 @@ class PlayerViewModel @Inject constructor(
     fun previous() = connection.previous()
     fun setSpeed(speed: Float) = connection.setSpeed(speed)
 
+    /** Stop playback and clear the loaded episode (dismisses the mini-player). */
+    fun stop() = connection.stop()
+
     /** Start playback from the given position in the user's queue. */
     fun playQueueItem(index: Int) = connection.playFromQueue(queue.value, index)
 
