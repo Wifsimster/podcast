@@ -16,53 +16,80 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-private val ChiliRed = Color(0xFFB4231C)
-private val ChiliRedLight = Color(0xFFFF5944)
-private val Ember = Color(0xFFE8A13C)
-private val EmberLight = Color(0xFFFFC46B)
+// Ondes brand palette — indigo "airwaves", matching the launcher-icon gradient
+// (#3D5AFE → #1A237E). Cool sky/teal accents keep the whole system on a single
+// blue-green family so the logo and the in-app theme read as one identity.
+private val Indigo = Color(0xFF3D5AFE)        // logo primary — the signature accent
+private val IndigoBright = Color(0xFF93A3FF)  // lighter indigo for dark surfaces
+private val SkyLight = Color(0xFF0091EA)      // cool accent on light backgrounds
+private val SkyDark = Color(0xFF6FD6FF)       // cool accent on dark backgrounds
+private val TealLight = Color(0xFF00897B)     // "downloaded / saved offline"
+private val TealDark = Color(0xFF4DD0C4)
 
 private val DarkColors = darkColorScheme(
-    primary = ChiliRedLight,
-    onPrimary = Color(0xFF3A0A06),
-    secondary = Ember,
-    background = Color(0xFF161210),
-    surface = Color(0xFF1F1A18),
-    surfaceVariant = Color(0xFF332B28),
+    primary = IndigoBright,
+    onPrimary = Color(0xFF0A1A6B),
+    primaryContainer = Color(0xFF283593),
+    onPrimaryContainer = Color(0xFFDEE1FF),
+    secondary = SkyDark,
+    onSecondary = Color(0xFF00344A),
+    secondaryContainer = Color(0xFF004C6B),
+    onSecondaryContainer = Color(0xFFC5E7FF),
+    tertiary = TealDark,
+    onTertiary = Color(0xFF00382F),
+    background = Color(0xFF111319),
+    onBackground = Color(0xFFE4E2EC),
+    surface = Color(0xFF15171F),
+    onSurface = Color(0xFFE4E2EC),
+    surfaceVariant = Color(0xFF2A2E45),
+    onSurfaceVariant = Color(0xFFC6C8DA),
+    outline = Color(0xFF8F909F),
 )
 
 private val LightColors = lightColorScheme(
-    primary = ChiliRed,
+    primary = Indigo,
     onPrimary = Color.White,
-    secondary = Color(0xFFB06A12),
-    background = Color(0xFFFFF8F6),
+    primaryContainer = Color(0xFFDEE1FF),
+    onPrimaryContainer = Color(0xFF00105C),
+    secondary = SkyLight,
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFFCDE6FF),
+    onSecondaryContainer = Color(0xFF001E30),
+    tertiary = TealLight,
+    onTertiary = Color.White,
+    background = Color(0xFFFAFBFF),
+    onBackground = Color(0xFF1A1B22),
     surface = Color(0xFFFFFFFF),
-    surfaceVariant = Color(0xFFF3E7E3),
+    onSurface = Color(0xFF1A1B22),
+    surfaceVariant = Color(0xFFE3E5F4),
+    onSurfaceVariant = Color(0xFF45475A),
+    outline = Color(0xFF767889),
 )
 
 private val DarkCarneColors = CarneColors(
-    brand = ChiliRedLight,
-    onBrand = Color(0xFF3A0A06),
-    ember = EmberLight,
-    played = ChiliRedLight,
-    downloaded = EmberLight,
+    brand = IndigoBright,
+    onBrand = Color(0xFF0A1A6B),
+    accent = SkyDark,
+    played = IndigoBright,
+    downloaded = TealDark,
 )
 
 private val LightCarneColors = CarneColors(
-    brand = ChiliRed,
+    brand = Indigo,
     onBrand = Color.White,
-    ember = Ember,
-    played = ChiliRed,
-    downloaded = Color(0xFFB06A12),
+    accent = SkyLight,
+    played = Indigo,
+    downloaded = TealLight,
 )
 
 /**
- * Carne's theme entry point. Wraps [MaterialExpressiveTheme] — which supplies
+ * Ondes' theme entry point. Wraps [MaterialExpressiveTheme] — which supplies
  * the Material 3 Expressive spring-based [MotionScheme] and component defaults —
  * and provides the brand token layer ([CarneColors], [CarneSpacing], [CarneShapes])
  * on top.
  *
- * Material You dynamic color is kept on by default; the chili-red brand tokens
- * stay fixed so the identity reads through regardless of the device wallpaper.
+ * Material You dynamic color is kept on by default; the indigo brand tokens stay
+ * fixed so the identity matches the launcher icon regardless of the device wallpaper.
  */
 @Composable
 fun CarneTheme(
@@ -74,14 +101,14 @@ fun CarneTheme(
     val colorScheme: ColorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             // Keep Material You's wallpaper-derived palette, but pin the primary
-            // role to the chili-red brand so Material components (buttons, switches,
-            // the nav indicator) match the CarneColors brand tokens instead of
-            // showing a second, competing accent.
+            // role to the indigo brand so Material components (buttons, switches,
+            // the nav indicator) match the launcher icon instead of showing a
+            // second, competing accent.
             val dynamic = if (darkTheme) dynamicDarkColorScheme(context)
             else dynamicLightColorScheme(context)
             dynamic.copy(
-                primary = if (darkTheme) ChiliRedLight else ChiliRed,
-                onPrimary = if (darkTheme) Color(0xFF3A0A06) else Color.White,
+                primary = if (darkTheme) IndigoBright else Indigo,
+                onPrimary = if (darkTheme) Color(0xFF0A1A6B) else Color.White,
             )
         }
         darkTheme -> DarkColors
@@ -103,7 +130,7 @@ fun CarneTheme(
 }
 
 /**
- * Accessor for Carne tokens, mirroring how [MaterialTheme] exposes its subsystems
+ * Accessor for Ondes tokens, mirroring how [MaterialTheme] exposes its subsystems
  * (e.g. `CarneTheme.colors.brand`). A function and an object can share a name in
  * Kotlin, so `CarneTheme { }` and `CarneTheme.colors` coexist.
  */

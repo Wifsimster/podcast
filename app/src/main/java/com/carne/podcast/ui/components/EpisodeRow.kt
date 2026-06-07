@@ -266,7 +266,7 @@ private fun DownloadAffordance(
                 modifier = Modifier.semantics { contentDescription = downloadingLabel },
             ) {
                 LoadingIndicator(
-                    color = CarneTheme.colors.ember,
+                    color = CarneTheme.colors.accent,
                     modifier = Modifier.size(20.dp),
                 )
             }

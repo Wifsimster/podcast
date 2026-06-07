@@ -49,7 +49,7 @@
 
     <!-- Library -->
     <string name="library_empty_title">Sua biblioteca está vazia</string>
-    <string name="library_empty_message">Inscreva-se em programas e eles ficarão aqui, prontos quando você quiser. 🌶️</string>
+    <string name="library_empty_message">Inscreva-se em programas e eles ficarão aqui, prontos quando você quiser. 🎧</string>
     <string name="browse_podcasts">Explorar podcasts</string>
     <string name="library_tab_podcasts">Podcasts</string>
     <string name="sort_library">Ordenar</string>
@@ -74,13 +74,13 @@
     <string name="search_no_matches_message">Revise a ortografia ou tente outro programa.</string>
     <string name="browse_by_theme">Explorar por tema</string>
     <string name="nothing_to_show_title">Nada para mostrar</string>
-    <string name="theme_load_error">Não foi possível carregar os principais programas de %1$s. Verifique sua conexão e tente outro tema. 🌶️</string>
+    <string name="theme_load_error">Não foi possível carregar os principais programas de %1$s. Verifique sua conexão e tente outro tema. 🎧</string>
     <string name="subscribe_to">Inscrever-se em %1$s</string>
     <string name="subscribed_to">Inscrito em %1$s</string>
     <string name="search_error_none">Nenhum podcast encontrado</string>
     <string name="search_subscribed">Inscrito</string>
     <string name="search_feed_error">Não foi possível carregar esse feed</string>
-    <string name="search_failed">Não foi possível pesquisar. Verifique sua conexão e tente novamente. 🌶️</string>
+    <string name="search_failed">Não foi possível pesquisar. Verifique sua conexão e tente novamente. 🎧</string>
     <string name="clear_search">Limpar busca</string>
 
     <!-- Podcast detail -->
@@ -196,7 +196,7 @@
     <string name="delete_download">Excluir download</string>
 
     <!-- Onboarding (#9) -->
-    <string name="onboarding_title">Dê um tempero ao seu feed 🌶️</string>
+    <string name="onboarding_title">Vamos sintonizar seu feed 🎧</string>
     <string name="onboarding_subtitle">Escolha alguns temas e vamos selecionar ótimos programas para você.</string>
     <string name="onboarding_continue">Continuar</string>
     <string name="skip">Pular</string>

@@ -49,7 +49,7 @@
 
     <!-- Library -->
     <string name="library_empty_title">Your library\'s empty</string>
-    <string name="library_empty_message">Subscribe to shows and they\'ll live here, ready when you are. Let\'s get cooking. 🌶️</string>
+    <string name="library_empty_message">Subscribe to shows and they\'ll live here, ready when you are. Let\'s get listening. 🎧</string>
     <string name="browse_podcasts">Browse podcasts</string>
     <string name="library_tab_podcasts">Podcasts</string>
     <string name="sort_library">Sort</string>
@@ -74,13 +74,13 @@
     <string name="search_no_matches_message">Spice up the spelling, or try another show.</string>
     <string name="browse_by_theme">Browse by theme</string>
     <string name="nothing_to_show_title">Nothing to show</string>
-    <string name="theme_load_error">Couldn\'t load top shows for %1$s. Check your connection and try another theme. 🌶️</string>
+    <string name="theme_load_error">Couldn\'t load top shows for %1$s. Check your connection and try another theme. 🎧</string>
     <string name="subscribe_to">Subscribe to %1$s</string>
     <string name="subscribed_to">Subscribed to %1$s</string>
     <string name="search_error_none">No podcasts found</string>
     <string name="search_subscribed">Subscribed</string>
     <string name="search_feed_error">Couldn\'t load that feed</string>
-    <string name="search_failed">Couldn\'t search. Check your connection and try again. 🌶️</string>
+    <string name="search_failed">Couldn\'t search. Check your connection and try again. 🎧</string>
     <string name="clear_search">Clear search</string>
 
     <!-- Podcast detail -->
@@ -196,7 +196,7 @@
     <string name="delete_download">Delete download</string>
 
     <!-- Onboarding (#9) -->
-    <string name="onboarding_title">Let\'s spice up your feed 🌶️</string>
+    <string name="onboarding_title">Let\'s tune your feed 🎧</string>
     <string name="onboarding_subtitle">Pick a few topics and we\'ll line up some great shows for you.</string>
     <string name="onboarding_continue">Continue</string>
     <string name="skip">Skip</string>

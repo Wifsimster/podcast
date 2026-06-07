@@ -49,7 +49,7 @@
 
     <!-- Library -->
     <string name="library_empty_title">Tu biblioteca está vacía</string>
-    <string name="library_empty_message">Suscríbete a programas y aparecerán aquí, listos cuando quieras. 🌶️</string>
+    <string name="library_empty_message">Suscríbete a programas y aparecerán aquí, listos cuando quieras. 🎧</string>
     <string name="browse_podcasts">Explorar pódcasts</string>
     <string name="library_tab_podcasts">Pódcasts</string>
     <string name="sort_library">Ordenar</string>
@@ -74,13 +74,13 @@
     <string name="search_no_matches_message">Revisa la ortografía o prueba con otro programa.</string>
     <string name="browse_by_theme">Explorar por tema</string>
     <string name="nothing_to_show_title">Nada que mostrar</string>
-    <string name="theme_load_error">No se pudieron cargar los mejores programas de %1$s. Comprueba tu conexión y prueba con otro tema. 🌶️</string>
+    <string name="theme_load_error">No se pudieron cargar los mejores programas de %1$s. Comprueba tu conexión y prueba con otro tema. 🎧</string>
     <string name="subscribe_to">Suscribirse a %1$s</string>
     <string name="subscribed_to">Suscrito a %1$s</string>
     <string name="search_error_none">No se encontraron pódcasts</string>
     <string name="search_subscribed">Suscrito</string>
     <string name="search_feed_error">No se pudo cargar ese feed</string>
-    <string name="search_failed">No se pudo buscar. Comprueba tu conexión e inténtalo de nuevo. 🌶️</string>
+    <string name="search_failed">No se pudo buscar. Comprueba tu conexión e inténtalo de nuevo. 🎧</string>
     <string name="clear_search">Borrar búsqueda</string>
 
     <!-- Podcast detail -->
@@ -196,7 +196,7 @@
     <string name="delete_download">Eliminar descarga</string>
 
     <!-- Onboarding (#9) -->
-    <string name="onboarding_title">Demos sabor a tu feed 🌶️</string>
+    <string name="onboarding_title">Sintonicemos tu feed 🎧</string>
     <string name="onboarding_subtitle">Elige algunos temas y te propondremos programas estupendos.</string>
     <string name="onboarding_continue">Continuar</string>
     <string name="skip">Omitir</string>
