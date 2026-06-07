@@ -4,6 +4,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,12 +16,20 @@ import javax.inject.Singleton
 class PodcastSearchService @Inject constructor(
     private val client: OkHttpClient,
 ) {
+    /**
+     * iTunes storefront to query, derived once from the device locale's region
+     * (ISO 3166-1 alpha-2, lowercased) so Search/Discover are localized. Falls
+     * back to "us" when the device reports no region.
+     */
+    private val country: String =
+        Locale.getDefault().country.lowercase(Locale.ROOT).ifBlank { "us" }
     /** Free-text search by show name / author. */
     fun search(term: String): List<PodcastSearchResult> {
         if (term.isBlank()) return emptyList()
         val url = "https://itunes.apple.com/search".toHttpUrl().newBuilder()
             .addQueryParameter("media", "podcast")
             .addQueryParameter("entity", "podcast")
+            .addQueryParameter("country", country)
             .addQueryParameter("limit", "30")
             .addQueryParameter("term", term)
             .build()
@@ -37,7 +46,7 @@ class PodcastSearchService @Inject constructor(
      * a handful of the best shows per theme. Reads the genre chart for the most
      * popular collection ids, then resolves each to a subscribable feed URL.
      */
-    fun topPodcasts(genreId: Int, limit: Int = 3): List<PodcastSearchResult> {
+    fun topPodcasts(genreId: Int, limit: Int = 15): List<PodcastSearchResult> {
         val ids = chartIds(genreId, limit)
         if (ids.isEmpty()) return emptyList()
 
@@ -60,7 +69,7 @@ class PodcastSearchService @Inject constructor(
 
     /** Top collection ids for a genre, ranked, from the iTunes "top podcasts" chart. */
     private fun chartIds(genreId: Int, limit: Int): List<String> {
-        val url = "https://itunes.apple.com/us/rss/toppodcasts/limit=$limit/genre=$genreId/json"
+        val url = "https://itunes.apple.com/$country/rss/toppodcasts/limit=$limit/genre=$genreId/json"
         val feed = getJson(url)?.optJSONObject("feed") ?: return emptyList()
         val entries = feed.optJSONArray("entry") ?: return emptyList()
         val ids = ArrayList<String>(entries.length())

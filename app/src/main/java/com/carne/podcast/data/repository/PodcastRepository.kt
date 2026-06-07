@@ -188,7 +188,7 @@ class PodcastRepository @Inject constructor(
     }
 
     /** Top shows for a theme (iTunes genre id), to propose on the Discover screen. */
-    suspend fun topPodcasts(genreId: Int, limit: Int = 3): List<PodcastSearchResult> =
+    suspend fun topPodcasts(genreId: Int, limit: Int = 15): List<PodcastSearchResult> =
         withContext(Dispatchers.IO) {
             runCatching { searchService.topPodcasts(genreId, limit) }.getOrDefault(emptyList())
         }

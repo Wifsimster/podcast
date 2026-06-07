@@ -41,7 +41,7 @@ class OnboardingViewModel @Inject constructor(
         viewModelScope.launch {
             _busy.value = true
             themes.filter { it.genreId in _selected.value }.forEach { theme ->
-                repository.topPodcasts(theme.genreId, limit = 3).forEach { result ->
+                repository.topPodcasts(theme.genreId, limit = 15).forEach { result ->
                     runCatching { repository.subscribe(result.feedUrl) }
                 }
             }
