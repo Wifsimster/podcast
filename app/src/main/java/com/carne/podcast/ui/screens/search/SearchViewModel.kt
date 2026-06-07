@@ -116,7 +116,7 @@ class SearchViewModel @Inject constructor(
             themeResults = emptyList(),
         )
         viewModelScope.launch {
-            val top = repository.topPodcasts(theme.genreId, limit = 3)
+            val top = repository.topPodcasts(theme.genreId, limit = 15)
             // Ignore a stale response if the user has since tapped another chip.
             if (_state.value.selectedTheme != theme) return@launch
             _state.value = _state.value.copy(themeLoading = false, themeResults = top)
