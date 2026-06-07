@@ -92,6 +92,12 @@ android {
         // indicators) are still annotated experimental in material3 1.4.x.
         freeCompilerArgs += "-opt-in=androidx.compose.material3.ExperimentalMaterial3ExpressiveApi"
     }
+    androidResources {
+        // Generate a locales_config.xml from the values-* folders so the new
+        // languages appear in Android 13+'s per-app language picker. The default
+        // (unqualified) resources are English — declared in res/resources.properties.
+        generateLocaleConfig = true
+    }
     buildFeatures {
         compose = true
         buildConfig = true
