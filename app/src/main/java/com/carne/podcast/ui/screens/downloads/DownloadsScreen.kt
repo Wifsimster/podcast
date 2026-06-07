@@ -50,7 +50,7 @@ fun DownloadsScreen(
                 onClick = { viewModel.open(episode); onOpenPlayer() },
                 onDownload = {},
                 onDeleteDownload = { viewModel.deleteDownload(episode) },
-                onTogglePlayed = { viewModel.markPlayed(episode, !episode.isFinished) },
+                onSetPlayed = { played -> viewModel.markPlayed(episode, played) },
                 onPlayNext = { viewModel.playNext(episode) },
                 onAddToQueue = { viewModel.addToQueue(episode) },
                 modifier = Modifier.animateItem(),
