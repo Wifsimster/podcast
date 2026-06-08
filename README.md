@@ -58,7 +58,7 @@ search, paste any RSS feed, or import your OPML — then listen anywhere.
 
 **Easiest — from CI:** every push builds an installable APK.
 1. Open the repo's **Actions** tab → latest **Build APK** run.
-2. Download the **`carne-release-apk`** artifact and unzip it.
+2. Download the **`ondes-release-apk`** artifact and unzip it.
 3. Copy `app-release.apk` to your phone, tap it, allow *install from unknown
    sources*, install.
 
@@ -82,14 +82,14 @@ Requires JDK 17 and the Android SDK (platform 35).
 ## Project layout
 
 ```
-app/src/main/java/com/carne/podcast/
+app/src/main/java/com/ondes/podcast/
 ├─ data/        Room (local) · RSS + iTunes (remote) · repository · settings (DataStore) · opml + backup (data ownership)
 ├─ playback/    Media3 service, controller bridge, sleep timer
 ├─ download/    WorkManager episode downloader
 ├─ sync/        Periodic feed refresh worker + new-episode notifications
 ├─ ui/          Compose screens, theme, navigation, components
 ├─ di/          Hilt modules
-├─ CarneApp     Application — WorkManager + notification channel setup
+├─ OndesApp     Application — WorkManager + notification channel setup
 └─ MainActivity
 ```
 
@@ -97,5 +97,5 @@ app/src/main/java/com/carne/podcast/
 
 - Ondes is an independent player. It streams the publicly published RSS feeds
   you subscribe to and is not affiliated with any podcast or publisher.
-- The internal package/applicationId remains `com.carne.podcast` for
+- The internal package/applicationId remains `com.ondes.podcast` for
   historical reasons; the user-facing name is **Ondes**.

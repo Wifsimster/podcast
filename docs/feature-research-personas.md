@@ -1,4 +1,4 @@
-# 🌶️ Carne — Recherche de fonctionnalités multi-personas
+# 🌶️ Ondes — Recherche de fonctionnalités multi-personas
 
 > Rapport de recherche produit · 2026-06-06
 > Méthode : 5 personas utilisateurs distincts ont audité le code existant de
@@ -11,7 +11,7 @@
 ## 1. Méthodologie
 
 Cinq « chercheurs produit » ont chacun incarné un profil d'utilisateur réel,
-exploré la base de code (`app/src/main/java/com/carne/podcast/`) pour
+exploré la base de code (`app/src/main/java/com/ondes/podcast/`) pour
 cartographier ce qui existe déjà, et proposé 6 à 8 idées chacun, avec
 estimation d'effort et note d'implémentation ancrée dans de vrais fichiers.
 
@@ -63,7 +63,7 @@ positions de lecture + réglages) — **100 % local, aucun serveur**.
 > correctif fondamental en §4).
 >
 > **Implémentation :** `OpmlExporter`/`OpmlParser` (style `XmlPullParser`),
-> sérialisation des DAO + `CarneSettings` en JSON via le sélecteur de
+> sérialisation des DAO + `OndesSettings` en JSON via le sélecteur de
 > fichiers système (`ACTION_CREATE_DOCUMENT` / `ACTION_GET_CONTENT`), section
 > « Vos données » dans `SettingsScreen`.
 
@@ -181,7 +181,7 @@ meilleures émissions, pour remplir l'écran d'accueil dès la première minute.
 > `repository.subscribe()`).
 >
 > **Implémentation :** écran `onboarding` routé avant `HOME` dans
-> `CarneNavigation`, gardé par un flag DataStore `onboarding_done`.
+> `OndesNavigation`, gardé par un flag DataStore `onboarding_done`.
 
 ---
 
@@ -205,7 +205,7 @@ réclamé par Lina, absent de `PodcastScreen`).
 
 **Migrations Room sûres (anti perte de données).** La base est aujourd'hui en
 `fallbackToDestructiveMigration()` avec `exportSchema = false`
-(`AppModule.kt`, `CarneDatabase.kt`) : **toute mise à jour modifiant le schéma
+(`AppModule.kt`, `OndesDatabase.kt`) : **toute mise à jour modifiant le schéma
 efface la bibliothèque et l'historique de l'utilisateur.** Plusieurs features
 ci-dessus (queue, chapitres, profils, marque-pages) ajoutent des colonnes/tables
 — il faut donc activer `exportSchema = true` et écrire de vraies `Migration`

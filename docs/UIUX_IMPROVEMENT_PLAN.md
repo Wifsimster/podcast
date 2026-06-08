@@ -1,4 +1,4 @@
-# Carne — UI/UX Improvement Plan
+# Ondes — UI/UX Improvement Plan
 
 ## 1. TL;DR
 
@@ -15,7 +15,7 @@
 
 ### Recommendation: go to **4 tabs**
 
-Material 3 specifies navigation bars for **3–5 destinations**. Carne currently ships **6**, and two of them don't earn a permanent slot: **Settings** is a textbook overflow destination (reached from a top-bar icon in Pocket Casts, AntennaPod, Spotify), and **Downloads** is just a filtered view of the library. **Queue** is the one secondary surface that genuinely deserves prominence in a player-centric app.
+Material 3 specifies navigation bars for **3–5 destinations**. Ondes currently ships **6**, and two of them don't earn a permanent slot: **Settings** is a textbook overflow destination (reached from a top-bar icon in Pocket Casts, AntennaPod, Spotify), and **Downloads** is just a filtered view of the library. **Queue** is the one secondary surface that genuinely deserves prominence in a player-centric app.
 
 At six tabs, labels truncate on narrow screens and at large font scale, and each target shrinks below comfortable size.
 
@@ -44,12 +44,12 @@ At six tabs, labels truncate on narrow screens and at large font scale, and each
 
 | Change | Severity | Effort |
 |---|---|---|
-| Add `windowInsetsPadding(navigationBars)` to the nav bar / mini-player so content clears the system bar (`CarneNavigation.kt:76-86`, `MiniPlayer.kt:49-53`) | high | moderate |
-| Selected-tab detection uses `==` instead of `destination.hierarchy.any { }` — fix so nested destinations highlight the right tab (`CarneNavigation.kt:159`) | high | moderate |
-| Tab re-select is a no-op (`CarneNavigation.kt:162-172`) — wire it to `animateScrollToItem(0)` (scroll-to-top, the standard pattern) | medium | quick-win |
-| Adopt **`NavigationSuiteScaffold` / `NavigationRail`** so the same 4 destinations adapt to medium/expanded widths (tablets, foldables, landscape) instead of a bottom bar everywhere (`CarneNavigation.kt:73-88`) | high | large |
+| Add `windowInsetsPadding(navigationBars)` to the nav bar / mini-player so content clears the system bar (`OndesNavigation.kt:76-86`, `MiniPlayer.kt:49-53`) | high | moderate |
+| Selected-tab detection uses `==` instead of `destination.hierarchy.any { }` — fix so nested destinations highlight the right tab (`OndesNavigation.kt:159`) | high | moderate |
+| Tab re-select is a no-op (`OndesNavigation.kt:162-172`) — wire it to `animateScrollToItem(0)` (scroll-to-top, the standard pattern) | medium | quick-win |
+| Adopt **`NavigationSuiteScaffold` / `NavigationRail`** so the same 4 destinations adapt to medium/expanded widths (tablets, foldables, landscape) instead of a bottom bar everywhere (`OndesNavigation.kt:73-88`) | high | large |
 
-**File:** `app/src/main/java/com/carne/podcast/ui/navigation/CarneNavigation.kt`, `Routes.kt`, `MiniPlayer.kt`
+**File:** `app/src/main/java/com/ondes/podcast/ui/navigation/OndesNavigation.kt`, `Routes.kt`, `MiniPlayer.kt`
 
 ---
 
@@ -97,7 +97,7 @@ At six tabs, labels truncate on narrow screens and at large font scale, and each
 | **Adaptive grid.** `GridCells.Fixed(2)` → `GridCells.Adaptive(minSize=160.dp)` (`LibraryScreen.kt:57`); cap detail content width on large screens. | medium | quick-win |
 | **Merge tile semantics.** Each tile reads as 3 separate TalkBack nodes (`LibraryScreen.kt:68-92`). Add `semantics(mergeDescendants=true)` + onClick label "Open {title}". | medium | quick-win |
 | **Stable subscribe button width** (filled "Subscribe" ↔ outlined "Subscribed" resize); set `contentDescription` to reflect unsubscribe when subscribed (`PodcastScreen.kt:132-146`). | low | quick-win |
-| **Localize the version footer.** Hardcoded `"🌶️ Carne v…"` literal in the grid (`LibraryScreen.kt:95-103`); version already lives in Settings — remove it or move to a localized string. | low | quick-win |
+| **Localize the version footer.** Hardcoded `"🌶️ Ondes v…"` literal in the grid (`LibraryScreen.kt:95-103`); version already lives in Settings — remove it or move to a localized string. | low | quick-win |
 
 ### Search / Discover
 
@@ -130,13 +130,13 @@ At six tabs, labels truncate on narrow screens and at large font scale, and each
 
 | Change | Sev | Effort |
 |---|---|---|
-| **Brand color survives dynamic color.** Dynamic scheme discards `LightColors`/`DarkColors` on Android 12+ (`Theme.kt:70-81`), leaving wallpaper-primary on Material components and chili-red only on `CarneColors` — two competing accents. Build the dynamic scheme then `.copy(primary = ChiliRed, onPrimary = …)`. | high | moderate |
+| **Brand color survives dynamic color.** Dynamic scheme discards `LightColors`/`DarkColors` on Android 12+ (`Theme.kt:70-81`), leaving wallpaper-primary on Material components and chili-red only on `OndesColors` — two competing accents. Build the dynamic scheme then `.copy(primary = ChiliRed, onPrimary = …)`. | high | moderate |
 | **IME insets.** Zero `imePadding`/`safeDrawing` anywhere; the keyboard occludes the search field/results (`SearchScreen.kt:57-74`). Add `Modifier.imePadding()` and adopt a consistent inset strategy. | high | quick-win |
-| **Large-screen layout** — `NavigationRail` at medium/expanded, adaptive Library grid, capped player artwork (`CarneNavigation.kt:157`, `LibraryScreen.kt:57`, `PlayerScreen.kt:88-94`). *(Consolidates the large-screen findings across reviewers — see Bigger Bets.)* | medium | large |
+| **Large-screen layout** — `NavigationRail` at medium/expanded, adaptive Library grid, capped player artwork (`OndesNavigation.kt:157`, `LibraryScreen.kt:57`, `PlayerScreen.kt:88-94`). *(Consolidates the large-screen findings across reviewers — see Bigger Bets.)* | medium | large |
 | **Top app bar consistency.** No `scrollBehavior` / Large/Medium app bars anywhere; three different header treatments across six screens. Give Podcast detail a `LargeTopAppBar` with `exitUntilCollapsedScrollBehavior`; standardize the rest. | medium | moderate |
-| **Token discipline sweep.** `PodcastScreen`/`SettingsScreen` hardcode 16/12/8/4dp literals the design system exists to replace. Sweep to `CarneTheme.spacing`; add a lint rule forbidding raw `.dp` in `ui/screens`. | medium | quick-win |
-| **Unify the progress bar.** Mini-player and `EpisodeRow` progress bars diverge in color/track (`MiniPlayer.kt:58-68`, `EpisodeRow.kt:128-133`). Extract one `CarneProgressBar`; update the design-system note (wavy indicator no longer used). | low | quick-win |
-| **Expressive nav motion.** NavHost uses plain `fadeIn/fadeOut` with default specs, so `MotionScheme.expressive()` never reaches transitions (`CarneNavigation.kt:96-99`). Pass the motion-scheme spec or upgrade to a subtle shared-axis; keep the player slide-up. | low | moderate |
+| **Token discipline sweep.** `PodcastScreen`/`SettingsScreen` hardcode 16/12/8/4dp literals the design system exists to replace. Sweep to `OndesTheme.spacing`; add a lint rule forbidding raw `.dp` in `ui/screens`. | medium | quick-win |
+| **Unify the progress bar.** Mini-player and `EpisodeRow` progress bars diverge in color/track (`MiniPlayer.kt:58-68`, `EpisodeRow.kt:128-133`). Extract one `OndesProgressBar`; update the design-system note (wavy indicator no longer used). | low | quick-win |
+| **Expressive nav motion.** NavHost uses plain `fadeIn/fadeOut` with default specs, so `MotionScheme.expressive()` never reaches transitions (`OndesNavigation.kt:96-99`). Pass the motion-scheme spec or upgrade to a subtle shared-axis; keep the player slide-up. | low | moderate |
 
 ### Accessibility & Ergonomics (cross-cutting)
 
@@ -159,21 +159,21 @@ A flat checklist of low-effort / high-value items pulled from across the report:
 
 - [ ] Add `Modifier.navigationBarsPadding()` to the Player Column so show notes clear the system bar (`PlayerScreen.kt`).
 - [ ] Add `Modifier.imePadding()` to the Search column so the keyboard stops covering the field/results (`SearchScreen.kt`).
-- [ ] Add the nav-bar window inset to the bottom bar / mini-player (`CarneNavigation.kt`, `MiniPlayer.kt`).
+- [ ] Add the nav-bar window inset to the bottom bar / mini-player (`OndesNavigation.kt`, `MiniPlayer.kt`).
 - [ ] Show **"X min left"** on in-progress rows (Home + EpisodeRow); add EN/FR string. Doubles as the color-only-progress a11y fix.
 - [ ] Right-timestamp **remaining-time toggle** on the player scrubber.
 - [ ] **Library grid** `Fixed(2)` → `Adaptive(minSize = 160.dp)` (one line).
 - [ ] **Expandable podcast description** ("Show more / Show less").
 - [ ] Merge **Library tile semantics** + "Open {title}" onClick label.
 - [ ] Add a **clear "x"** trailing icon to the search field.
-- [ ] **Localize / remove** the hardcoded `"🌶️ Carne v…"` footer; move duration unit labels to string resources.
+- [ ] **Localize / remove** the hardcoded `"🌶️ Ondes v…"` footer; move duration unit labels to string resources.
 - [ ] Fix tab **re-select** → scroll-to-top (`animateScrollToItem(0)`).
 - [ ] Fix selected-tab check to use `destination.hierarchy.any { }`.
 - [ ] **Mini-player second line** with podcast name; verify 48dp targets.
 - [ ] Chapters-sheet **active-chapter semantics** + non-color cue.
 - [ ] Settings **ChoiceRow** full-row clickable + merged semantics + `stateDescription`.
 - [ ] Better Home **empty-state icon** (Podcasts/Add) + leading icon on the CTA.
-- [ ] Token sweep: `PodcastScreen`/`SettingsScreen` raw `.dp` → `CarneTheme.spacing`.
+- [ ] Token sweep: `PodcastScreen`/`SettingsScreen` raw `.dp` → `OndesTheme.spacing`.
 
 ---
 
@@ -191,12 +191,12 @@ A flat checklist of low-effort / high-value items pulled from across the report:
 
 ## 6. What's already good
 
-Honest credit — Carne is well above the bar for a sideloaded podcast app:
+Honest credit — Ondes is well above the bar for a sideloaded podcast app:
 
 - **Accessibility hygiene is genuinely strong.** Icon-only buttons carry `contentDescription`; the play/pause control is a single stateful semantics node with `stateDescription` and a correctly null-described inner icon (no double announcement); row artwork is intentionally undescribed while header/player artwork gets `artwork_for`; the decorative mini-player progress is hidden via `clearAndSetSemantics`; loading states use polite live regions; headings are marked; EN/FR strings are at full 122/122 parity.
-- **The theming foundation is clean and disciplined** — a brand-token layer (`CarneColors`/`Spacing`/`Shapes`) over `MaterialExpressiveTheme` with `MotionScheme.expressive()`, thoughtful Expressive component adoption (`LoadingIndicator`, `ContainedLoadingIndicator`, the spring-backed AnimatedContent play/pause), and good token discipline in newer screens.
+- **The theming foundation is clean and disciplined** — a brand-token layer (`OndesColors`/`Spacing`/`Shapes`) over `MaterialExpressiveTheme` with `MotionScheme.expressive()`, thoughtful Expressive component adoption (`LoadingIndicator`, `ContainedLoadingIndicator`, the spring-backed AnimatedContent play/pause), and good token discipline in newer screens.
 - **The player is tasteful and above-average craft** — large labeled artwork, brand-tinted 80dp play/pause with expressive cross-fade, a scrubber with local scrub-state so the thumb doesn't fight position ticks, and an `HtmlText` that turns mm:ss timestamps in show notes into seek links while keeping feed hyperlinks tappable. The mini→full slide-up with a shared root-scoped `PlayerViewModel` is a nice touch.
 - **Home correctly distinguishes loading / empty / content** with an explicit `loading` flag (avoiding the classic "spinner forever on an empty library" trap), and uses `animateItem()` for list mutations.
-- **Solid data-management fundamentals** — SAF-based export/import, a shared on-brand `CarneEmptyState` with good first-run copy, properly localized episode-count headers, and accessibility semantics on subscribe/reorder controls.
+- **Solid data-management fundamentals** — SAF-based export/import, a shared on-brand `OndesEmptyState` with good first-run copy, properly localized episode-count headers, and accessibility semantics on subscribe/reorder controls.
 
 The recurring theme across this plan: the *intent* is consistently right (refresh flows, error states, expressive motion, brand color are all already built) — much of the highest-impact work is **wiring up plumbing that exists but was dropped**, not net-new construction.

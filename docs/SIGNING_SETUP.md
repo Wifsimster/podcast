@@ -90,7 +90,7 @@ gh secret set KEY_PASSWORD      -b'<key password>'
   (signed with the upload key);
 - if it is **not** set, the AAB is debug-signed and only good for inspection.
 
-The signed `.aab` is uploaded as the **`carne-release-aab`** workflow artifact.
+The signed `.aab` is uploaded as the **`ondes-release-aab`** workflow artifact.
 Download it from the run and upload it to the Play Console (or wire up automated
 publishing later).
 
@@ -100,7 +100,7 @@ After setting the secrets, trigger CI (push or "Run workflow"). Then check the
 AAB's signer:
 
 ```bash
-unzip -p carne-release-aab.zip 'BUNDLE-METADATA/*' >/dev/null  # (just to extract)
+unzip -p ondes-release-aab.zip 'BUNDLE-METADATA/*' >/dev/null  # (just to extract)
 # or, on a built APK:
 $ANDROID_HOME/build-tools/<ver>/apksigner verify --print-certs app-release.apk
 ```
