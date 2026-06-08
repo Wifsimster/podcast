@@ -1,11 +1,14 @@
 package com.carne.podcast.ui.screens.player
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.displayCutoutPadding
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -56,6 +59,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -69,6 +73,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.carne.podcast.R
 import com.carne.podcast.data.local.Chapter
 import com.carne.podcast.data.local.EpisodeEntity
+import com.carne.podcast.playback.PlayerUiState
 import com.carne.podcast.ui.components.HtmlText
 import com.carne.podcast.ui.components.PlayPauseIcon
 import com.carne.podcast.ui.components.PodcastArtwork
@@ -89,6 +94,136 @@ fun PlayerScreen(
     val queue by viewModel.queue.collectAsStateWithLifecycle()
     val skipBackSeconds by viewModel.skipBackSeconds.collectAsStateWithLifecycle()
     val skipForwardSeconds by viewModel.skipForwardSeconds.collectAsStateWithLifecycle()
+
+    val landscape =
+        LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    val artworkUrl = state.artworkUri ?: episode?.imageUrl
+    val artworkDescription = stringResource(
+        R.string.artwork_for,
+        state.title.ifEmpty { episode?.title.orEmpty() },
+    )
+
+    @Composable
+    fun controls(modifier: Modifier) = PlayerControls(
+        state = state,
+        episode = episode,
+        chapters = chapters,
+        queue = queue,
+        sleepRemaining = sleepRemaining,
+        sleepEndOfEpisode = sleepEndOfEpisode,
+        skipBackSeconds = skipBackSeconds,
+        skipForwardSeconds = skipForwardSeconds,
+        viewModel = viewModel,
+        modifier = modifier,
+    )
+
+    if (landscape) {
+        // Side-by-side so a full-width square artwork doesn't push the controls
+        // off-screen: artwork is bounded by the (short) landscape height on the
+        // left, the controls scroll independently on the right.
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .displayCutoutPadding()
+                .padding(horizontal = CarneTheme.spacing.xl),
+        ) {
+            NowPlayingTopBar(onClose = onClose, onStop = { viewModel.stop(); onClose() })
+            // weight(1f) so the Row takes the height left below the top bar rather
+            // than the full column height (which would overflow and clip).
+            Row(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                PodcastArtwork(
+                    url = artworkUrl,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .aspectRatio(1f)
+                        .padding(vertical = CarneTheme.spacing.sm),
+                    shape = CarneTheme.shapes.artworkLarge,
+                    contentDescription = artworkDescription,
+                )
+                Spacer(Modifier.width(CarneTheme.spacing.xl))
+                controls(
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState()),
+                )
+            }
+        }
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .displayCutoutPadding()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = CarneTheme.spacing.xl),
+        ) {
+            NowPlayingTopBar(onClose = onClose, onStop = { viewModel.stop(); onClose() })
+            Spacer(Modifier.height(CarneTheme.spacing.sm))
+            PodcastArtwork(
+                url = artworkUrl,
+                modifier = Modifier.fillMaxWidth().aspectRatio(1f),
+                shape = CarneTheme.shapes.artworkLarge,
+                contentDescription = artworkDescription,
+            )
+            controls(Modifier.fillMaxWidth())
+        }
+    }
+}
+
+/** Close / "Now playing" / Stop header, shared by both orientations. */
+@Composable
+private fun NowPlayingTopBar(onClose: () -> Unit, onStop: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = CarneTheme.spacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(onClick = onClose) {
+            Icon(
+                Icons.Rounded.KeyboardArrowDown,
+                contentDescription = stringResource(R.string.close),
+            )
+        }
+        Text(
+            text = stringResource(R.string.now_playing),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
+        // Stop clears the episode and dismisses both the player and mini-player.
+        IconButton(onClick = onStop) {
+            Icon(
+                Icons.Rounded.Stop,
+                contentDescription = stringResource(R.string.stop_playback),
+            )
+        }
+    }
+}
+
+/**
+ * Title, scrubber, transport and secondary controls plus show notes — the part
+ * that lives below the artwork in portrait and beside it in landscape. The
+ * caller supplies the [modifier] (and thus the scroll container) so the block
+ * scrolls with the artwork in portrait but independently of it in landscape.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PlayerControls(
+    state: PlayerUiState,
+    episode: EpisodeEntity?,
+    chapters: List<Chapter>,
+    queue: List<EpisodeEntity>,
+    sleepRemaining: Long,
+    sleepEndOfEpisode: Boolean,
+    skipBackSeconds: Int,
+    skipForwardSeconds: Int,
+    viewModel: PlayerViewModel,
+    modifier: Modifier = Modifier,
+) {
     var showChapters by remember { mutableStateOf(false) }
     var showQueue by remember { mutableStateOf(false) }
 
@@ -101,50 +236,7 @@ fun PlayerScreen(
     val sliderPosition = (if (scrubbing) scrubValue
     else if (duration > 0) state.positionMs.toFloat() else 0f).coerceIn(0f, maxValue)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = CarneTheme.spacing.xl),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(vertical = CarneTheme.spacing.sm),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(onClick = onClose) {
-                Icon(
-                    Icons.Rounded.KeyboardArrowDown,
-                    contentDescription = stringResource(R.string.close),
-                )
-            }
-            Text(
-                text = stringResource(R.string.now_playing),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
-            )
-            // Stop clears the episode and dismisses both the player and mini-player.
-            IconButton(onClick = { viewModel.stop(); onClose() }) {
-                Icon(
-                    Icons.Rounded.Stop,
-                    contentDescription = stringResource(R.string.stop_playback),
-                )
-            }
-        }
-
-        Spacer(Modifier.height(CarneTheme.spacing.sm))
-        PodcastArtwork(
-            url = state.artworkUri ?: episode?.imageUrl,
-            modifier = Modifier.fillMaxWidth().aspectRatio(1f),
-            shape = CarneTheme.shapes.artworkLarge,
-            contentDescription = stringResource(
-                R.string.artwork_for,
-                state.title.ifEmpty { episode?.title.orEmpty() },
-            ),
-        )
-
+    Column(modifier = modifier) {
         Spacer(Modifier.height(CarneTheme.spacing.xl))
         Text(
             text = state.title.ifEmpty { episode?.title.orEmpty() },
