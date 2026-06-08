@@ -1,16 +1,21 @@
 package com.carne.podcast.ui.screens.library
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.carne.podcast.R
+import com.carne.podcast.common.SnackbarController
 import com.carne.podcast.data.local.PodcastWithCount
 import com.carne.podcast.data.repository.PodcastRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /** How the subscriptions grid is ordered. */
@@ -18,21 +23,29 @@ enum class LibrarySort { RECENT, ALPHABETICAL, UNPLAYED }
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
-    repository: PodcastRepository,
+    private val repository: PodcastRepository,
+    private val snackbar: SnackbarController,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private val _sort = MutableStateFlow(LibrarySort.RECENT)
     val sort: StateFlow<LibrarySort> = _sort.asStateFlow()
 
+    /** feedUrls currently picked in multi-select mode (empty = not selecting). */
+    private val _selectedFeedUrls = MutableStateFlow<Set<String>>(emptySet())
+    val selectedFeedUrls: StateFlow<Set<String>> = _selectedFeedUrls.asStateFlow()
+
     val subscriptions: StateFlow<List<PodcastWithCount>> =
         combine(repository.observeSubscriptionsWithCounts(), _sort) { items, sort ->
+            // Defensive dedupe so the feedUrl-keyed grid can never crash on a dup.
+            val unique = items.distinctBy { it.podcast.feedUrl }
             when (sort) {
                 LibrarySort.ALPHABETICAL ->
-                    items.sortedBy { it.podcast.title.lowercase() }
+                    unique.sortedBy { it.podcast.title.lowercase() }
                 LibrarySort.RECENT ->
-                    items.sortedByDescending { it.podcast.lastUpdated }
+                    unique.sortedByDescending { it.podcast.lastUpdated }
                 LibrarySort.UNPLAYED ->
-                    items.sortedWith(
+                    unique.sortedWith(
                         compareByDescending<PodcastWithCount> { it.unplayedCount }
                             .thenBy { it.podcast.title.lowercase() },
                     )
@@ -41,5 +54,39 @@ class LibraryViewModel @Inject constructor(
 
     fun setSort(sort: LibrarySort) {
         _sort.value = sort
+    }
+
+    // --- multi-select ---
+
+    /** Begin selection mode with [feedUrl] picked (typically from a long-press). */
+    fun startSelection(feedUrl: String) {
+        _selectedFeedUrls.value = setOf(feedUrl)
+    }
+
+    fun toggleSelection(feedUrl: String) {
+        _selectedFeedUrls.value = _selectedFeedUrls.value.toMutableSet().apply {
+            if (!add(feedUrl)) remove(feedUrl)
+        }
+    }
+
+    fun clearSelection() {
+        _selectedFeedUrls.value = emptySet()
+    }
+
+    /** Unsubscribe every picked feed, with a single undoable snackbar. */
+    fun unsubscribeSelected() {
+        val targets = _selectedFeedUrls.value
+        if (targets.isEmpty()) return
+        clearSelection()
+        viewModelScope.launch {
+            repository.unsubscribeAll(targets)
+            snackbar.show(
+                text = context.resources.getQuantityString(
+                    R.plurals.unsubscribed_count, targets.size, targets.size,
+                ),
+                actionLabel = context.getString(R.string.undo),
+                onAction = { viewModelScope.launch { repository.resubscribeAll(targets) } },
+            )
+        }
     }
 }
