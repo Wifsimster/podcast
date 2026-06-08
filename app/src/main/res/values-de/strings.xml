@@ -202,4 +202,22 @@
     <string name="onboarding_subtitle">Wähle ein paar Themen und wir stellen dir tolle Sendungen zusammen.</string>
     <string name="onboarding_continue">Weiter</string>
     <string name="skip">Überspringen</string>
+    <string name="onboarding_proposals_title">Sendungen, die dir gefallen könnten</string>
+    <string name="onboarding_proposals_subtitle">Tippe die an, die du möchtest – die abonnieren wir.</string>
+    <string name="onboarding_proposals_error">Vorschläge konnten gerade nicht geladen werden. Prüfe deine Verbindung und versuche es erneut. 🎧</string>
+    <string name="onboarding_subscribe_selected">Abonnieren &amp; fertig</string>
+    <string name="unsubscribe_selected">Abbestellen</string>
+    <string name="unsubscribe_confirm_title">Podcasts abbestellen?</string>
+    <plurals name="selected_count">
+        <item quantity="one">%1$d ausgewählt</item>
+        <item quantity="other">%1$d ausgewählt</item>
+    </plurals>
+    <plurals name="unsubscribe_confirm_message">
+        <item quantity="one">Diesen Podcast abbestellen?</item>
+        <item quantity="other">Diese %1$d Podcasts abbestellen?</item>
+    </plurals>
+    <plurals name="unsubscribed_count">
+        <item quantity="one">1 Podcast abbestellt</item>
+        <item quantity="other">%1$d Podcasts abbestellt</item>
+    </plurals>
 </resources>

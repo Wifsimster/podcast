@@ -202,4 +202,22 @@
     <string name="onboarding_subtitle">Escolha alguns temas e vamos selecionar ótimos programas para você.</string>
     <string name="onboarding_continue">Continuar</string>
     <string name="skip">Pular</string>
+    <string name="onboarding_proposals_title">Programas que você pode gostar</string>
+    <string name="onboarding_proposals_subtitle">Toque nos que você quiser — vamos assinar esses.</string>
+    <string name="onboarding_proposals_error">Não foi possível carregar sugestões agora. Verifique sua conexão e tente novamente. 🎧</string>
+    <string name="onboarding_subscribe_selected">Assinar e concluir</string>
+    <string name="unsubscribe_selected">Cancelar assinatura</string>
+    <string name="unsubscribe_confirm_title">Cancelar a assinatura dos podcasts?</string>
+    <plurals name="selected_count">
+        <item quantity="one">%1$d selecionado</item>
+        <item quantity="other">%1$d selecionados</item>
+    </plurals>
+    <plurals name="unsubscribe_confirm_message">
+        <item quantity="one">Cancelar a assinatura deste podcast?</item>
+        <item quantity="other">Cancelar a assinatura destes %1$d podcasts?</item>
+    </plurals>
+    <plurals name="unsubscribed_count">
+        <item quantity="one">Assinatura cancelada de 1 podcast</item>
+        <item quantity="other">Assinatura cancelada de %1$d podcasts</item>
+    </plurals>
 </resources>

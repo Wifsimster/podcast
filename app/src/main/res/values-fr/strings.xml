@@ -202,4 +202,22 @@
     <string name="onboarding_subtitle">Choisissez quelques thèmes et on vous propose de bonnes émissions.</string>
     <string name="onboarding_continue">Continuer</string>
     <string name="skip">Passer</string>
+    <string name="onboarding_proposals_title">Des émissions qui devraient vous plaire</string>
+    <string name="onboarding_proposals_subtitle">Touchez celles qui vous intéressent — on s’y abonnera.</string>
+    <string name="onboarding_proposals_error">Impossible de charger des suggestions pour le moment. Vérifiez votre connexion et réessayez. 🎧</string>
+    <string name="onboarding_subscribe_selected">S’abonner et terminer</string>
+    <string name="unsubscribe_selected">Se désabonner</string>
+    <string name="unsubscribe_confirm_title">Se désabonner des podcasts ?</string>
+    <plurals name="selected_count">
+        <item quantity="one">%1$d sélectionné</item>
+        <item quantity="other">%1$d sélectionnés</item>
+    </plurals>
+    <plurals name="unsubscribe_confirm_message">
+        <item quantity="one">Se désabonner de ce podcast ?</item>
+        <item quantity="other">Se désabonner de ces %1$d podcasts ?</item>
+    </plurals>
+    <plurals name="unsubscribed_count">
+        <item quantity="one">Désabonné de 1 podcast</item>
+        <item quantity="other">Désabonné de %1$d podcasts</item>
+    </plurals>
 </resources>

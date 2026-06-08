@@ -202,4 +202,24 @@
     <string name="onboarding_subtitle">Pick a few topics and we\'ll line up some great shows for you.</string>
     <string name="onboarding_continue">Continue</string>
     <string name="skip">Skip</string>
+    <!-- Onboarding: propose shows from picked themes -->
+    <string name="onboarding_proposals_title">Shows we think you’ll like</string>
+    <string name="onboarding_proposals_subtitle">Tap the ones you want — we’ll subscribe to those.</string>
+    <string name="onboarding_proposals_error">We couldn’t load suggestions right now. Check your connection and try again. 🎧</string>
+    <string name="onboarding_subscribe_selected">Subscribe &amp; finish</string>
+    <!-- Library: multi-select unsubscribe -->
+    <string name="unsubscribe_selected">Unsubscribe</string>
+    <string name="unsubscribe_confirm_title">Unsubscribe podcasts?</string>
+    <plurals name="selected_count">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
+    <plurals name="unsubscribe_confirm_message">
+        <item quantity="one">Unsubscribe from this podcast?</item>
+        <item quantity="other">Unsubscribe from these %1$d podcasts?</item>
+    </plurals>
+    <plurals name="unsubscribed_count">
+        <item quantity="one">Unsubscribed from 1 podcast</item>
+        <item quantity="other">Unsubscribed from %1$d podcasts</item>
+    </plurals>
 </resources>

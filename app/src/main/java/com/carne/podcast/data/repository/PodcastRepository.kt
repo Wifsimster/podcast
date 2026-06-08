@@ -81,6 +81,20 @@ class PodcastRepository @Inject constructor(
         podcastDao.setSubscribed(feedUrl, false)
     }
 
+    /** Soft-unsubscribe several feeds at once (library multi-select). */
+    suspend fun unsubscribeAll(feedUrls: Collection<String>) = withContext(Dispatchers.IO) {
+        feedUrls.forEach { podcastDao.setSubscribed(it, false) }
+    }
+
+    /**
+     * Re-flag several feeds as subscribed — the cheap inverse of [unsubscribeAll]
+     * used to undo a bulk unsubscribe. Rows are soft-deleted so this needs no
+     * network refresh (unlike [subscribe]).
+     */
+    suspend fun resubscribeAll(feedUrls: Collection<String>) = withContext(Dispatchers.IO) {
+        feedUrls.forEach { podcastDao.setSubscribed(it, true) }
+    }
+
     /**
      * (Re)fetch a feed and reconcile podcast + episodes into the database.
      * Returns the episodes that were genuinely new this refresh (so callers can
