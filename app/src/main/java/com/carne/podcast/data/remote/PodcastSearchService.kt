@@ -38,7 +38,7 @@ class PodcastSearchService @Inject constructor(
         for (i in 0 until results.length()) {
             results.optJSONObject(i)?.let { o -> toResult(o)?.let(out::add) }
         }
-        return out
+        return distinctByFeedUrl(out)
     }
 
     /**
@@ -64,7 +64,7 @@ class PodcastSearchService @Inject constructor(
             val id = o.optLong("collectionId").takeIf { it != 0L }?.toString() ?: continue
             toResult(o)?.let { byId[id] = it }
         }
-        return ids.mapNotNull { byId[it] }
+        return distinctByFeedUrl(ids.mapNotNull { byId[it] })
     }
 
     /** Top collection ids for a genre, ranked, from the iTunes "top podcasts" chart. */
@@ -91,6 +91,16 @@ class PodcastSearchService @Inject constructor(
             return JSONObject(body)
         }
     }
+
+    /**
+     * Keep the first result per feedUrl, preserving order. iTunes can return the
+     * same show twice (a feed published under several collection ids); the result
+     * lists are keyed by feedUrl in Compose, and a duplicate key crashes the
+     * LazyColumn ("Key was already used"). Reproduces e.g. searching "the room"
+     * on the French storefront.
+     */
+    internal fun distinctByFeedUrl(results: List<PodcastSearchResult>): List<PodcastSearchResult> =
+        results.distinctBy { it.feedUrl }
 
     private fun toResult(o: JSONObject): PodcastSearchResult? {
         val feed = o.optString("feedUrl")
