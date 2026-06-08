@@ -125,10 +125,18 @@ class SearchViewModel @Inject constructor(
 
     fun subscribe(result: PodcastSearchResult) {
         viewModelScope.launch {
-            repository.subscribe(result.feedUrl)
-            _state.value = _state.value.copy(
-                subscribedFeeds = _state.value.subscribedFeeds + result.feedUrl
-            )
+            // Only flip the row to "Subscribed" if the feed actually fetched;
+            // otherwise surface the error instead of silently faking success.
+            if (repository.subscribe(result.feedUrl).isSuccess) {
+                _state.value = _state.value.copy(
+                    subscribedFeeds = _state.value.subscribedFeeds + result.feedUrl,
+                    error = null,
+                )
+            } else {
+                _state.value = _state.value.copy(
+                    error = context.getString(R.string.search_feed_error),
+                )
+            }
         }
     }
 

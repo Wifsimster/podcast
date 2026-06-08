@@ -77,7 +77,10 @@ class PodcastViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch(Dispatchers.IO) {
             _refreshing.value = true
+            // Tell the user when a manual pull-to-refresh fails instead of just
+            // stopping the spinner with no feedback.
             runCatching { repository.refreshFeed(feedUrl) }
+                .onFailure { snackbar.show(context.getString(R.string.data_op_failed)) }
             _refreshing.value = false
         }
     }
@@ -93,7 +96,9 @@ class PodcastViewModel @Inject constructor(
                     onAction = { viewModelScope.launch { repository.subscribe(feedUrl) } },
                 )
             } else {
-                repository.subscribe(feedUrl)
+                if (repository.subscribe(feedUrl).isFailure) {
+                    snackbar.show(context.getString(R.string.search_feed_error))
+                }
             }
         }
     }

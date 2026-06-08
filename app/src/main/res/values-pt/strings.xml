@@ -34,6 +34,7 @@
     <string name="paused">Pausado</string>
     <string name="download">Baixar</string>
     <string name="downloading">Baixando</string>
+    <string name="download_failed">Falha no download — toque para tentar novamente</string>
     <string name="downloaded_tap_delete">Baixado — toque para excluir</string>
     <string name="play_next">Reproduzir a seguir</string>
     <string name="add_to_queue">Adicionar à fila</string>

@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <!-- Expedited/foreground episode downloads (WorkManager) on Android 14+. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Required by LoudnessEnhancer (the "Boost volume" audio effect). -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
@@ -50,6 +52,13 @@
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
+
+        <!-- WorkManager runs expedited episode downloads as a foreground service on
+             older API levels; declare the data-sync type it posts with. -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"

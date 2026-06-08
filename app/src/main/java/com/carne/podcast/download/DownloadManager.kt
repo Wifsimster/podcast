@@ -1,12 +1,16 @@
 package com.carne.podcast.download
 
 import android.content.Context
+import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import androidx.work.workDataOf
+import java.util.concurrent.TimeUnit
 import com.carne.podcast.R
 import com.carne.podcast.common.SnackbarController
 import com.carne.podcast.data.local.DownloadState
@@ -44,6 +48,15 @@ class DownloadManager @Inject constructor(
         val request = OneTimeWorkRequestBuilder<EpisodeDownloadWorker>()
             .setInputData(workDataOf(EpisodeDownloadWorker.KEY_EPISODE_ID to episodeId))
             .setConstraints(constraints)
+            // Expedited so a user-triggered download starts promptly and runs as a
+            // foreground worker (less likely to be OS-killed mid-stream); falls back
+            // to a normal request when the app is out of expedited quota.
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .setBackoffCriteria(
+                BackoffPolicy.EXPONENTIAL,
+                WorkRequest.MIN_BACKOFF_MILLIS,
+                TimeUnit.MILLISECONDS,
+            )
             .build()
         WorkManager.getInstance(context)
             .enqueueUniqueWork(workName(episodeId), ExistingWorkPolicy.KEEP, request)

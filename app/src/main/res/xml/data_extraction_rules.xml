@@ -1,15 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Backup & device-transfer rules for Android 12+ (API 31). Carne keeps all data
-  on-device (Room DB, DataStore settings, downloads), so we allow the full app
-  data set to be carried over by both cloud backup and device-to-device
-  transfer. Mirrors backup_rules.xml used on older API levels.
+  Backup & device-transfer rules for Android 12+ (API 31).
+
+  Ondes promises (see docs/privacy-policy.md) that subscriptions, listening
+  progress, downloads, queue and settings stay on the device and are never
+  transmitted. To keep that guarantee true we explicitly exclude every store of
+  user data from BOTH cloud backup (Google Drive) and direct device-to-device
+  transfer:
+    - carne.db        — Room DB: subscriptions, episodes, listening progress, queue
+    - datastore/      — Preferences DataStore: user settings
+    - downloads/      — offline episode audio (large, re-downloadable; would also
+                        blow Auto Backup's ~25 MB quota and silently disable backup)
+
+  Portability is handled instead by the in-app OPML / JSON backup the user
+  triggers explicitly. Mirrors backup_rules.xml used on older API levels.
 -->
 <data-extraction-rules>
     <cloud-backup>
-        <include domain="root" path="." />
+        <exclude domain="database" path="carne.db" />
+        <exclude domain="file" path="datastore" />
+        <exclude domain="file" path="downloads" />
     </cloud-backup>
     <device-transfer>
-        <include domain="root" path="." />
+        <exclude domain="database" path="carne.db" />
+        <exclude domain="file" path="datastore" />
+        <exclude domain="file" path="downloads" />
     </device-transfer>
 </data-extraction-rules>

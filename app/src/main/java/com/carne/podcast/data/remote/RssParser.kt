@@ -1,6 +1,8 @@
 package com.carne.podcast.data.remote
 
 import android.util.Xml
+import com.carne.podcast.util.httpUrlOrEmpty
+import com.carne.podcast.util.isHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.xmlpull.v1.XmlPullParser
@@ -103,16 +105,18 @@ class RssParser @Inject constructor(
                     val name = parser.name.lowercase(Locale.US)
                     when (name) {
                         "item", "entry" -> {
-                            if (iAudio.isNotEmpty()) {
+                            // Only http(s) enclosures are playable; a feed pointing
+                            // the audio at a local file:// / content:// URI is dropped.
+                            if (isHttpUrl(iAudio)) {
                                 episodes += ParsedEpisode(
                                     guid = iGuid.ifEmpty { iAudio },
                                     title = iTitle.ifEmpty { "Untitled" },
                                     description = iDesc,
-                                    audioUrl = iAudio,
-                                    imageUrl = iImage,
+                                    audioUrl = iAudio.trim(),
+                                    imageUrl = httpUrlOrEmpty(iImage),
                                     pubDate = iPub,
                                     durationMs = iDuration,
-                                    chaptersUrl = iChapters,
+                                    chaptersUrl = httpUrlOrEmpty(iChapters),
                                 )
                             }
                             insideItem = false
@@ -128,7 +132,7 @@ class RssParser @Inject constructor(
             title = channelTitle.ifEmpty { "Podcast" },
             author = channelAuthor,
             description = channelDesc,
-            imageUrl = channelImage,
+            imageUrl = httpUrlOrEmpty(channelImage),
             link = channelLink,
             episodes = episodes,
         )
