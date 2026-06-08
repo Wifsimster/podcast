@@ -28,11 +28,16 @@ val hasReleaseSigning: Boolean = releaseStoreFile != null
 // gradle.properties and is bumped automatically by semantic-release on each
 // release. versionCode is derived from the semver so it always increases.
 val appVersionName: String = (project.findProperty("VERSION_NAME") as String?) ?: "0.0.0"
+// Bands are 1000-wide (minor, patch each < 1000) so a long-lived minor cycle
+// can run to patch 999, and minor to 999, without ever colliding with or
+// regressing below the next component — Play rejects a non-increasing
+// versionCode. 1.10.0 -> 1_010_000; previous 1.9.0 -> 1_009_000 (both larger
+// than the old major*10000+minor*100+patch scheme, so the sequence keeps rising).
 val appVersionCode: Int = appVersionName.substringBefore("-").split(".").let { parts ->
     val major = parts.getOrNull(0)?.toIntOrNull() ?: 0
     val minor = parts.getOrNull(1)?.toIntOrNull() ?: 0
     val patch = parts.getOrNull(2)?.toIntOrNull() ?: 0
-    major * 10000 + minor * 100 + patch
+    major * 1_000_000 + minor * 1_000 + patch
 }
 
 android {

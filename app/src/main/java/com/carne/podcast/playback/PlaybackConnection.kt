@@ -15,15 +15,19 @@ import com.carne.podcast.data.local.EpisodeEntity
 import com.carne.podcast.data.repository.PodcastRepository
 import com.carne.podcast.data.settings.CarneSettings
 import com.carne.podcast.data.settings.SettingsRepository
+import com.carne.podcast.util.httpUrlOrEmpty
+import com.carne.podcast.util.isHttpUrl
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -64,10 +68,12 @@ class PlaybackConnection @Inject constructor(
     /** Latest settings snapshot, kept current so playback honours live changes. */
     @Volatile private var settings: CarneSettings = CarneSettings()
 
+    /** Smooth-progress ticker; only alive while something is actually playing. */
+    private var tickerJob: Job? = null
+
     init {
         scope.launch { settingsRepository.settings.collect { settings = it } }
         connect()
-        startPositionTicker()
     }
 
     private fun connect() {
@@ -89,22 +95,26 @@ class PlaybackConnection @Inject constructor(
     }
 
     private fun startPositionTicker() {
-        scope.launch {
-            while (true) {
-                val c = controller
-                if (c != null && c.isPlaying) {
-                    _state.value = _state.value.copy(
-                        positionMs = c.currentPosition.coerceAtLeast(0),
-                        durationMs = c.duration.let { if (it == C.TIME_UNSET) 0L else it },
-                    )
-                }
+        if (tickerJob?.isActive == true) return
+        tickerJob = scope.launch {
+            while (isActive) {
+                val c = controller ?: break
+                if (!c.isPlaying) break
+                _state.value = _state.value.copy(
+                    positionMs = c.currentPosition.coerceAtLeast(0),
+                    durationMs = c.duration.let { if (it == C.TIME_UNSET) 0L else it },
+                )
                 delay(500)
             }
+            tickerJob = null
         }
     }
 
     private fun syncFromController() {
         val c = controller ?: return
+        // Run the smooth-progress ticker only while playing; stop it otherwise so
+        // the main thread isn't woken every 500ms for the process's whole life.
+        if (c.isPlaying) startPositionTicker() else { tickerJob?.cancel(); tickerJob = null }
         val item = c.currentMediaItem
         _state.value = _state.value.copy(
             isConnected = true,
@@ -178,11 +188,12 @@ class PlaybackConnection @Inject constructor(
     private fun mediaItemFor(episode: EpisodeEntity): MediaItem {
         val uri: Uri = episode.localFilePath
             ?.let { path -> File(path).takeIf { it.exists() }?.let { Uri.fromFile(it) } }
-            ?: episode.audioUrl.toUri()
+            ?: episode.audioUrl.takeIf { isHttpUrl(it) }?.toUri()
+            ?: Uri.EMPTY
 
         val metadata = MediaMetadata.Builder()
             .setTitle(episode.title)
-            .setArtworkUri(episode.imageUrl.takeIf { it.isNotBlank() }?.toUri())
+            .setArtworkUri(httpUrlOrEmpty(episode.imageUrl).takeIf { it.isNotBlank() }?.toUri())
             .setIsBrowsable(false)
             .setIsPlayable(true)
             .build()

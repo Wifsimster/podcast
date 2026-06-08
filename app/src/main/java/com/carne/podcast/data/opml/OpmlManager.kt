@@ -2,6 +2,7 @@ package com.carne.podcast.data.opml
 
 import android.util.Xml
 import com.carne.podcast.data.repository.PodcastRepository
+import com.carne.podcast.util.isHttpUrl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
@@ -80,12 +81,13 @@ class OpmlManager @Inject constructor(
             if (event == XmlPullParser.START_TAG &&
                 parser.name.equals("outline", ignoreCase = true)
             ) {
-                val xmlUrl = attr(parser, "xmlUrl")
-                if (!xmlUrl.isNullOrBlank()) {
+                val xmlUrl = attr(parser, "xmlUrl")?.trim()
+                // Ignore non-http(s) feed URLs an OPML file might smuggle in.
+                if (xmlUrl != null && isHttpUrl(xmlUrl)) {
                     val title = attr(parser, "title")
                         ?: attr(parser, "text")
                         ?: xmlUrl
-                    entries += OpmlEntry(title.trim(), xmlUrl.trim())
+                    entries += OpmlEntry(title.trim(), xmlUrl)
                 }
             }
             event = parser.next()

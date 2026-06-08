@@ -9,6 +9,8 @@ import com.carne.podcast.data.local.QueueItemEntity
 import com.carne.podcast.data.settings.CarneSettings
 import com.carne.podcast.data.settings.SettingsRepository
 import com.carne.podcast.data.settings.ThemeMode
+import com.carne.podcast.util.httpUrlOrEmpty
+import com.carne.podcast.util.isHttpUrl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -84,14 +86,18 @@ class BackupManager @Inject constructor(
         val root = JSONObject(input.readBytes().toString(Charsets.UTF_8))
 
         root.optJSONArray("podcasts")?.let { arr ->
-            val list = (0 until arr.length()).map { i ->
+            val list = (0 until arr.length()).mapNotNull { i ->
                 val o = arr.getJSONObject(i)
+                // A backup is user-supplied: a tampered file could point a feed or
+                // its artwork at a local URI. Skip non-http feeds, strip non-http art.
+                val feedUrl = o.getString("feedUrl")
+                if (!isHttpUrl(feedUrl)) return@mapNotNull null
                 PodcastEntity(
-                    feedUrl = o.getString("feedUrl"),
+                    feedUrl = feedUrl,
                     title = o.optString("title"),
                     author = o.optString("author"),
                     description = o.optString("description"),
-                    imageUrl = o.optString("imageUrl"),
+                    imageUrl = httpUrlOrEmpty(o.optString("imageUrl")),
                     link = o.optString("link"),
                     subscribed = o.optBoolean("subscribed", true),
                     lastUpdated = o.optLong("lastUpdated", 0L),
@@ -101,15 +107,17 @@ class BackupManager @Inject constructor(
         }
 
         root.optJSONArray("episodes")?.let { arr ->
-            val list = (0 until arr.length()).map { i ->
+            val list = (0 until arr.length()).mapNotNull { i ->
                 val o = arr.getJSONObject(i)
+                val audioUrl = httpUrlOrEmpty(o.optString("audioUrl"))
+                if (audioUrl.isEmpty()) return@mapNotNull null
                 EpisodeEntity(
                     id = o.getString("id"),
                     feedUrl = o.optString("feedUrl"),
                     title = o.optString("title"),
                     description = o.optString("description"),
-                    audioUrl = o.optString("audioUrl"),
-                    imageUrl = o.optString("imageUrl"),
+                    audioUrl = audioUrl,
+                    imageUrl = httpUrlOrEmpty(o.optString("imageUrl")),
                     pubDate = o.optLong("pubDate", 0L),
                     durationMs = o.optLong("durationMs", 0L),
                     positionMs = o.optLong("positionMs", 0L),

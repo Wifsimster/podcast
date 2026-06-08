@@ -25,7 +25,7 @@ data class PodcastEntity(
 
 @Entity(
     tableName = "episodes",
-    indices = [Index("feedUrl"), Index("pubDate")],
+    indices = [Index("feedUrl"), Index("pubDate"), Index("downloadState")],
 )
 data class EpisodeEntity(
     @PrimaryKey val id: String,            // guid (or audioUrl fallback)

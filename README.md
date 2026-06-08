@@ -70,9 +70,14 @@ search, paste any RSS feed, or import your OPML — then listen anywhere.
 ./gradlew assembleRelease
 # → app/build/outputs/apk/release/app-release.apk
 ```
-Requires JDK 17 and the Android SDK (platform 35). The release build is signed
-with the local debug key so it installs without extra setup — swap in your own
-keystore in `app/build.gradle.kts` for store distribution.
+Requires JDK 17 and the Android SDK (platform 35).
+
+> **Signing:** the **APK** distributed here (CI artifact / GitHub Release) is
+> **debug-signed** so it installs without extra setup — it is for sideloading
+> only, not Play. The **Play Store AAB** is built and **upload-signed** with the
+> real upload key (supplied via `keystore.properties` locally or CI env vars; see
+> `keystore.properties.example`). Configure your own upload key the same way for
+> store distribution.
 
 ## Project layout
 

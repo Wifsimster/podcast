@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.PauseCircle
 import androidx.compose.material.icons.rounded.PlaylistAdd
 import androidx.compose.material.icons.rounded.PlaylistPlay
@@ -278,6 +279,16 @@ private fun DownloadAffordance(
                     modifier = Modifier.size(20.dp),
                 )
             }
+        }
+        // A failed download must read differently from "never downloaded" and
+        // offer a retry — tapping re-enqueues it.
+        DownloadState.FAILED -> IconButton(onClick = onDownload) {
+            Icon(
+                Icons.Rounded.ErrorOutline,
+                contentDescription = stringResource(R.string.download_failed),
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(20.dp),
+            )
         }
         else -> IconButton(onClick = onDownload) {
             Icon(

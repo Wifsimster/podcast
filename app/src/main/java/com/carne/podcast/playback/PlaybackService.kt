@@ -3,6 +3,7 @@ package com.carne.podcast.playback
 import android.media.audiofx.LoudnessEnhancer
 import android.net.Uri
 import android.os.Bundle
+import android.os.Process
 import android.util.Log
 import androidx.core.net.toUri
 import androidx.media3.common.AudioAttributes
@@ -23,6 +24,8 @@ import com.carne.podcast.data.repository.PodcastRepository
 import com.carne.podcast.data.settings.CarneSettings
 import com.carne.podcast.data.settings.SettingsRepository
 import com.carne.podcast.download.DownloadManager
+import com.carne.podcast.util.httpUrlOrEmpty
+import com.carne.podcast.util.isHttpUrl
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
@@ -187,6 +190,19 @@ class PlaybackService : MediaLibraryService() {
     // Android Auto / MediaBrowser content tree
     // ---------------------------------------------------------------------
 
+    /**
+     * The browse tree exposes the user's whole library (subscriptions, episode
+     * titles, feed URLs). The service is `exported` so Android Auto / Wear can
+     * reach it, but that also lets any installed app bind — so the content tree
+     * is gated to our own UI, the platform, and a small allowlist of known media
+     * browsers. Untrusted callers may still connect (so transport controls work)
+     * but get nothing back from the library callbacks.
+     */
+    private fun isCallerTrusted(caller: MediaSession.ControllerInfo): Boolean {
+        if (caller.uid == Process.myUid() || caller.uid == Process.SYSTEM_UID) return true
+        return caller.packageName in TRUSTED_BROWSER_PACKAGES
+    }
+
     private inner class LibraryCallback : MediaLibrarySession.Callback {
 
         override fun onGetLibraryRoot(
@@ -200,6 +216,10 @@ class PlaybackService : MediaLibraryService() {
                     "recent=${params?.isRecent} suggested=${params?.isSuggested} " +
                     "offline=${params?.isOffline}",
             )
+            if (!isCallerTrusted(browser)) {
+                Log.w(TAG, "onGetLibraryRoot: denied untrusted '${browser.packageName}' uid=${browser.uid}")
+                return@future LibraryResult.ofError(SessionResult.RESULT_ERROR_PERMISSION_DENIED)
+            }
             try {
                 // Android Auto asks for a "recent" root to populate the resume /
                 // now-playing card. Hand back a dedicated root whose single child is
@@ -218,6 +238,9 @@ class PlaybackService : MediaLibraryService() {
             mediaId: String,
         ): ListenableFuture<LibraryResult<MediaItem>> = scope.future(Dispatchers.IO) {
             Log.i(TAG, "onGetItem: mediaId='$mediaId' caller='${browser.packageName}'")
+            if (!isCallerTrusted(browser)) {
+                return@future LibraryResult.ofError(SessionResult.RESULT_ERROR_PERMISSION_DENIED)
+            }
             try {
                 val item = when (mediaId) {
                     ROOT_ID -> rootItem()
@@ -255,6 +278,9 @@ class PlaybackService : MediaLibraryService() {
                 "onGetChildren: parent='$parentId' page=$page pageSize=$pageSize " +
                     "caller='${browser.packageName}'",
             )
+            if (!isCallerTrusted(browser)) {
+                return@future LibraryResult.ofItemList(ImmutableList.of<MediaItem>(), null)
+            }
             try {
                 val children: List<MediaItem> = when (parentId) {
                     ROOT_ID -> listOf(
@@ -373,7 +399,7 @@ class PlaybackService : MediaLibraryService() {
     private fun podcastItem(feedUrl: String, title: String, imageUrl: String): MediaItem {
         val metadata = MediaMetadata.Builder()
             .setTitle(title)
-            .setArtworkUri(imageUrl.takeIf { it.isNotBlank() }?.toUri())
+            .setArtworkUri(httpUrlOrEmpty(imageUrl).takeIf { it.isNotBlank() }?.toUri())
             .setIsBrowsable(true)
             .setIsPlayable(false)
             .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST)
@@ -388,7 +414,7 @@ class PlaybackService : MediaLibraryService() {
     private fun episodeBrowseItem(episode: EpisodeEntity): MediaItem {
         val metadata = MediaMetadata.Builder()
             .setTitle(episode.title)
-            .setArtworkUri(episode.imageUrl.takeIf { it.isNotBlank() }?.toUri())
+            .setArtworkUri(httpUrlOrEmpty(episode.imageUrl).takeIf { it.isNotBlank() }?.toUri())
             .setIsBrowsable(false)
             .setIsPlayable(true)
             .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST_EPISODE)
@@ -399,14 +425,21 @@ class PlaybackService : MediaLibraryService() {
             .build()
     }
 
-    /** A fully playable episode with its local/remote audio URI. */
-    private fun playableItem(episode: EpisodeEntity): MediaItem {
-        val uri: Uri = episode.localFilePath
+    /**
+     * A fully playable episode with its local/remote audio URI, or null if it has
+     * neither a downloaded file nor a safe http(s) source. The remote URI and the
+     * artwork (handed to SystemUI / Android Auto) are restricted to http(s) so a
+     * tampered feed can't make us open a local file:// / content:// URI.
+     */
+    private fun playableItem(episode: EpisodeEntity): MediaItem? {
+        val localUri: Uri? = episode.localFilePath
             ?.let { path -> File(path).takeIf { it.exists() }?.let { Uri.fromFile(it) } }
-            ?: episode.audioUrl.toUri()
+        val uri: Uri = localUri
+            ?: episode.audioUrl.takeIf { isHttpUrl(it) }?.toUri()
+            ?: return null
         val metadata = MediaMetadata.Builder()
             .setTitle(episode.title)
-            .setArtworkUri(episode.imageUrl.takeIf { it.isNotBlank() }?.toUri())
+            .setArtworkUri(httpUrlOrEmpty(episode.imageUrl).takeIf { it.isNotBlank() }?.toUri())
             .setIsBrowsable(false)
             .setIsPlayable(true)
             .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST_EPISODE)
@@ -475,6 +508,21 @@ class PlaybackService : MediaLibraryService() {
 
         /** Volume-boost gain in millibels (~10 dB) when "Boost volume" is on. */
         private const val BOOST_GAIN_MB = 1_000
+
+        /**
+         * Packages allowed to browse the media library tree, beyond callers that
+         * already share our uid or the system uid. Covers Android Auto, the
+         * Assistant, Wear OS and the platform's media controls.
+         */
+        private val TRUSTED_BROWSER_PACKAGES = setOf(
+            "com.google.android.projection.gearhead", // Android Auto
+            "com.google.android.autosimulator",       // Android Auto head-unit simulator
+            "com.google.android.carassistant",        // Automotive assistant
+            "com.google.android.googlequicksearchbox", // Google Assistant
+            "com.google.android.wearable.app",        // Wear OS companion
+            "com.android.systemui",                   // System media controls
+            "com.google.android.bluetooth",           // Bluetooth media controls
+        )
 
         // Browse-tree node ids.
         private const val ROOT_ID = "[root]"

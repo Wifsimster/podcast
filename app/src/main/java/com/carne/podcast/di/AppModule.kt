@@ -37,7 +37,7 @@ object AppModule {
         Room.databaseBuilder(context, CarneDatabase::class.java, "carne.db")
             // Real migrations preserve the user's library & listening history
             // across schema bumps; destructive fallback is only a last resort.
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
             .fallbackToDestructiveMigration()
             .build()
 
@@ -74,6 +74,16 @@ object AppModule {
         override fun migrate(db: SupportSQLiteDatabase) {
             db.execSQL("ALTER TABLE `podcasts` ADD COLUMN `overrideSpeed` REAL")
             db.execSQL("ALTER TABLE `podcasts` ADD COLUMN `autoDownload` INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
+    /** v5 indexes episodes.downloadState so the Downloads query stops table-scanning. */
+    private val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_episodes_downloadState` " +
+                    "ON `episodes` (`downloadState`)"
+            )
         }
     }
 }
