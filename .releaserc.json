@@ -22,7 +22,7 @@
         "assets": [
           {
             "path": "app/build/outputs/apk/release/app-release.apk",
-            "label": "Carne v${nextRelease.version} (app-release.apk)"
+            "label": "Ondes v${nextRelease.version} (app-release.apk)"
           }
         ]
       }

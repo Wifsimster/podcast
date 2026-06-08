@@ -1,7 +1,7 @@
 # 🚀 Google Play Store — publication checklist
 
-Tracking everything required to ship **Carne** on the Google Play Store.
-Carne was originally built for sideloading (no store, no account), so this
+Tracking everything required to ship **Ondes** on the Google Play Store.
+Ondes was originally built for sideloading (no store, no account), so this
 covers the gap to a production Play listing.
 
 Legend: ✅ done · 🟡 partially done / needs action · ⬜ not started ·
@@ -16,7 +16,7 @@ Legend: ✅ done · 🟡 partially done / needs action · ⬜ not started ·
 | 1.1 | Release signing config reads an **upload key** from `keystore.properties` / CI env vars, falls back to debug key when absent | ✅ | `app/build.gradle.kts`. See `keystore.properties.example`. |
 | 1.2 | Generate the real **upload keystore** and store it safely (1Password / secret manager) | ⬜ | Run `./scripts/setup-upload-keystore.sh`. Full walkthrough: [`docs/SIGNING_SETUP.md`](SIGNING_SETUP.md). **Never commit it.** |
 | 1.3 | Add CI secrets: `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` | ⬜ | The setup script prints the exact `gh secret set` commands. See [`docs/SIGNING_SETUP.md`](SIGNING_SETUP.md) §3. |
-| 1.4 | Build the **Android App Bundle (.aab)** — Play requires AAB, not APK | ✅ | `./gradlew bundleRelease` → `app/build/outputs/bundle/release/app-release.aab`. CI uploads `carne-release-aab`. |
+| 1.4 | Build the **Android App Bundle (.aab)** — Play requires AAB, not APK | ✅ | `./gradlew bundleRelease` → `app/build/outputs/bundle/release/app-release.aab`. CI uploads `ondes-release-aab`. |
 | 1.5 | `targetSdk` meets Play's current minimum for new apps | ✅ | `targetSdk = 36` (Android 16), `compileSdk = 36`. |
 | 1.6 | **16 KB page size** compliance (required for new apps/updates on Android 15+) | ✅ | Enforced in CI: `scripts/check-16kb-alignment.sh` inspects every `.so` in the AAB and fails the build if any LOAD segment isn't 16 KB-aligned (passes trivially if there are no native libs). Run locally on any `.aab`/`.apk` too. |
 | 1.7 | `versionCode` strictly increases on every upload | ✅ | Derived from semver in `app/build.gradle.kts` (major*10000 + minor*100 + patch). v1.4.0 → `10400`. |
@@ -38,7 +38,7 @@ Legend: ✅ done · 🟡 partially done / needs action · ⬜ not started ·
 | # | Item | Status | Notes |
 |---|------|--------|-------|
 | 3.1 | **Privacy policy URL** (hosted, public) | 🔴 ⬜ | Mandatory for all apps. Draft below in §6. Host it (GitHub Pages works). |
-| 3.2 | **Data safety** form | ⬜ | Carne stores everything on-device, no accounts, no analytics/ads. Declare: no data collected/shared. Mention network calls to iTunes search + RSS feeds (not "collection" per Play's definition, but be accurate). |
+| 3.2 | **Data safety** form | ⬜ | Ondes stores everything on-device, no accounts, no analytics/ads. Declare: no data collected/shared. Mention network calls to iTunes search + RSS feeds (not "collection" per Play's definition, but be accurate). |
 | 3.3 | **Foreground service** declaration | ⬜ | Justify `FOREGROUND_SERVICE_MEDIA_PLAYBACK` — background audio playback (core feature). |
 | 3.4 | **Content rating** (IARC) questionnaire | ⬜ | Likely "Everyone"; podcast content is user-fetched, so review the music/streaming questions. |
 | 3.5 | **Ads** declaration | ⬜ | No ads. |
@@ -61,7 +61,7 @@ Legend: ✅ done · 🟡 partially done / needs action · ⬜ not started ·
 
 ## 5. Branding / legal risk — ✅ resolved
 
-The app was previously named **"Carne"**, themed around, and **auto-subscribed**
+The app was previously named **"Ondes"**, themed around, and **auto-subscribed**
 the third-party podcast **"Silicon Carne"** by Carlos Diaz with no affiliation —
 which risked tripping Google Play's **Impersonation** and **Intellectual
 Property** policies.
@@ -70,11 +70,11 @@ Property** policies.
 - ✅ Renamed the user-facing app to **"Ondes"** (`app_name`, onboarding/home
   copy, OPML export title, HTTP User-Agent).
 - ✅ Removed the first-launch auto-subscription of the Silicon Carne feed
-  (`CarneApp.bootstrapDefaultSubscription` and `SILICON_CARNE_FEED` deleted).
+  (`OndesApp.bootstrapDefaultSubscription` and `SILICON_CARNE_FEED` deleted).
   Users now add shows themselves via search / RSS / OPML.
 - ✅ Updated README to drop the Silicon Carne references.
 
-Note: the internal `applicationId`/package stays `com.carne.podcast` (not
+Note: the internal `applicationId`/package stays `com.ondes.podcast` (not
 user-visible, generic word, not infringing) to avoid a permanent ID change and
 a large package refactor. Revisit only if you want a fully on-brand store URL
 **before** the first publish (the ID is immutable once published).

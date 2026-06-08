@@ -7,7 +7,7 @@
   transmitted. To keep that guarantee true we explicitly exclude every store of
   user data from BOTH cloud backup (Google Drive) and direct device-to-device
   transfer:
-    - carne.db        — Room DB: subscriptions, episodes, listening progress, queue
+    - ondes.db        — Room DB: subscriptions, episodes, listening progress, queue
     - datastore/      — Preferences DataStore: user settings
     - downloads/      — offline episode audio (large, re-downloadable; would also
                         blow Auto Backup's ~25 MB quota and silently disable backup)
@@ -17,12 +17,12 @@
 -->
 <data-extraction-rules>
     <cloud-backup>
-        <exclude domain="database" path="carne.db" />
+        <exclude domain="database" path="ondes.db" />
         <exclude domain="file" path="datastore" />
         <exclude domain="file" path="downloads" />
     </cloud-backup>
     <device-transfer>
-        <exclude domain="database" path="carne.db" />
+        <exclude domain="database" path="ondes.db" />
         <exclude domain="file" path="datastore" />
         <exclude domain="file" path="downloads" />
     </device-transfer>

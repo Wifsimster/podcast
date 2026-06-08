@@ -6,7 +6,7 @@
   the ~25 MB backup quota. Portability is via the in-app OPML / JSON export.
 -->
 <full-backup-content>
-    <exclude domain="database" path="carne.db" />
+    <exclude domain="database" path="ondes.db" />
     <exclude domain="file" path="datastore" />
     <exclude domain="file" path="downloads" />
 </full-backup-content>

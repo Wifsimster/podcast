@@ -20,5 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Carne"
+rootProject.name = "Ondes"
 include(":app")

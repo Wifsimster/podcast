@@ -41,11 +41,11 @@ val appVersionCode: Int = appVersionName.substringBefore("-").split(".").let { p
 }
 
 android {
-    namespace = "com.carne.podcast"
+    namespace = "com.ondes.podcast"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.carne.podcast"
+        applicationId = "com.ondes.podcast"
         minSdk = 26
         targetSdk = 36
         versionCode = appVersionCode
