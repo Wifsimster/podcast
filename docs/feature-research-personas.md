@@ -11,7 +11,7 @@
 ## 1. Méthodologie
 
 Cinq « chercheurs produit » ont chacun incarné un profil d'utilisateur réel,
-exploré la base de code (`app/src/main/java/com/ondes/podcast/`) pour
+exploré la base de code (`app/src/main/java/ovh/battistella/ondes/`) pour
 cartographier ce qui existe déjà, et proposé 6 à 8 idées chacun, avec
 estimation d'effort et note d'implémentation ancrée dans de vrais fichiers.
 
