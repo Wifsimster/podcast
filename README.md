@@ -105,7 +105,7 @@ Requires JDK 17 and the Android SDK (platform 35).
 ## Project layout
 
 ```
-app/src/main/java/com/ondes/podcast/
+app/src/main/java/ovh/battistella/ondes/
 ├─ data/        Room (local) · RSS + iTunes (remote) · repository · settings (DataStore) · opml + backup (data ownership)
 ├─ playback/    Media3 service, controller bridge, sleep timer
 ├─ download/    WorkManager episode downloader
@@ -120,7 +120,7 @@ app/src/main/java/com/ondes/podcast/
 
 - Ondes is an independent player. It streams the publicly published RSS feeds
   you subscribe to and is not affiliated with any podcast or publisher.
-- The internal package/applicationId remains `com.ondes.podcast` for
+- The internal package/applicationId remains `ovh.battistella.ondes` for
   historical reasons; the user-facing name is **Ondes**.
 
 ---

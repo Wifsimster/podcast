@@ -49,7 +49,7 @@ At six tabs, labels truncate on narrow screens and at large font scale, and each
 | Tab re-select is a no-op (`OndesNavigation.kt:162-172`) — wire it to `animateScrollToItem(0)` (scroll-to-top, the standard pattern) | medium | quick-win |
 | Adopt **`NavigationSuiteScaffold` / `NavigationRail`** so the same 4 destinations adapt to medium/expanded widths (tablets, foldables, landscape) instead of a bottom bar everywhere (`OndesNavigation.kt:73-88`) | high | large |
 
-**File:** `app/src/main/java/com/ondes/podcast/ui/navigation/OndesNavigation.kt`, `Routes.kt`, `MiniPlayer.kt`
+**File:** `app/src/main/java/ovh/battistella/ondes/ui/navigation/OndesNavigation.kt`, `Routes.kt`, `MiniPlayer.kt`
 
 ---
 

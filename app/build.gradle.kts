@@ -41,11 +41,11 @@ val appVersionCode: Int = appVersionName.substringBefore("-").split(".").let { p
 }
 
 android {
-    namespace = "com.ondes.podcast"
+    namespace = "ovh.battistella.ondes"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.ondes.podcast"
+        applicationId = "ovh.battistella.ondes"
         minSdk = 26
         targetSdk = 36
         versionCode = appVersionCode

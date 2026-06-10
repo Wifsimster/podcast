@@ -74,7 +74,7 @@ Property** policies.
   Users now add shows themselves via search / RSS / OPML.
 - ✅ Updated README to drop the Silicon Carne references.
 
-Note: the internal `applicationId`/package stays `com.ondes.podcast` (not
+Note: the internal `applicationId`/package stays `ovh.battistella.ondes` (not
 user-visible, generic word, not infringing) to avoid a permanent ID change and
 a large package refactor. Revisit only if you want a fully on-brand store URL
 **before** the first publish (the ID is immutable once published).
