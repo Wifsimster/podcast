@@ -7,8 +7,9 @@ app — not the playback engine.
 
 This note records how Ondes's copy was revised to respect the principles, and —
 just as importantly — which principles were **deliberately not applied** because
-they conflict with what Ondes is: a free, ad-free, tracker-free, no-login,
-open-source player. Forcing those would make the product worse, not more viral.
+they conflict with what Ondes is: an ad-free, tracker-free, no-login,
+open-source player that's **free to build and a one-time purchase on Play**.
+Forcing the rest would make the product worse, not more viral.
 
 ## Applied
 
@@ -31,18 +32,29 @@ open-source player. Forcing those would make the product worse, not more viral.
 | 26 | No weak words | Removed "& more" and bare adjectives from the short description and hero. |
 | 28 | CTA says what happens next | "Get the APK — installs in under a minute, no store account required." |
 | 30 | Describe it in under 10 words | Tagline: "Your podcasts. 0 ads, 0 trackers, 0 account." |
+| 27 | One-time payment, not a subscription | The Play Store version is a **one-time purchase** (placeholder ~$3 / €3), and the price is sold *as a feature*: "Pay once — yours for good. No subscription, no ads, no upsells, ever." |
+| 25 | Let people try before they pay | The free, open-source sideload build **is** the trial: "Try it free here first; buy it on Play if it earns a spot on your phone." |
+
+## Monetization model
+
+Ondes uses a **two-path** model that lets it honor the pricing principles without
+betraying the open-source ethos:
+
+- **Free** — clone, build and sideload the open-source APK (also published as a CI
+  artifact / GitHub Release). This is the try-before-you-buy path (#25).
+- **Paid** — a **one-time purchase** on Google Play (placeholder ~$3 / €3, set per
+  market in the Play Console). Same app, no subscription, no ads, no in-app
+  purchases — the convenience of one-tap install, and it funds the work (#27).
 
 ## Deliberately not applied (and why)
 
 | # | Principle | Why it's wrong for Ondes |
 |---|-----------|--------------------------|
-| 1 | No free plan | Ondes is free and open-source by design. A privacy player you must pay to try is a contradiction. |
-| 8 | Hard paywall | Same — there is no payment step to gate. |
-| 12 / 16 | Pricing tiers / "Pricing" in the header | There is no price; inventing tiers would be noise. |
-| 25 | Let people try before they pay | Already 100% free — the whole app *is* the trial. |
-| 27 | No subscription | Already true (no subscription exists), so nothing to change. |
-| 31 | Be more expensive than competitors | Price is $0 on purpose; "charge more" is off the table. |
-| 29 | Don't launch without testimonials | We won't fabricate quotes. Real user reviews belong on the store page once they exist. |
+| 1 | No free plan | The open-source build stays free on purpose — a *privacy* player you can't inspect or self-host would undercut its own pitch. The Play version is paid; the free build is the "plan." |
+| 8 | Hard paywall | The Play listing is paid (a soft paywall), but we won't wall off the open-source build or gate features behind a second payment. |
+| 12 / 16 | Pricing tiers / "Pricing" in the header | One price, every feature, forever — inventing Good/Better/Best tiers would add decisions, not sales (the opposite of the goal). |
+| 31 | Be more expensive than competitors | A one-time ~€3 against free-with-ads / subscription rivals is *cheaper*, and that contrast is the selling point. "Charge more" doesn't fit the privacy-for-everyone positioning. |
+| 29 | Don't launch without testimonials | We won't fabricate quotes. Real Play Store reviews belong on the listing once they exist. |
 | 5 / 15 | OG image as a thumbnail / founder's face | Design and personal-brand assets, out of scope for a copy pass; the feature graphic lives in `docs/store-assets/`. |
 
 ## Why the in-app copy was left mostly as-is

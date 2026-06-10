@@ -72,6 +72,13 @@ store account required.
 
 ## Get the APK on your phone
 
+> **Free to build, fair to buy.** Ondes is open source — clone it, build it, and
+> sideload it for free, forever (the steps below). The **Google Play** version is
+> a **one-time purchase** (no subscription, no ads, no in-app purchases) for
+> people who'd rather tap *Install* than run Gradle — it's the same app, and it
+> funds the work. Try it free here first; buy it on Play if it earns a spot on
+> your phone.
+
 **Easiest — from CI:** every push builds an installable APK.
 1. Open the repo's **Actions** tab → latest **Build APK** run.
 2. Download the **`ondes-release-apk`** artifact and unzip it.

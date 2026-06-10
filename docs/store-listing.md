@@ -26,6 +26,9 @@ every tap, an account before you can press play. Ondes does none of that.
 0 ads. 0 trackers. 0 account. Every subscription, download, position and setting
 stays on your phone — nothing is sent anywhere.
 
+Pay once — Ondes is yours for good. No subscription, no ads, no upsells, ever.
+One price, every feature, forever.
+
 Search a show or paste any RSS feed, then listen your way: full background
 playback with lock-screen and notification controls, 0.8×–3× speed, skip
 silence, and a volume boost for clearer speech over road and train noise. Finish
@@ -80,6 +83,9 @@ Ondes ne fait rien de tout ça.
 0 pub. 0 pisteur. 0 compte. Vos abonnements, téléchargements, positions et
 réglages restent sur votre téléphone — rien n'est envoyé nulle part.
 
+Payez une fois — Ondes est à vous pour toujours. Pas d'abonnement, pas de pub,
+aucune option payante. Un seul prix, toutes les fonctions, à vie.
+
 Cherchez une émission ou collez n'importe quel flux RSS, puis écoutez à votre
 façon : lecture en arrière-plan complète avec contrôles écran de verrouillage et
 notifications, vitesse 0,8×–3×, suppression des silences et boost de volume pour
@@ -122,5 +128,7 @@ vous abonnez et n'est affilié à aucun podcast ni éditeur.
 | Tags | podcast, player, audio |
 | Contact email | battistella@proton.me |
 | Privacy policy URL | (host `docs/privacy-policy.md`, then paste the URL) |
-| App access | All functionality available without special access / login |
+| Pricing | **Paid app — one-time purchase** (placeholder: ~$3 / €3; set the final price per market in the Play Console). No subscription, no in-app purchases. |
+| App access | All functionality unlocked on purchase — no login, no further charges |
 | Contains ads | No |
+| In-app purchases | No |
