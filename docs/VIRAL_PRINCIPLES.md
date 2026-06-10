@@ -32,7 +32,7 @@ Forcing the rest would make the product worse, not more viral.
 | 26 | No weak words | Removed "& more" and bare adjectives from the short description and hero. |
 | 28 | CTA says what happens next | "Get the APK — installs in under a minute, no store account required." |
 | 30 | Describe it in under 10 words | Tagline: "Your podcasts. 0 ads, 0 trackers, 0 account." |
-| 27 | One-time payment, not a subscription | The Play Store version is a **one-time purchase** (placeholder ~$3 / €3), and the price is sold *as a feature*: "Pay once — yours for good. No subscription, no ads, no upsells, ever." |
+| 27 | One-time payment, not a subscription | The Play Store version is a **one-time purchase** (€2.99 / $2.99 launch price), and the price is sold *as a feature*: "Pay once — yours for good. No subscription, no ads, no upsells, ever." |
 | 25 | Let people try before they pay | The free, open-source sideload build **is** the trial: "Try it free here first; buy it on Play if it earns a spot on your phone." |
 
 ## Monetization model
@@ -42,9 +42,19 @@ betraying the open-source ethos:
 
 - **Free** — clone, build and sideload the open-source APK (also published as a CI
   artifact / GitHub Release). This is the try-before-you-buy path (#25).
-- **Paid** — a **one-time purchase** on Google Play (placeholder ~$3 / €3, set per
-  market in the Play Console). Same app, no subscription, no ads, no in-app
-  purchases — the convenience of one-tap install, and it funds the work (#27).
+- **Paid** — a **one-time purchase** on Google Play (**€2.99 / $2.99 launch price**,
+  with Google Play local pricing left on so other markets auto-adjust). Same app,
+  no subscription, no ads, no in-app purchases — the convenience of one-tap
+  install, and it funds the work (#27).
+
+**Why €2.99 (the pricing-debate verdict).** A free, open-source build already
+exists, so the Play price buys *convenience + support*, not the software — which
+caps how high it can go against free rivals like AntennaPod. €2.99 clears the
+"why not just use the free one?" objection with margin to spare, matches charm
+pricing (#3), and is paired with the one-time-vs-subscription story ("less than
+two months of a podcast subscription; buy once, not €40 every year"). The plan is
+to **launch at €2.99 and raise to €3.99 after ~50+ ratings** — you can always
+raise a price, but cutting one at launch reads as desperation.
 
 ## Deliberately not applied (and why)
 

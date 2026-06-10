@@ -128,7 +128,7 @@ vous abonnez et n'est affilié à aucun podcast ni éditeur.
 | Tags | podcast, player, audio |
 | Contact email | battistella@proton.me |
 | Privacy policy URL | (host `docs/privacy-policy.md`, then paste the URL) |
-| Pricing | **Paid app — one-time purchase** (placeholder: ~$3 / €3; set the final price per market in the Play Console). No subscription, no in-app purchases. |
+| Pricing | **Paid app — one-time purchase: €2.99 / $2.99 launch price.** Leave Google Play local pricing (PPP) **on** so other markets auto-adjust; review the per-country prices once before publishing. Planned: raise to €3.99 / $3.99 once the listing has ~50+ ratings. No subscription, no in-app purchases. |
 | App access | All functionality unlocked on purchase — no login, no further charges |
 | Contains ads | No |
 | In-app purchases | No |
