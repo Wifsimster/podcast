@@ -15,17 +15,24 @@ Ondes — Podcast Player
 
 **Short description** (≤80)
 ```
-Ad-free, private podcast player: downloads, Android Auto, sleep timer & more
+Podcasts with 0 ads, 0 trackers, 0 account. Downloads, Android Auto, 3× speed.
 ```
 
 **Full description** (≤4000)
 ```
-Ondes is a clean, fast, ad-free podcast player for Android — no ads, no
-analytics, no account. Just your shows.
+Most podcast apps make you the product: ads between episodes, trackers logging
+every tap, an account before you can press play. Ondes does none of that.
 
-Discover podcasts with built-in search or paste any RSS feed, then listen the
-way you like: full background playback with lock-screen and notification
-controls, variable speed, skip silence, and a volume boost for clearer speech.
+0 ads. 0 trackers. 0 account. Every subscription, download, position and setting
+stays on your phone — nothing is sent anywhere.
+
+Pay once — Ondes is yours for good. No subscription, no ads, no upsells, ever.
+One price, every feature, forever.
+
+Search a show or paste any RSS feed, then listen your way: full background
+playback with lock-screen and notification controls, 0.8×–3× speed, skip
+silence, and a volume boost for clearer speech over road and train noise. Finish
+a 60-minute show in 40.
 
 FEATURES
 • Background playback with lock-screen & notification controls
@@ -42,7 +49,7 @@ FEATURES
 • Subscriptions library with pull-to-refresh and per-show filtering
 • Own your data: OPML import/export and full local backup/restore
 • Material You dynamic theming, light/dark/system, edge-to-edge
-• Localized in English and French
+• Localized in 5 languages: English, French, German, Spanish, Portuguese
 • Accessibility: full TalkBack support with custom actions
 
 PRIVATE BY DESIGN
@@ -64,19 +71,26 @@ Ondes — Lecteur de podcasts
 
 **Description courte** (≤80)
 ```
-Lecteur de podcasts privé et sans pub : téléchargements, Android Auto, minuteur
+Podcasts sans pub, sans pisteurs, sans compte. Téléchargements, Android Auto.
 ```
 
 **Description complète** (≤4000)
 ```
-Ondes est un lecteur de podcasts pour Android : épuré, rapide et sans
-publicité — pas de pub, pas d'analyse, pas de compte. Juste vos émissions.
+La plupart des apps de podcast font de vous le produit : pub entre les épisodes,
+pisteurs qui notent chaque geste, un compte avant même d'appuyer sur lecture.
+Ondes ne fait rien de tout ça.
 
-Trouvez des podcasts grâce à la recherche intégrée ou collez n'importe quel
-flux RSS, puis écoutez comme vous voulez : lecture en arrière-plan complète
-avec contrôles sur l'écran de verrouillage et les notifications, vitesse
-variable, suppression des silences et boost de volume pour des voix plus
-claires.
+0 pub. 0 pisteur. 0 compte. Vos abonnements, téléchargements, positions et
+réglages restent sur votre téléphone — rien n'est envoyé nulle part.
+
+Payez une fois — Ondes est à vous pour toujours. Pas d'abonnement, pas de pub,
+aucune option payante. Un seul prix, toutes les fonctions, à vie.
+
+Cherchez une émission ou collez n'importe quel flux RSS, puis écoutez à votre
+façon : lecture en arrière-plan complète avec contrôles écran de verrouillage et
+notifications, vitesse 0,8×–3×, suppression des silences et boost de volume pour
+des voix plus claires malgré le bruit de la route ou du train. Terminez une
+émission de 60 minutes en 40.
 
 FONCTIONNALITÉS
 • Lecture en arrière-plan avec contrôles écran de verrouillage & notifications
@@ -93,7 +107,7 @@ FONCTIONNALITÉS
 • Bibliothèque d'abonnements avec tirer-pour-actualiser et filtres par émission
 • Vos données vous appartiennent : import/export OPML et sauvegarde locale
 • Thème dynamique Material You, clair/sombre/système, bord à bord
-• Traduit en français et en anglais
+• Traduit en 5 langues : français, anglais, allemand, espagnol, portugais
 • Accessibilité : prise en charge complète de TalkBack
 
 PRIVÉ PAR CONCEPTION
@@ -114,5 +128,7 @@ vous abonnez et n'est affilié à aucun podcast ni éditeur.
 | Tags | podcast, player, audio |
 | Contact email | battistella@proton.me |
 | Privacy policy URL | (host `docs/privacy-policy.md`, then paste the URL) |
-| App access | All functionality available without special access / login |
+| Pricing | **Paid app — one-time purchase: €2.99 / $2.99 launch price.** Leave Google Play local pricing (PPP) **on** so other markets auto-adjust; review the per-country prices once before publishing. Planned: raise to €3.99 / $3.99 once the listing has ~50+ ratings. No subscription, no in-app purchases. |
+| App access | All functionality unlocked on purchase — no login, no further charges |
 | Contains ads | No |
+| In-app purchases | No |

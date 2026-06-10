@@ -1,7 +1,23 @@
-# 📻 Ondes — a modern Android podcast player
+# 📻 Ondes — podcasts without the ads watching you back
 
-A clean, ad-free, tracker-free podcast player for Android. Discover shows via
-search, paste any RSS feed, or import your OPML — then listen anywhere.
+**Your podcasts. 0 ads, 0 trackers, 0 account. Just press play.**
+
+Most podcast apps make you the product: ads between episodes, trackers logging
+every tap, an account before you can listen. Ondes does none of that. Search a
+show, paste any RSS feed, or import your OPML — then listen anywhere: on your
+phone, from the lock screen, or hands-free in the car.
+
+- 🚫 **0 ads · 0 trackers · 0 login** — every subscription, download and
+  setting stays on your phone
+- ⏩ **0.8×–3× speed**, skip silence and a volume boost — finish a 60-minute
+  show in 40
+- 💾 **Offline downloads** that survive the app being closed — your commute,
+  your flight, your dead zones
+- 🚗 **Android Auto** — browse and play hands-free
+- 🌍 **5 languages**, light & dark, Material You
+
+👉 **[Get the APK](#get-the-apk-on-your-phone)** — installs in under a minute, no
+store account required.
 
 ## Screenshots
 
@@ -33,7 +49,7 @@ search, paste any RSS feed, or import your OPML — then listen anywhere.
 - ♿ **Accessibility** — merged TalkBack list items with custom actions for every episode operation
 - 🧾 **Up-Next queue** — a persistent, reorderable play queue ("Play next" / "Add to queue")
 - 💼 **Own your data** — OPML import/export and a full local backup/restore (subscriptions, progress & settings), all on-device
-- 🌍 **Localized** — English & French (`fr`)
+- 🌍 **Localized in 5 languages** — English, French, German, Spanish & Portuguese
 - ⚙️ **Settings** for playback, downloads, updates, your data and appearance
 - 🎨 **Material You** dynamic theming, light/dark/system theme, edge-to-edge
 - 🚫 No ads, no analytics, no login
@@ -55,6 +71,13 @@ search, paste any RSS feed, or import your OPML — then listen anywhere.
 `minSdk 26` (Android 8.0) · `targetSdk 35` · single-activity, MVVM.
 
 ## Get the APK on your phone
+
+> **Free to build, fair to buy.** Ondes is open source — clone it, build it, and
+> sideload it for free, forever (the steps below). The **Google Play** version is
+> a **one-time purchase** (no subscription, no ads, no in-app purchases) for
+> people who'd rather tap *Install* than run Gradle — it's the same app, and it
+> funds the work. Try it free here first; buy it on Play if it earns a spot on
+> your phone.
 
 **Easiest — from CI:** every push builds an installable APK.
 1. Open the repo's **Actions** tab → latest **Build APK** run.
@@ -99,3 +122,13 @@ app/src/main/java/com/ondes/podcast/
   you subscribe to and is not affiliated with any podcast or publisher.
 - The internal package/applicationId remains `com.ondes.podcast` for
   historical reasons; the user-facing name is **Ondes**.
+
+---
+
+<p align="center">
+  <strong>Ondes</strong> — French for <em>waves</em>. Podcasts ride the
+  airwaves; your data never should.<br/>
+  <sub>0 ads · 0 trackers · 0 login · 100% on your phone</sub><br/><br/>
+  ⭐ If a player that doesn't spy on you is worth having, star the repo and
+  send it to a friend who's tired of ads.
+</p>
