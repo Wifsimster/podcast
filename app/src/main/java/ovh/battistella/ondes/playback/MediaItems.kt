@@ -78,6 +78,29 @@ object MediaItems {
             .setMediaMetadata(episodeMetadata(episode))
             .build()
 
+    /** A browsable, non-playable folder node in the Android Auto tree. */
+    fun folder(mediaId: String, title: String): MediaItem {
+        val metadata = MediaMetadata.Builder()
+            .setTitle(title)
+            .setIsBrowsable(true)
+            .setIsPlayable(false)
+            .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS)
+            .build()
+        return MediaItem.Builder().setMediaId(mediaId).setMediaMetadata(metadata).build()
+    }
+
+    /** A browsable podcast node whose children are its episodes. */
+    fun podcast(mediaId: String, title: String, imageUrl: String): MediaItem {
+        val metadata = MediaMetadata.Builder()
+            .setTitle(title)
+            .setArtworkUri(httpUrlOrEmpty(imageUrl).takeIf { it.isNotBlank() }?.toUri())
+            .setIsBrowsable(true)
+            .setIsPlayable(false)
+            .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST)
+            .build()
+        return MediaItem.Builder().setMediaId(mediaId).setMediaMetadata(metadata).build()
+    }
+
     private fun episodeMetadata(episode: EpisodeEntity): MediaMetadata =
         MediaMetadata.Builder()
             .setTitle(episode.title)
