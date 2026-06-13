@@ -13,7 +13,7 @@ import ovh.battistella.ondes.data.remote.ParsedFeed
 import ovh.battistella.ondes.data.remote.PodcastSearchResult
 import ovh.battistella.ondes.data.remote.PodcastSearchService
 import ovh.battistella.ondes.data.remote.RssParser
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -41,6 +41,7 @@ class PodcastRepository @Inject constructor(
     private val rssParser: RssParser,
     private val searchService: PodcastSearchService,
     private val httpClient: OkHttpClient,
+    private val ioDispatcher: CoroutineDispatcher,
 ) {
     fun observeSubscriptions(): Flow<List<PodcastEntity>> = podcastDao.observeSubscribed()
     fun observeSubscriptionsWithCounts(): Flow<List<PodcastWithCount>> =
@@ -70,19 +71,19 @@ class PodcastRepository @Inject constructor(
     suspend fun getLatestOnce(): List<EpisodeEntity> = observeLatest().first()
 
     /** Subscribe to a feed by URL, fetching its content. Returns the feed URL. */
-    suspend fun subscribe(feedUrl: String): Result<String> = withContext(Dispatchers.IO) {
+    suspend fun subscribe(feedUrl: String): Result<String> = withContext(ioDispatcher) {
         runCatching {
             refreshFeed(feedUrl, markSubscribed = true)
             feedUrl
         }
     }
 
-    suspend fun unsubscribe(feedUrl: String) = withContext(Dispatchers.IO) {
+    suspend fun unsubscribe(feedUrl: String) = withContext(ioDispatcher) {
         podcastDao.setSubscribed(feedUrl, false)
     }
 
     /** Soft-unsubscribe several feeds at once (library multi-select). */
-    suspend fun unsubscribeAll(feedUrls: Collection<String>) = withContext(Dispatchers.IO) {
+    suspend fun unsubscribeAll(feedUrls: Collection<String>) = withContext(ioDispatcher) {
         feedUrls.forEach { podcastDao.setSubscribed(it, false) }
     }
 
@@ -91,7 +92,7 @@ class PodcastRepository @Inject constructor(
      * used to undo a bulk unsubscribe. Rows are soft-deleted so this needs no
      * network refresh (unlike [subscribe]).
      */
-    suspend fun resubscribeAll(feedUrls: Collection<String>) = withContext(Dispatchers.IO) {
+    suspend fun resubscribeAll(feedUrls: Collection<String>) = withContext(ioDispatcher) {
         feedUrls.forEach { podcastDao.setSubscribed(it, true) }
     }
 
@@ -101,7 +102,7 @@ class PodcastRepository @Inject constructor(
      * surface "new episode" notifications); known episodes keep their state.
      */
     suspend fun refreshFeed(feedUrl: String, markSubscribed: Boolean = false): List<EpisodeEntity> =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val parsed: ParsedFeed = rssParser.fetchAndParse(feedUrl)
             val existing = podcastDao.getPodcast(feedUrl)
             podcastDao.upsert(
@@ -140,7 +141,7 @@ class PodcastRepository @Inject constructor(
             rows.filterIndexed { index, _ -> rowIds.getOrElse(index) { -1L } != -1L }
         }
 
-    suspend fun refreshAllSubscriptions(feedUrls: List<String>) = withContext(Dispatchers.IO) {
+    suspend fun refreshAllSubscriptions(feedUrls: List<String>) = withContext(ioDispatcher) {
         feedUrls.forEach { url -> runCatching { refreshFeed(url) } }
     }
 
@@ -149,7 +150,7 @@ class PodcastRepository @Inject constructor(
      * skipping a podcast's first-ever fetch so an initial subscribe doesn't
      * spam a notification for the whole back catalogue.
      */
-    suspend fun refreshSubscriptionsForNew(): List<NewEpisodeBatch> = withContext(Dispatchers.IO) {
+    suspend fun refreshSubscriptionsForNew(): List<NewEpisodeBatch> = withContext(ioDispatcher) {
         val subscriptions = getSubscriptionsOnce()
         subscriptions.mapNotNull { podcast ->
             val firstFetch = podcast.lastUpdated == 0L
@@ -169,7 +170,7 @@ class PodcastRepository @Inject constructor(
      * chapters JSON URL. Network + JSON happen off the main thread; failures
      * (offline, malformed) yield an empty list rather than throwing.
      */
-    suspend fun chaptersFor(episode: EpisodeEntity): List<Chapter> = withContext(Dispatchers.IO) {
+    suspend fun chaptersFor(episode: EpisodeEntity): List<Chapter> = withContext(ioDispatcher) {
         val url = episode.chaptersUrl?.takeIf { it.isNotBlank() } ?: return@withContext emptyList()
         runCatching {
             val request = Request.Builder().url(url).build()
@@ -197,13 +198,13 @@ class PodcastRepository @Inject constructor(
      * response (genuinely no matches). Collapsing both to an empty list made
      * offline look like "no podcasts found".
      */
-    suspend fun search(term: String): Result<List<PodcastSearchResult>> = withContext(Dispatchers.IO) {
+    suspend fun search(term: String): Result<List<PodcastSearchResult>> = withContext(ioDispatcher) {
         runCatching { searchService.search(term) }
     }
 
     /** Top shows for a theme (iTunes genre id), to propose on the Discover screen. */
     suspend fun topPodcasts(genreId: Int, limit: Int = 15): List<PodcastSearchResult> =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             runCatching { searchService.topPodcasts(genreId, limit) }.getOrDefault(emptyList())
         }
 
@@ -228,26 +229,26 @@ class PodcastRepository @Inject constructor(
     suspend fun getQueueOnce(): List<EpisodeEntity> = queueDao.getQueueOnce()
 
     /** Append an episode to the end of the queue (no-op if already queued). */
-    suspend fun addToQueueEnd(episodeId: String) = withContext(Dispatchers.IO) {
+    suspend fun addToQueueEnd(episodeId: String) = withContext(ioDispatcher) {
         if (queueDao.contains(episodeId)) return@withContext
         val next = (queueDao.maxSortIndex() ?: 0L) + QUEUE_STEP
         queueDao.upsert(QueueItemEntity(episodeId, next))
     }
 
     /** Splice an episode to the front of the queue so it plays next. */
-    suspend fun playNextInQueue(episodeId: String) = withContext(Dispatchers.IO) {
+    suspend fun playNextInQueue(episodeId: String) = withContext(ioDispatcher) {
         val head = (queueDao.minSortIndex() ?: 0L) - QUEUE_STEP
         queueDao.upsert(QueueItemEntity(episodeId, head))
     }
 
-    suspend fun removeFromQueue(episodeId: String) = withContext(Dispatchers.IO) {
+    suspend fun removeFromQueue(episodeId: String) = withContext(ioDispatcher) {
         queueDao.remove(episodeId)
     }
 
-    suspend fun clearQueue() = withContext(Dispatchers.IO) { queueDao.clear() }
+    suspend fun clearQueue() = withContext(ioDispatcher) { queueDao.clear() }
 
     /** Persist a new explicit ordering of the queue (used by drag/move). */
-    suspend fun setQueueOrder(orderedEpisodeIds: List<String>) = withContext(Dispatchers.IO) {
+    suspend fun setQueueOrder(orderedEpisodeIds: List<String>) = withContext(ioDispatcher) {
         queueDao.upsertAll(
             orderedEpisodeIds.mapIndexed { index, id ->
                 QueueItemEntity(id, index.toLong() * QUEUE_STEP)
