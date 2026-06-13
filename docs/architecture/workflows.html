@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ondes · Component & Workflow Map</title>
+<style>
+  :root {
+    --bg: #0e1116;
+    --panel: #161b22;
+    --panel-2: #1c2430;
+    --node: #1e2733;
+    --node-border: #2d3a48;
+    --text: #e6edf3;
+    --muted: #8b97a6;
+    --accent: #7aa2ff;
+    --accent-2: #58e6c4;
+    --hot: #ffb454;
+    --dim-opacity: 0.18;
+    --layer-line: #232c38;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+  header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--layer-line);
+    background: linear-gradient(180deg, #131820, #0e1116);
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  header h1 { margin: 0; font-size: 18px; letter-spacing: .2px; }
+  header h1 .radio { color: var(--accent); }
+  header .sub { color: var(--muted); font-size: 13px; }
+  header .pkg {
+    margin-left: auto; color: var(--muted); font-size: 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  .layout { flex: 1; display: flex; min-height: 0; }
+
+  /* Sidebar */
+  aside {
+    width: 320px;
+    flex: none;
+    background: var(--panel);
+    border-right: 1px solid var(--layer-line);
+    overflow-y: auto;
+    padding: 14px;
+  }
+  aside .intro { color: var(--muted); font-size: 12.5px; margin: 0 0 14px; }
+  aside h2 {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .8px;
+    color: var(--muted); margin: 18px 4px 8px;
+  }
+  .flow-btn {
+    display: block; width: 100%; text-align: left;
+    background: var(--panel-2); color: var(--text);
+    border: 1px solid transparent; border-radius: 10px;
+    padding: 10px 12px; margin-bottom: 8px; cursor: pointer;
+    transition: border-color .15s, background .15s, transform .05s;
+  }
+  .flow-btn:hover { border-color: #38465a; }
+  .flow-btn:active { transform: translateY(1px); }
+  .flow-btn.active {
+    border-color: var(--accent);
+    background: linear-gradient(180deg, #1d2b4a, #182238);
+  }
+  .flow-btn .t { font-weight: 600; font-size: 13.5px; }
+  .flow-btn .s { color: var(--muted); font-size: 12px; margin-top: 3px; }
+
+  .reset {
+    margin-top: 6px; width: 100%; padding: 8px;
+    background: transparent; color: var(--muted);
+    border: 1px dashed #38465a; border-radius: 8px; cursor: pointer;
+  }
+  .reset:hover { color: var(--text); border-color: #4a5b72; }
+
+  /* Stage */
+  main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .stage-wrap { flex: 1; overflow: auto; padding: 22px; position: relative; }
+  #diagram { position: relative; min-width: 760px; }
+
+  svg.wires {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    pointer-events: none; overflow: visible; z-index: 3;
+  }
+  svg.wires path.wire {
+    fill: none; stroke: var(--accent);
+    stroke-width: 2.5; stroke-linecap: round;
+    opacity: .9;
+    stroke-dasharray: var(--len); stroke-dashoffset: var(--len);
+    animation: draw .5s ease forwards;
+  }
+  svg.wires path.wire.hot { stroke: var(--hot); stroke-width: 3.5; opacity: 1; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  svg.wires .badge circle { fill: var(--accent); stroke: #0e1116; stroke-width: 2; }
+  svg.wires .badge.hot circle { fill: var(--hot); }
+  svg.wires .badge text { fill: #0e1116; font-weight: 700; font-size: 11px; }
+
+  .layer { margin-bottom: 26px; position: relative; }
+  .layer-label {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: .7px;
+    color: var(--muted); margin-bottom: 9px; padding-left: 2px;
+  }
+  .layer-nodes { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  .node {
+    position: relative; z-index: 2;
+    background: var(--node);
+    border: 1px solid var(--node-border);
+    border-radius: 10px;
+    padding: 9px 12px; min-width: 120px;
+    transition: opacity .2s, border-color .2s, box-shadow .2s, transform .1s;
+  }
+  .node .nl { font-weight: 600; font-size: 13px; }
+  .node .ns {
+    color: var(--muted); font-size: 11px; margin-top: 2px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .node.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 6px 22px -8px var(--accent);
+  }
+  .node.endpoint { border-color: var(--hot); box-shadow: 0 0 0 1px var(--hot), 0 6px 22px -8px var(--hot); }
+  .filtering .node:not(.active) { opacity: var(--dim-opacity); }
+  .filtering .layer-label { opacity: .5; }
+
+  /* Steps panel */
+  .steps {
+    border-top: 1px solid var(--layer-line);
+    background: var(--panel);
+    max-height: 38vh; overflow-y: auto;
+    padding: 14px 20px;
+  }
+  .steps.empty { color: var(--muted); }
+  .steps h3 { margin: 0 0 4px; font-size: 15px; }
+  .steps .flow-sum { color: var(--muted); font-size: 12.5px; margin: 0 0 12px; }
+  ol.step-list { list-style: none; margin: 0; padding: 0; }
+  ol.step-list li {
+    display: grid; grid-template-columns: 26px 1fr; gap: 10px;
+    padding: 8px 8px; border-radius: 8px; cursor: default;
+    transition: background .12s;
+  }
+  ol.step-list li:hover, ol.step-list li.hot { background: var(--panel-2); }
+  .step-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent); color: #0e1116;
+    font-weight: 700; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  ol.step-list li.hot .step-num { background: var(--hot); }
+  .step-path { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+  .step-path b { color: var(--text); font-weight: 600; }
+  .step-path .arrow { color: var(--accent); margin: 0 5px; }
+  .step-label {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px; color: var(--accent-2);
+    background: #0f1a18; border: 1px solid #1d3a33;
+    padding: 1px 6px; border-radius: 5px; display: inline-block; margin: 2px 0 4px;
+  }
+  .step-note { font-size: 13px; }
+
+  .hint { color: var(--muted); font-size: 12px; }
+  @media (max-width: 760px) {
+    aside { width: 240px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="radio">📻 Ondes</span> · Component &amp; Workflow Map</h1>
+  <span class="sub" id="subtitle"></span>
+  <span class="pkg" id="pkg"></span>
+</header>
+
+<div class="layout">
+  <aside>
+    <p class="intro" id="intro"></p>
+    <h2>Workflows</h2>
+    <div id="flow-list"></div>
+    <button class="reset" id="reset">Clear · show all components</button>
+  </aside>
+
+  <main>
+    <div class="stage-wrap">
+      <div id="diagram">
+        <svg class="wires" id="wires" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/>
+            </marker>
+            <marker id="arrow-hot" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="var(--hot)"/>
+            </marker>
+          </defs>
+        </svg>
+        <!-- layers injected here -->
+      </div>
+    </div>
+    <div class="steps empty" id="steps">
+      <span class="hint">Pick a workflow on the left to trace it across the components.</span>
+    </div>
+  </main>
+</div>
+
+<!-- Inline fallback copy of workflows.json so this page also works opened directly from disk (file://). -->
+<script type="application/json" id="embedded-data">
+{
+  "meta": {
+    "app": "Ondes",
+    "subtitle": "Component & workflow map",
+    "description": "Every node below is a real package/component in the app (ovh.battistella.ondes.*). Pick a workflow on the left to light up the components it touches and see, step by step, what each one hands to the next.",
+    "package": "ovh.battistella.ondes"
+  },
+  "layers": [
+    { "id": "ui", "label": "UI · Compose screens + ViewModels (ui/*)" },
+    { "id": "repository", "label": "Repository · single source of truth (data/repository, data/settings)" },
+    { "id": "services", "label": "Services · playback / sync / download / import-export (playback, sync, download, data/opml, data/backup)" },
+    { "id": "data", "label": "Data sources (data/local, data/remote)" },
+    { "id": "platform", "label": "Platform & external systems" }
+  ],
+  "nodes": [
+    { "id": "home",          "label": "Home",            "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "library",       "label": "Library",         "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "podcast",       "label": "Podcast",         "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "search",        "label": "Search · Discover","sub": "Screen + ViewModel",       "layer": "ui" },
+    { "id": "player",        "label": "Player",          "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "downloads",     "label": "Downloads",       "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "queue",         "label": "Up-Next Queue",   "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "settings",      "label": "Settings",        "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "onboarding",    "label": "Onboarding",      "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "snackbar",      "label": "SnackbarController","sub": "common",                   "layer": "ui" },
+
+    { "id": "repository",    "label": "PodcastRepository","sub": "data/repository",           "layer": "repository" },
+    { "id": "settingsRepo",  "label": "SettingsRepository","sub": "data/settings",            "layer": "repository" },
+
+    { "id": "playbackConnection", "label": "PlaybackConnection", "sub": "playback · MediaController bridge", "layer": "services" },
+    { "id": "playbackService",    "label": "PlaybackService",    "sub": "playback · MediaLibraryService",    "layer": "services" },
+    { "id": "sleepTimer",         "label": "SleepTimer",         "sub": "playback",                          "layer": "services" },
+    { "id": "mediaLibraryTree",   "label": "MediaLibraryTree",   "sub": "playback · browse tree",            "layer": "services" },
+    { "id": "downloadManager",    "label": "DownloadManager",    "sub": "download",                          "layer": "services" },
+    { "id": "downloadWorker",     "label": "EpisodeDownloadWorker","sub": "download · Worker",               "layer": "services" },
+    { "id": "downloadNotifications","label": "DownloadNotifications","sub": "download",                      "layer": "services" },
+    { "id": "feedScheduler",      "label": "FeedRefreshScheduler","sub": "sync",                             "layer": "services" },
+    { "id": "feedWorker",         "label": "FeedRefreshWorker",  "sub": "sync · Worker",                     "layer": "services" },
+    { "id": "newEpisodeNotifier", "label": "NewEpisodeNotifier", "sub": "sync",                              "layer": "services" },
+    { "id": "opmlManager",        "label": "OpmlManager",        "sub": "data/opml",                         "layer": "services" },
+    { "id": "backupManager",      "label": "BackupManager",      "sub": "data/backup",                       "layer": "services" },
+
+    { "id": "room",          "label": "Room Database",   "sub": "data/local · DAOs + Entities", "layer": "data" },
+    { "id": "searchService", "label": "PodcastSearchService","sub": "data/remote",              "layer": "data" },
+    { "id": "rssParser",     "label": "RssParser",       "sub": "data/remote",                  "layer": "data" },
+
+    { "id": "workManager",   "label": "WorkManager",     "sub": "AndroidX background jobs",   "layer": "platform" },
+    { "id": "okhttp",        "label": "OkHttp",          "sub": "HTTP client (di/AppModule)", "layer": "platform" },
+    { "id": "exoplayer",     "label": "ExoPlayer · MediaSession","sub": "Media3",             "layer": "platform" },
+    { "id": "androidAuto",   "label": "Android Auto",    "sub": "external media browser",     "layer": "platform" },
+    { "id": "notifications", "label": "System Notifications","sub": "Android OS",             "layer": "platform" },
+    { "id": "storage",       "label": "Device Storage",  "sub": "app files / SAF documents",  "layer": "platform" },
+    { "id": "itunes",        "label": "iTunes API",      "sub": "itunes.apple.com",           "layer": "platform" },
+    { "id": "rssFeeds",      "label": "RSS Feeds",       "sub": "podcast hosts",              "layer": "platform" }
+  ],
+  "flows": [
+    {
+      "id": "subscribe",
+      "title": "Subscribe to a podcast",
+      "summary": "From a search result (or a pasted RSS URL) to a fully reconciled show in the user's library.",
+      "steps": [
+        { "from": "search",     "to": "repository", "label": "subscribe(feedUrl)", "note": "SearchViewModel calls PodcastRepository.subscribe() with the chosen feed URL." },
+        { "from": "repository", "to": "rssParser",  "label": "fetchAndParse(feedUrl)", "note": "subscribe() delegates to refreshFeed(markSubscribed = true), which asks RssParser to fetch and parse the feed." },
+        { "from": "rssParser",  "to": "okhttp",     "label": "GET feed XML", "note": "RssParser uses the shared OkHttpClient to download the raw feed." },
+        { "from": "okhttp",     "to": "rssFeeds",   "label": "HTTP request", "note": "OkHttp hits the podcast host and streams back the RSS/Atom document." },
+        { "from": "rssParser",  "to": "repository", "label": "ParsedFeed(title, author, episodes…)", "note": "Parsed metadata + episode list returns to the repository." },
+        { "from": "repository", "to": "room",       "label": "podcastDao.upsert(subscribed=true) + episode upserts", "note": "Repository reconciles the show and its episodes into Room, flagging it subscribed; known episodes keep their played/position state." },
+        { "from": "room",       "to": "library",    "label": "observeSubscriptions() Flow emits", "note": "LibraryViewModel observes a Room Flow, so the new show appears instantly without a manual refresh." },
+        { "from": "repository", "to": "snackbar",   "label": "Result<String> → confirmation", "note": "The Result is surfaced to the UI; SnackbarController shows success / error feedback." }
+      ]
+    },
+    {
+      "id": "play",
+      "title": "Play an episode",
+      "summary": "Tapping play hands an episode to the foreground media service and starts saving progress.",
+      "steps": [
+        { "from": "player",            "to": "playbackConnection", "label": "play(episode, queue)", "note": "PlayerViewModel calls PlaybackConnection.play() with the episode (and optional surrounding queue)." },
+        { "from": "playbackConnection","to": "settingsRepo",       "label": "read default + per-podcast speed", "note": "PlaybackConnection resolves the playback speed: per-podcast override if set, otherwise the user's default." },
+        { "from": "playbackConnection","to": "playbackService",    "label": "MediaController.setMediaItems(); play()", "note": "Episode(s) are converted to MediaItems and sent to PlaybackService over the MediaController session, seeking to the saved position." },
+        { "from": "playbackService",   "to": "exoplayer",          "label": "prepare + play audio", "note": "PlaybackService drives ExoPlayer and applies skip-silence / volume-boost audio effects." },
+        { "from": "playbackService",   "to": "notifications",      "label": "MediaSession notification", "note": "The MediaSession publishes lock-screen / notification transport controls." },
+        { "from": "playbackService",   "to": "room",               "label": "savePosition(id, positionMs, durationMs)", "note": "A position saver periodically writes progress back to Room so the user can resume later." },
+        { "from": "room",              "to": "home",               "label": "observeInProgress() emits", "note": "Home's \"Continue listening\" row reads the in-progress Flow and stays in sync." }
+      ]
+    },
+    {
+      "id": "download",
+      "title": "Download an episode",
+      "summary": "Offline download via a WorkManager job that survives the app being closed.",
+      "steps": [
+        { "from": "podcast",        "to": "downloadManager", "label": "enqueue(episodeId)", "note": "From the podcast / downloads UI, DownloadManager.enqueue() is called with the episode id." },
+        { "from": "downloadManager","to": "workManager",     "label": "OneTimeWorkRequest(KEY_EPISODE_ID)", "note": "DownloadManager enqueues unique work (KEEP policy) carrying the episode id as input data." },
+        { "from": "workManager",    "to": "downloadWorker",  "label": "doWork() — Wi-Fi constraint honoured", "note": "WorkManager runs EpisodeDownloadWorker when constraints (e.g. Wi-Fi-only) are met, even if the app is closed." },
+        { "from": "downloadWorker", "to": "repository",      "label": "updateDownload(DOWNLOADING)", "note": "Worker flips the episode's download state so the UI shows progress." },
+        { "from": "downloadWorker", "to": "okhttp",          "label": "stream audio bytes", "note": "Worker streams the audio file through the shared OkHttpClient, retrying transient 429/5xx errors." },
+        { "from": "okhttp",         "to": "storage",         "label": "write file", "note": "Bytes are written to app storage as the local copy." },
+        { "from": "downloadWorker", "to": "downloadNotifications", "label": "foreground progress notification", "note": "Worker runs as a foreground service with a progress notification." },
+        { "from": "downloadWorker", "to": "repository",      "label": "updateDownload(DOWNLOADED, localPath)", "note": "On success the episode is marked DOWNLOADED with its local path (FAILED / QUEUED on error)." },
+        { "from": "repository",     "to": "room",            "label": "persist downloadState", "note": "Repository writes the final state into Room." },
+        { "from": "room",           "to": "downloads",       "label": "observeDownloaded() emits", "note": "Downloads screen observes the downloaded Flow and lists the now-offline episode." }
+      ]
+    },
+    {
+      "id": "backgroundRefresh",
+      "title": "Background refresh + new-episode notification",
+      "summary": "A periodic job checks every subscription, notifies on new episodes, and can auto-download them.",
+      "steps": [
+        { "from": "feedScheduler",     "to": "workManager",  "label": "enqueueUniquePeriodicWork (every N h, Wi-Fi)", "note": "FeedRefreshScheduler schedules a periodic, network-constrained job (cancelled when the user disables background refresh)." },
+        { "from": "workManager",       "to": "feedWorker",   "label": "doWork()", "note": "WorkManager wakes FeedRefreshWorker on schedule." },
+        { "from": "feedWorker",        "to": "repository",   "label": "refreshSubscriptionsForNew()", "note": "Worker asks the repository to refresh every subscribed feed and report only genuinely new episodes." },
+        { "from": "repository",        "to": "rssParser",    "label": "fetchAndParse(each feed)", "note": "Repository re-parses each subscribed feed (via RssParser → OkHttp → host)." },
+        { "from": "repository",        "to": "room",         "label": "upsert new episodes", "note": "New episodes are written to Room; existing ones keep their state." },
+        { "from": "feedWorker",        "to": "newEpisodeNotifier", "label": "notify(new batches)", "note": "Worker hands the batches of new episodes to NewEpisodeNotifier." },
+        { "from": "newEpisodeNotifier","to": "notifications", "label": "system notification", "note": "A grouped \"new episodes\" notification is posted." },
+        { "from": "feedWorker",        "to": "downloadManager", "label": "enqueue() if podcast.autoDownload", "note": "For shows with auto-download on, the worker enqueues each new episode — handing off to the Download flow." }
+      ]
+    },
+    {
+      "id": "importOpml",
+      "title": "Import OPML",
+      "summary": "Bulk-subscribe from a standard OPML file exported by another podcast app.",
+      "steps": [
+        { "from": "settings",     "to": "storage",      "label": "pick .opml document", "note": "Settings opens the system file picker (SAF); the chosen document's InputStream is opened." },
+        { "from": "settings",     "to": "opmlManager",  "label": "import(inputStream)", "note": "SettingsViewModel passes the stream to OpmlManager.import()." },
+        { "from": "opmlManager",  "to": "repository",   "label": "subscribe(feedUrl) per entry", "note": "OpmlManager parses the outline and subscribes to each listed feed, skipping ones already subscribed." },
+        { "from": "repository",   "to": "rssParser",    "label": "fetchAndParse(feedUrl)", "note": "Each subscribe() fetches & parses that feed (RssParser → OkHttp → host)." },
+        { "from": "repository",   "to": "room",         "label": "upsert podcasts + episodes", "note": "Every imported show is reconciled into Room." },
+        { "from": "room",         "to": "library",      "label": "observeSubscriptions() emits", "note": "The whole imported library appears as the Flow emits; OpmlManager returns the count added." }
+      ]
+    },
+    {
+      "id": "exportOpml",
+      "title": "Export OPML",
+      "summary": "Write the user's subscriptions out as a portable, lock-in-free OPML file.",
+      "steps": [
+        { "from": "settings",    "to": "storage",     "label": "create .opml document", "note": "Settings asks the system for a destination document; its OutputStream is opened." },
+        { "from": "settings",    "to": "opmlManager", "label": "export(outputStream)", "note": "SettingsViewModel calls OpmlManager.export()." },
+        { "from": "opmlManager", "to": "repository",  "label": "getSubscriptionsOnce()", "note": "OpmlManager reads the current subscriptions snapshot from the repository." },
+        { "from": "repository",  "to": "room",        "label": "podcastDao query", "note": "Repository reads subscribed shows from Room." },
+        { "from": "opmlManager", "to": "storage",     "label": "write OPML XML", "note": "OpmlManager serialises the shows to OPML and writes them to the chosen file; returns the count exported." }
+      ]
+    },
+    {
+      "id": "backup",
+      "title": "Backup / Restore",
+      "summary": "A full JSON snapshot of subscriptions, listening progress, queue and settings — so a reinstall keeps everything.",
+      "steps": [
+        { "from": "settings",      "to": "backupManager", "label": "export(out) / import(in)", "note": "Settings drives BackupManager with a SAF stream for the backup file." },
+        { "from": "backupManager", "to": "room",          "label": "read/write podcasts, episodes, queue (DAOs)", "note": "BackupManager talks directly to the DAOs to dump or restore library, per-episode progress and the Up-Next queue." },
+        { "from": "backupManager", "to": "settingsRepo",  "label": "read/write settings (theme, speed…)", "note": "User preferences are included in the same snapshot via SettingsRepository." },
+        { "from": "backupManager", "to": "storage",       "label": "JSON backup document", "note": "Everything is serialised to / read from a single JSON document on disk." }
+      ]
+    },
+    {
+      "id": "discover",
+      "title": "Search / Discover podcasts",
+      "summary": "Free-text search and theme charts powered by the public iTunes APIs — no key, no account.",
+      "steps": [
+        { "from": "search",        "to": "repository",    "label": "search(term) / topPodcasts(genreId)", "note": "SearchViewModel asks the repository to search by name/author or fetch a theme's top shows." },
+        { "from": "repository",    "to": "searchService", "label": "PodcastSearchService.search()", "note": "Repository delegates to PodcastSearchService, which builds the iTunes storefront URL." },
+        { "from": "searchService", "to": "okhttp",        "label": "GET itunes.apple.com/search|lookup", "note": "The service calls iTunes over OkHttp and parses the JSON, de-duplicating by feed URL." },
+        { "from": "okhttp",        "to": "itunes",        "label": "HTTP request", "note": "OkHttp performs the request against Apple's public endpoints." },
+        { "from": "searchService", "to": "repository",    "label": "List<PodcastSearchResult>", "note": "Clean, de-duplicated results return to the repository." },
+        { "from": "repository",    "to": "search",        "label": "Result<List<…>> → UI list", "note": "SearchViewModel renders the results; each can feed the Subscribe flow." }
+      ]
+    },
+    {
+      "id": "sleepTimer",
+      "title": "Sleep timer",
+      "summary": "Stop playback after a fixed duration, or at the end of the current episode.",
+      "steps": [
+        { "from": "player",            "to": "sleepTimer",         "label": "start(durationMs) / startEndOfEpisode()", "note": "PlayerViewModel injects SleepTimer directly and arms it from the timer sheet." },
+        { "from": "sleepTimer",        "to": "player",             "label": "remainingMs / endOfEpisodeArmed StateFlow", "note": "SleepTimer exposes countdown StateFlows the Player UI displays live." },
+        { "from": "sleepTimer",        "to": "playbackConnection", "label": "pause() on expiry", "note": "When the countdown hits zero (or the episode ends), SleepTimer calls PlaybackConnection.pause()." },
+        { "from": "playbackConnection","to": "playbackService",    "label": "MediaController.pause()", "note": "The pause is relayed to the media service." },
+        { "from": "playbackService",   "to": "exoplayer",          "label": "ExoPlayer.pause()", "note": "ExoPlayer stops and the notification updates." }
+      ]
+    },
+    {
+      "id": "queue",
+      "title": "Up-Next queue",
+      "summary": "A persistent, reorderable play queue (\"Play next\" / \"Add to queue\").",
+      "steps": [
+        { "from": "queue",             "to": "repository",         "label": "addToQueueEnd / playNextInQueue / setQueueOrder", "note": "QueueViewModel mutates the queue through the repository's queue operations." },
+        { "from": "repository",        "to": "room",               "label": "queueDao writes (sortIndex)", "note": "The repository persists ordering in the Room queue table, so it survives restarts." },
+        { "from": "room",              "to": "queue",              "label": "observeQueue() emits", "note": "The Queue screen observes the queue Flow and re-renders on every change." },
+        { "from": "queue",             "to": "playbackConnection", "label": "playFromQueue(queue, startIndex)", "note": "Starting playback hands the whole ordered queue to PlaybackConnection." },
+        { "from": "playbackConnection","to": "playbackService",    "label": "setMediaItems(queue)", "note": "PlaybackService loads the queue into ExoPlayer for continuous, gapless next-up playback." }
+      ]
+    },
+    {
+      "id": "androidAuto",
+      "title": "Android Auto browse & play",
+      "summary": "The car head-unit browses Continue / Subscriptions / Downloads and plays hands-free.",
+      "steps": [
+        { "from": "androidAuto",     "to": "playbackService",  "label": "onGetLibraryRoot / onGetChildren(parentId)", "note": "Android Auto connects to PlaybackService (a MediaLibraryService) and requests the browse tree." },
+        { "from": "playbackService", "to": "mediaLibraryTree", "label": "root() / children(parentId)", "note": "PlaybackService delegates browse requests to MediaLibraryTree, after verifying the caller is trusted." },
+        { "from": "mediaLibraryTree","to": "repository",       "label": "getSubscriptionsOnce / inProgress / downloaded", "note": "The tree pulls the right episode lists from the repository for each folder." },
+        { "from": "repository",      "to": "room",             "label": "DAO queries", "note": "Repository reads from Room." },
+        { "from": "playbackService", "to": "androidAuto",      "label": "List<MediaItem> (browsable tree)", "note": "Folders + playable items are returned for the car UI to render." },
+        { "from": "androidAuto",     "to": "playbackService",  "label": "onAddMediaItems → play", "note": "Selecting an item adds it to ExoPlayer and starts playback — reusing the Play flow." }
+      ]
+    },
+    {
+      "id": "onboarding",
+      "title": "First-run onboarding",
+      "summary": "The interest picker seeds a brand-new library from iTunes theme charts.",
+      "steps": [
+        { "from": "onboarding",   "to": "repository",    "label": "topPodcasts(genreId) per picked interest", "note": "OnboardingViewModel asks the repository for top shows in each interest the user picked." },
+        { "from": "repository",   "to": "searchService", "label": "topPodcasts → iTunes charts", "note": "PodcastSearchService reads the genre chart (via OkHttp → iTunes) and returns suggested shows." },
+        { "from": "onboarding",   "to": "repository",    "label": "subscribe(feedUrl) for chosen shows", "note": "Each show the user keeps is subscribed — reusing the Subscribe flow (parse → Room)." },
+        { "from": "repository",   "to": "room",          "label": "seed library + episodes", "note": "The picked shows and their episodes are written to Room." },
+        { "from": "onboarding",   "to": "settingsRepo",  "label": "mark onboarding complete", "note": "A settings flag flips so onboarding never shows again." },
+        { "from": "room",         "to": "home",          "label": "observeLatest() emits", "note": "Home immediately shows the latest episodes from the freshly-seeded library." }
+      ]
+    }
+  ]
+}
+</script>
+
+<script>
+(function () {
+  "use strict";
+
+  var data = null;
+  var activeFlow = null;
+  var nodeEls = {};        // id -> element
+  var wires = document.getElementById("wires");
+
+  // ---- Load data: prefer external workflows.json, fall back to embedded copy ----
+  function loadData() {
+    return fetch("workflows.json", { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .catch(function () {
+        return JSON.parse(document.getElementById("embedded-data").textContent);
+      });
+  }
+
+  function el(tag, cls, html) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html != null) e.innerHTML = html;
+    return e;
+  }
+
+  function buildDiagram() {
+    document.getElementById("subtitle").textContent = data.meta.subtitle || "";
+    document.getElementById("pkg").textContent = data.meta.package || "";
+    document.getElementById("intro").textContent = data.meta.description || "";
+
+    var diagram = document.getElementById("diagram");
+    data.layers.forEach(function (layer) {
+      var wrap = el("div", "layer");
+      wrap.appendChild(el("div", "layer-label", layer.label));
+      var row = el("div", "layer-nodes");
+      data.nodes.filter(function (n) { return n.layer === layer.id; })
+        .forEach(function (n) {
+          var node = el("div", "node");
+          node.dataset.id = n.id;
+          node.appendChild(el("div", "nl", n.label));
+          node.appendChild(el("div", "ns", n.sub));
+          row.appendChild(node);
+          nodeEls[n.id] = node;
+        });
+      wrap.appendChild(row);
+      diagram.appendChild(wrap);
+    });
+
+    var list = document.getElementById("flow-list");
+    data.flows.forEach(function (f) {
+      var b = el("button", "flow-btn");
+      b.dataset.id = f.id;
+      b.appendChild(el("div", "t", f.title));
+      b.appendChild(el("div", "s", f.summary));
+      b.addEventListener("click", function () { selectFlow(f.id); });
+      list.appendChild(b);
+    });
+
+    document.getElementById("reset").addEventListener("click", clearFlow);
+  }
+
+  function clearFlow() {
+    activeFlow = null;
+    document.querySelectorAll(".flow-btn").forEach(function (b) { b.classList.remove("active"); });
+    document.getElementById("diagram").classList.remove("filtering");
+    Object.values(nodeEls).forEach(function (n) { n.classList.remove("active", "endpoint"); });
+    clearWires();
+    var steps = document.getElementById("steps");
+    steps.className = "steps empty";
+    steps.innerHTML = '<span class="hint">Pick a workflow on the left to trace it across the components.</span>';
+  }
+
+  function selectFlow(id) {
+    var flow = data.flows.find(function (f) { return f.id === id; });
+    if (!flow) return;
+    activeFlow = flow;
+
+    document.querySelectorAll(".flow-btn").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.id === id);
+    });
+
+    // Highlight involved nodes
+    document.getElementById("diagram").classList.add("filtering");
+    Object.values(nodeEls).forEach(function (n) { n.classList.remove("active", "endpoint"); });
+    var involved = {};
+    flow.steps.forEach(function (s) { involved[s.from] = true; involved[s.to] = true; });
+    Object.keys(involved).forEach(function (nid) {
+      if (nodeEls[nid]) nodeEls[nid].classList.add("active");
+    });
+    // Mark the very first source and the last destination as endpoints
+    nodeEls[flow.steps[0].from] && nodeEls[flow.steps[0].from].classList.add("endpoint");
+
+    renderSteps(flow);
+    drawWires(flow);
+  }
+
+  function renderSteps(flow) {
+    var steps = document.getElementById("steps");
+    steps.className = "steps";
+    steps.innerHTML = "";
+    steps.appendChild(el("h3", null, flow.title));
+    steps.appendChild(el("p", "flow-sum", flow.summary));
+    var ol = el("ol", "step-list");
+    flow.steps.forEach(function (s, i) {
+      var li = el("li");
+      li.dataset.idx = i;
+      var num = el("div", "step-num", String(i + 1));
+      var body = el("div");
+      var fromN = nodeName(s.from), toN = nodeName(s.to);
+      body.appendChild(el("div", "step-path",
+        "<b>" + fromN + "</b><span class='arrow'>→</span><b>" + toN + "</b>"));
+      body.appendChild(el("span", "step-label", escapeHtml(s.label)));
+      body.appendChild(el("div", "step-note", escapeHtml(s.note)));
+      li.appendChild(num);
+      li.appendChild(body);
+      li.addEventListener("mouseenter", function () { highlightStep(i, true); });
+      li.addEventListener("mouseleave", function () { highlightStep(i, false); });
+      ol.appendChild(li);
+    });
+    steps.appendChild(ol);
+  }
+
+  function nodeName(id) {
+    var n = data.nodes.find(function (x) { return x.id === id; });
+    return n ? n.label : id;
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  // ---- Wire drawing ----
+  function clearWires() {
+    Array.prototype.slice.call(wires.querySelectorAll(".wire, .badge"))
+      .forEach(function (n) { n.remove(); });
+  }
+
+  // Intersection of the segment center->target with the target rect's border.
+  function edgePoint(rect, cx, cy, tx, ty) {
+    var dx = tx - cx, dy = ty - cy;
+    var hw = rect.w / 2, hh = rect.h / 2;
+    if (dx === 0 && dy === 0) return { x: tx, y: ty };
+    var scaleX = dx !== 0 ? hw / Math.abs(dx) : Infinity;
+    var scaleY = dy !== 0 ? hh / Math.abs(dy) : Infinity;
+    var scale = Math.min(scaleX, scaleY);
+    return { x: tx - dx * scale, y: ty - dy * scale };
+  }
+
+  function rectOf(id, base) {
+    var r = nodeEls[id].getBoundingClientRect();
+    return {
+      x: r.left - base.left, y: r.top - base.top,
+      w: r.width, h: r.height,
+      cx: r.left - base.left + r.width / 2,
+      cy: r.top - base.top + r.height / 2
+    };
+  }
+
+  function drawWires(flow) {
+    clearWires();
+    var base = document.getElementById("diagram").getBoundingClientRect();
+    var SVGNS = "http://www.w3.org/2000/svg";
+
+    // Track repeated pairs so overlapping arrows fan out.
+    var pairCount = {};
+
+    flow.steps.forEach(function (s, i) {
+      var a = rectOf(s.from, base), b = rectOf(s.to, base);
+      var key = [s.from, s.to].sort().join("__");
+      var seen = pairCount[key] || 0;
+      pairCount[key] = seen + 1;
+
+      var start = edgePoint(a, b.cx, b.cy, a.cx, a.cy);
+      var end = edgePoint(b, a.cx, a.cy, b.cx, b.cy);
+
+      // Perpendicular bow so multiple arrows / long jumps don't overlap.
+      var mx = (start.x + end.x) / 2, my = (start.y + end.y) / 2;
+      var vx = end.x - start.x, vy = end.y - start.y;
+      var len = Math.hypot(vx, vy) || 1;
+      var nx = -vy / len, ny = vx / len;
+      var bow = 26 + seen * 34;
+      // Bias bow direction by horizontal travel so adjacent flows read cleanly.
+      var dir = (s.from.charCodeAt(0) % 2 === 0) ? 1 : -1;
+      if (seen % 2 === 1) dir *= -1;
+      var ctrlX = mx + nx * bow * dir, ctrlY = my + ny * bow * dir;
+
+      var d = "M" + start.x + "," + start.y + " Q" + ctrlX + "," + ctrlY + " " + end.x + "," + end.y;
+      var path = document.createElementNS(SVGNS, "path");
+      path.setAttribute("d", d);
+      path.setAttribute("class", "wire");
+      path.setAttribute("marker-end", "url(#arrow)");
+      var pathLen = Math.hypot(vx, vy) + bow; // approx for dash animation
+      path.style.setProperty("--len", pathLen);
+      path.style.animationDelay = (i * 0.08) + "s";
+      path.dataset.idx = i;
+      wires.appendChild(path);
+
+      // Numbered badge at the curve apex (t = 0.5 on quadratic).
+      var bxq = 0.25 * start.x + 0.5 * ctrlX + 0.25 * end.x;
+      var byq = 0.25 * start.y + 0.5 * ctrlY + 0.25 * end.y;
+      var g = document.createElementNS(SVGNS, "g");
+      g.setAttribute("class", "badge");
+      g.dataset.idx = i;
+      var c = document.createElementNS(SVGNS, "circle");
+      c.setAttribute("cx", bxq); c.setAttribute("cy", byq); c.setAttribute("r", 10);
+      var t = document.createElementNS(SVGNS, "text");
+      t.setAttribute("x", bxq); t.setAttribute("y", byq + 4);
+      t.setAttribute("text-anchor", "middle");
+      t.textContent = String(i + 1);
+      g.appendChild(c); g.appendChild(t);
+      wires.appendChild(g);
+
+      // Hover the badge to spotlight its step.
+      g.style.pointerEvents = "all";
+      g.style.cursor = "pointer";
+      g.addEventListener("mouseenter", function () { highlightStep(i, true); });
+      g.addEventListener("mouseleave", function () { highlightStep(i, false); });
+    });
+  }
+
+  function highlightStep(idx, on) {
+    var wire = wires.querySelector('.wire[data-idx="' + idx + '"]');
+    var badge = wires.querySelector('.badge[data-idx="' + idx + '"]');
+    var li = document.querySelector('.step-list li[data-idx="' + idx + '"]');
+    if (wire) wire.classList.toggle("hot", on);
+    if (wire) wire.setAttribute("marker-end", on ? "url(#arrow-hot)" : "url(#arrow)");
+    if (badge) badge.classList.toggle("hot", on);
+    if (li) li.classList.toggle("hot", on);
+  }
+
+  // Redraw wires when layout changes.
+  var resizeTimer;
+  window.addEventListener("resize", function () {
+    if (!activeFlow) return;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () { drawWires(activeFlow); }, 120);
+  });
+  document.querySelector(".stage-wrap").addEventListener("scroll", function () {
+    // wires are positioned inside #diagram, so they scroll with it — no redraw needed.
+  });
+
+  loadData().then(function (d) {
+    data = d;
+    buildDiagram();
+  });
+})();
+</script>
+</body>
+</html>
