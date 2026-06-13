@@ -1,31 +1,21 @@
 package ovh.battistella.ondes.playback
 
 import android.media.audiofx.LoudnessEnhancer
-import android.net.Uri
-import android.os.Bundle
-import android.os.Process
 import android.util.Log
-import androidx.core.net.toUri
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
-import androidx.media3.session.MediaConstants
 import androidx.media3.session.SessionResult
-import ovh.battistella.ondes.R
-import ovh.battistella.ondes.data.local.EpisodeEntity
 import ovh.battistella.ondes.data.repository.PodcastRepository
 import ovh.battistella.ondes.data.settings.OndesSettings
 import ovh.battistella.ondes.data.settings.SettingsRepository
 import ovh.battistella.ondes.download.DownloadManager
-import ovh.battistella.ondes.util.httpUrlOrEmpty
-import ovh.battistella.ondes.util.isHttpUrl
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
@@ -41,7 +31,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
-import java.io.File
 import javax.inject.Inject
 
 /**
@@ -59,6 +48,7 @@ class PlaybackService : MediaLibraryService() {
     @Inject lateinit var repository: PodcastRepository
     @Inject lateinit var settingsRepository: SettingsRepository
     @Inject lateinit var downloadManager: DownloadManager
+    @Inject lateinit var libraryTree: MediaLibraryTree
 
     private var mediaSession: MediaLibrarySession? = null
     private lateinit var player: ExoPlayer
@@ -191,18 +181,11 @@ class PlaybackService : MediaLibraryService() {
     // ---------------------------------------------------------------------
 
     /**
-     * The browse tree exposes the user's whole library (subscriptions, episode
-     * titles, feed URLs). The service is `exported` so Android Auto / Wear can
-     * reach it, but that also lets any installed app bind — so the content tree
-     * is gated to our own UI, the platform, and a small allowlist of known media
-     * browsers. Untrusted callers may still connect (so transport controls work)
-     * but get nothing back from the library callbacks.
+     * Thin bridge from the Media3 session callbacks to [MediaLibraryTree], which
+     * owns the actual browse content. The callback layer keeps only the cross-
+     * cutting plumbing: the untrusted-caller gate, coroutine/future bridging, and
+     * mapping results/exceptions onto [LibraryResult].
      */
-    private fun isCallerTrusted(caller: MediaSession.ControllerInfo): Boolean {
-        if (caller.uid == Process.myUid() || caller.uid == Process.SYSTEM_UID) return true
-        return caller.packageName in TRUSTED_BROWSER_PACKAGES
-    }
-
     private inner class LibraryCallback : MediaLibrarySession.Callback {
 
         override fun onGetLibraryRoot(
@@ -210,24 +193,16 @@ class PlaybackService : MediaLibraryService() {
             browser: MediaSession.ControllerInfo,
             params: LibraryParams?,
         ): ListenableFuture<LibraryResult<MediaItem>> = scope.future(Dispatchers.IO) {
-            Log.i(
-                TAG,
-                "onGetLibraryRoot: caller='${browser.packageName}' " +
-                    "recent=${params?.isRecent} suggested=${params?.isSuggested} " +
-                    "offline=${params?.isOffline}",
-            )
-            if (!isCallerTrusted(browser)) {
+            if (!libraryTree.isCallerTrusted(browser)) {
                 Log.w(TAG, "onGetLibraryRoot: denied untrusted '${browser.packageName}' uid=${browser.uid}")
                 return@future LibraryResult.ofError(SessionResult.RESULT_ERROR_PERMISSION_DENIED)
             }
-            try {
+            runCatching {
                 // Android Auto asks for a "recent" root to populate the resume /
-                // now-playing card. Hand back a dedicated root whose single child is
-                // the most recent in-progress episode so the car can offer "resume".
-                val root = if (params?.isRecent == true) recentRootItem() else rootItem()
-                LibraryResult.ofItem(root, rootParams())
-            } catch (t: Throwable) {
-                Log.e(TAG, "onGetLibraryRoot failed", t)
+                // now-playing card; the tree hands back a dedicated root for it.
+                LibraryResult.ofItem(libraryTree.root(params?.isRecent == true), libraryTree.rootParams())
+            }.getOrElse {
+                Log.e(TAG, "onGetLibraryRoot failed", it)
                 LibraryResult.ofError(SessionResult.RESULT_ERROR_UNKNOWN)
             }
         }
@@ -237,30 +212,15 @@ class PlaybackService : MediaLibraryService() {
             browser: MediaSession.ControllerInfo,
             mediaId: String,
         ): ListenableFuture<LibraryResult<MediaItem>> = scope.future(Dispatchers.IO) {
-            Log.i(TAG, "onGetItem: mediaId='$mediaId' caller='${browser.packageName}'")
-            if (!isCallerTrusted(browser)) {
+            if (!libraryTree.isCallerTrusted(browser)) {
                 return@future LibraryResult.ofError(SessionResult.RESULT_ERROR_PERMISSION_DENIED)
             }
-            try {
-                val item = when (mediaId) {
-                    ROOT_ID -> rootItem()
-                    RECENT_ROOT_ID -> recentRootItem()
-                    CONTINUE_ID -> folderItem(CONTINUE_ID, getString(R.string.continue_listening))
-                    SUBSCRIPTIONS_ID ->
-                        folderItem(SUBSCRIPTIONS_ID, getString(R.string.subscriptions_title))
-                    DOWNLOADS_ID -> folderItem(DOWNLOADS_ID, getString(R.string.nav_downloads))
-                    else -> when {
-                        mediaId.startsWith(PODCAST_PREFIX) ->
-                            repository.getSubscriptionsOnce()
-                                .firstOrNull { PODCAST_PREFIX + it.feedUrl == mediaId }
-                                ?.let { podcastItem(it.feedUrl, it.title, it.imageUrl) }
-                        else -> repository.getEpisode(mediaId)?.let(::episodeBrowseItem)
-                    }
-                }
-                if (item != null) LibraryResult.ofItem(item, null)
-                else LibraryResult.ofError(SessionResult.RESULT_ERROR_BAD_VALUE)
-            } catch (t: Throwable) {
-                Log.e(TAG, "onGetItem failed for '$mediaId'", t)
+            runCatching {
+                libraryTree.item(mediaId)
+                    ?.let { LibraryResult.ofItem(it, null) }
+                    ?: LibraryResult.ofError(SessionResult.RESULT_ERROR_BAD_VALUE)
+            }.getOrElse {
+                Log.e(TAG, "onGetItem failed for '$mediaId'", it)
                 LibraryResult.ofError(SessionResult.RESULT_ERROR_UNKNOWN)
             }
         }
@@ -273,58 +233,23 @@ class PlaybackService : MediaLibraryService() {
             pageSize: Int,
             params: LibraryParams?,
         ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = scope.future(Dispatchers.IO) {
-            Log.i(
-                TAG,
-                "onGetChildren: parent='$parentId' page=$page pageSize=$pageSize " +
-                    "caller='${browser.packageName}'",
-            )
-            if (!isCallerTrusted(browser)) {
+            if (!libraryTree.isCallerTrusted(browser)) {
                 return@future LibraryResult.ofItemList(ImmutableList.of<MediaItem>(), null)
             }
-            try {
-                val children: List<MediaItem> = when (parentId) {
-                    ROOT_ID -> listOf(
-                        folderItem(CONTINUE_ID, getString(R.string.continue_listening)),
-                        folderItem(SUBSCRIPTIONS_ID, getString(R.string.subscriptions_title)),
-                        folderItem(DOWNLOADS_ID, getString(R.string.nav_downloads)),
-                    )
-                    // Resume card: the single most recent in-progress episode, or the
-                    // newest episode if nothing is part-way through.
-                    RECENT_ROOT_ID -> listOfNotNull(
-                        (repository.getInProgressOnce().firstOrNull()
-                            ?: repository.getLatestOnce().firstOrNull())
-                            ?.let(::episodeBrowseItem),
-                    )
-                    CONTINUE_ID -> repository.getInProgressOnce().map(::episodeBrowseItem)
-                    DOWNLOADS_ID -> repository.getDownloadedOnce().map(::episodeBrowseItem)
-                    SUBSCRIPTIONS_ID -> repository.getSubscriptionsOnce()
-                        .map { podcastItem(it.feedUrl, it.title, it.imageUrl) }
-                    else -> if (parentId.startsWith(PODCAST_PREFIX)) {
-                        val feedUrl = parentId.removePrefix(PODCAST_PREFIX)
-                        repository.getEpisodesOnce(feedUrl).map(::episodeBrowseItem)
-                    } else {
-                        emptyList()
-                    }
-                }
-                Log.i(TAG, "onGetChildren: parent='$parentId' -> ${children.size} items")
-                LibraryResult.ofItemList(ImmutableList.copyOf(children), null)
-            } catch (t: Throwable) {
-                Log.e(TAG, "onGetChildren failed for '$parentId'", t)
+            runCatching {
+                LibraryResult.ofItemList(ImmutableList.copyOf(libraryTree.children(parentId)), null)
+            }.getOrElse {
+                Log.e(TAG, "onGetChildren failed for '$parentId'", it)
                 LibraryResult.ofItemList(ImmutableList.of<MediaItem>(), null)
             }
         }
 
-        /**
-         * Browser clients (Android Auto, notifications) hand us items that
-         * carry only a `mediaId`. Resolve each one back to a fully-formed,
-         * playable [MediaItem] with its audio URI and metadata.
-         */
         override fun onAddMediaItems(
             mediaSession: MediaSession,
             controller: MediaSession.ControllerInfo,
             mediaItems: List<MediaItem>,
         ): ListenableFuture<List<MediaItem>> = scope.future(Dispatchers.IO) {
-            resolve(mediaItems)
+            libraryTree.resolve(mediaItems)
         }
 
         override fun onSetMediaItems(
@@ -334,121 +259,8 @@ class PlaybackService : MediaLibraryService() {
             startIndex: Int,
             startPositionMs: Long,
         ): ListenableFuture<MediaItemsWithStartPosition> = scope.future(Dispatchers.IO) {
-            val resolved = resolve(mediaItems)
-            if (resolved.isEmpty()) {
-                return@future MediaItemsWithStartPosition(emptyList(), 0, 0L)
-            }
-            val index = (if (startIndex == C.INDEX_UNSET) 0 else startIndex)
-                .coerceIn(0, resolved.lastIndex)
-            // If the caller didn't pin a position (e.g. tapping an episode in
-            // the car), resume from the saved position in the database.
-            val position = if (startPositionMs != C.TIME_UNSET) {
-                startPositionMs
-            } else {
-                repository.getEpisode(resolved[index].mediaId)
-                    ?.positionMs?.coerceAtLeast(0) ?: 0L
-            }
-            MediaItemsWithStartPosition(resolved, index, position)
+            libraryTree.setMediaItems(mediaItems, startIndex, startPositionMs)
         }
-    }
-
-    private suspend fun resolve(items: List<MediaItem>): List<MediaItem> {
-        val resolved = items.mapNotNull { item ->
-            // Already complete (has a URI) — keep as-is.
-            if (item.localConfiguration != null) return@mapNotNull item
-            repository.getEpisode(item.mediaId)?.let(::playableItem)
-        }
-        Log.i(TAG, "resolve: ${items.size} requested -> ${resolved.size} playable")
-        return resolved
-    }
-
-    // ---------------------------------------------------------------------
-    // MediaItem builders
-    // ---------------------------------------------------------------------
-
-    private fun rootItem(): MediaItem = folderItem(ROOT_ID, getString(R.string.app_name))
-
-    /** Root requested by Android Auto for the resume / now-playing card. */
-    private fun recentRootItem(): MediaItem = folderItem(RECENT_ROOT_ID, getString(R.string.app_name))
-
-    private fun rootParams(): LibraryParams = LibraryParams.Builder()
-        .setExtras(
-            Bundle().apply {
-                putInt(
-                    MediaConstants.EXTRAS_KEY_CONTENT_STYLE_BROWSABLE,
-                    MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_LIST_ITEM,
-                )
-                putInt(
-                    MediaConstants.EXTRAS_KEY_CONTENT_STYLE_PLAYABLE,
-                    MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_LIST_ITEM,
-                )
-            }
-        )
-        .build()
-
-    private fun folderItem(id: String, title: String): MediaItem {
-        val metadata = MediaMetadata.Builder()
-            .setTitle(title)
-            .setIsBrowsable(true)
-            .setIsPlayable(false)
-            .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS)
-            .build()
-        return MediaItem.Builder().setMediaId(id).setMediaMetadata(metadata).build()
-    }
-
-    private fun podcastItem(feedUrl: String, title: String, imageUrl: String): MediaItem {
-        val metadata = MediaMetadata.Builder()
-            .setTitle(title)
-            .setArtworkUri(httpUrlOrEmpty(imageUrl).takeIf { it.isNotBlank() }?.toUri())
-            .setIsBrowsable(true)
-            .setIsPlayable(false)
-            .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST)
-            .build()
-        return MediaItem.Builder()
-            .setMediaId(PODCAST_PREFIX + feedUrl)
-            .setMediaMetadata(metadata)
-            .build()
-    }
-
-    /** A playable episode without a resolved URI — for browse results. */
-    private fun episodeBrowseItem(episode: EpisodeEntity): MediaItem {
-        val metadata = MediaMetadata.Builder()
-            .setTitle(episode.title)
-            .setArtworkUri(httpUrlOrEmpty(episode.imageUrl).takeIf { it.isNotBlank() }?.toUri())
-            .setIsBrowsable(false)
-            .setIsPlayable(true)
-            .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST_EPISODE)
-            .build()
-        return MediaItem.Builder()
-            .setMediaId(episode.id)
-            .setMediaMetadata(metadata)
-            .build()
-    }
-
-    /**
-     * A fully playable episode with its local/remote audio URI, or null if it has
-     * neither a downloaded file nor a safe http(s) source. The remote URI and the
-     * artwork (handed to SystemUI / Android Auto) are restricted to http(s) so a
-     * tampered feed can't make us open a local file:// / content:// URI.
-     */
-    private fun playableItem(episode: EpisodeEntity): MediaItem? {
-        val localUri: Uri? = episode.localFilePath
-            ?.let { path -> File(path).takeIf { it.exists() }?.let { Uri.fromFile(it) } }
-        val uri: Uri = localUri
-            ?: episode.audioUrl.takeIf { isHttpUrl(it) }?.toUri()
-            ?: return null
-        val metadata = MediaMetadata.Builder()
-            .setTitle(episode.title)
-            .setArtworkUri(httpUrlOrEmpty(episode.imageUrl).takeIf { it.isNotBlank() }?.toUri())
-            .setIsBrowsable(false)
-            .setIsPlayable(true)
-            .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST_EPISODE)
-            .build()
-        return MediaItem.Builder()
-            .setMediaId(episode.id)
-            .setUri(uri)
-            .setMediaMetadata(metadata)
-            .build()
     }
 
     // ---------------------------------------------------------------------
@@ -508,28 +320,5 @@ class PlaybackService : MediaLibraryService() {
 
         /** Volume-boost gain in millibels (~10 dB) when "Boost volume" is on. */
         private const val BOOST_GAIN_MB = 1_000
-
-        /**
-         * Packages allowed to browse the media library tree, beyond callers that
-         * already share our uid or the system uid. Covers Android Auto, the
-         * Assistant, Wear OS and the platform's media controls.
-         */
-        private val TRUSTED_BROWSER_PACKAGES = setOf(
-            "com.google.android.projection.gearhead", // Android Auto
-            "com.google.android.autosimulator",       // Android Auto head-unit simulator
-            "com.google.android.carassistant",        // Automotive assistant
-            "com.google.android.googlequicksearchbox", // Google Assistant
-            "com.google.android.wearable.app",        // Wear OS companion
-            "com.android.systemui",                   // System media controls
-            "com.google.android.bluetooth",           // Bluetooth media controls
-        )
-
-        // Browse-tree node ids.
-        private const val ROOT_ID = "[root]"
-        private const val RECENT_ROOT_ID = "[recent]"
-        private const val CONTINUE_ID = "[continue]"
-        private const val SUBSCRIPTIONS_ID = "[subscriptions]"
-        private const val DOWNLOADS_ID = "[downloads]"
-        private const val PODCAST_PREFIX = "[podcast]"
     }
 }
