@@ -1,7 +1,6 @@
 package ovh.battistella.ondes.playback
 
 import android.media.audiofx.LoudnessEnhancer
-import android.net.Uri
 import android.os.Bundle
 import android.os.Process
 import android.util.Log
@@ -19,13 +18,11 @@ import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import androidx.media3.session.MediaConstants
 import androidx.media3.session.SessionResult
 import ovh.battistella.ondes.R
-import ovh.battistella.ondes.data.local.EpisodeEntity
 import ovh.battistella.ondes.data.repository.PodcastRepository
 import ovh.battistella.ondes.data.settings.OndesSettings
 import ovh.battistella.ondes.data.settings.SettingsRepository
 import ovh.battistella.ondes.download.DownloadManager
 import ovh.battistella.ondes.util.httpUrlOrEmpty
-import ovh.battistella.ondes.util.isHttpUrl
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
@@ -41,7 +38,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
-import java.io.File
 import javax.inject.Inject
 
 /**
@@ -254,7 +250,7 @@ class PlaybackService : MediaLibraryService() {
                             repository.getSubscriptionsOnce()
                                 .firstOrNull { PODCAST_PREFIX + it.feedUrl == mediaId }
                                 ?.let { podcastItem(it.feedUrl, it.title, it.imageUrl) }
-                        else -> repository.getEpisode(mediaId)?.let(::episodeBrowseItem)
+                        else -> repository.getEpisode(mediaId)?.let(MediaItems::browsable)
                     }
                 }
                 if (item != null) LibraryResult.ofItem(item, null)
@@ -293,15 +289,15 @@ class PlaybackService : MediaLibraryService() {
                     RECENT_ROOT_ID -> listOfNotNull(
                         (repository.getInProgressOnce().firstOrNull()
                             ?: repository.getLatestOnce().firstOrNull())
-                            ?.let(::episodeBrowseItem),
+                            ?.let(MediaItems::browsable),
                     )
-                    CONTINUE_ID -> repository.getInProgressOnce().map(::episodeBrowseItem)
-                    DOWNLOADS_ID -> repository.getDownloadedOnce().map(::episodeBrowseItem)
+                    CONTINUE_ID -> repository.getInProgressOnce().map(MediaItems::browsable)
+                    DOWNLOADS_ID -> repository.getDownloadedOnce().map(MediaItems::browsable)
                     SUBSCRIPTIONS_ID -> repository.getSubscriptionsOnce()
                         .map { podcastItem(it.feedUrl, it.title, it.imageUrl) }
                     else -> if (parentId.startsWith(PODCAST_PREFIX)) {
                         val feedUrl = parentId.removePrefix(PODCAST_PREFIX)
-                        repository.getEpisodesOnce(feedUrl).map(::episodeBrowseItem)
+                        repository.getEpisodesOnce(feedUrl).map(MediaItems::browsable)
                     } else {
                         emptyList()
                     }
@@ -356,7 +352,7 @@ class PlaybackService : MediaLibraryService() {
         val resolved = items.mapNotNull { item ->
             // Already complete (has a URI) — keep as-is.
             if (item.localConfiguration != null) return@mapNotNull item
-            repository.getEpisode(item.mediaId)?.let(::playableItem)
+            repository.getEpisode(item.mediaId)?.let(MediaItems::playable)
         }
         Log.i(TAG, "resolve: ${items.size} requested -> ${resolved.size} playable")
         return resolved
@@ -406,47 +402,6 @@ class PlaybackService : MediaLibraryService() {
             .build()
         return MediaItem.Builder()
             .setMediaId(PODCAST_PREFIX + feedUrl)
-            .setMediaMetadata(metadata)
-            .build()
-    }
-
-    /** A playable episode without a resolved URI — for browse results. */
-    private fun episodeBrowseItem(episode: EpisodeEntity): MediaItem {
-        val metadata = MediaMetadata.Builder()
-            .setTitle(episode.title)
-            .setArtworkUri(httpUrlOrEmpty(episode.imageUrl).takeIf { it.isNotBlank() }?.toUri())
-            .setIsBrowsable(false)
-            .setIsPlayable(true)
-            .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST_EPISODE)
-            .build()
-        return MediaItem.Builder()
-            .setMediaId(episode.id)
-            .setMediaMetadata(metadata)
-            .build()
-    }
-
-    /**
-     * A fully playable episode with its local/remote audio URI, or null if it has
-     * neither a downloaded file nor a safe http(s) source. The remote URI and the
-     * artwork (handed to SystemUI / Android Auto) are restricted to http(s) so a
-     * tampered feed can't make us open a local file:// / content:// URI.
-     */
-    private fun playableItem(episode: EpisodeEntity): MediaItem? {
-        val localUri: Uri? = episode.localFilePath
-            ?.let { path -> File(path).takeIf { it.exists() }?.let { Uri.fromFile(it) } }
-        val uri: Uri = localUri
-            ?: episode.audioUrl.takeIf { isHttpUrl(it) }?.toUri()
-            ?: return null
-        val metadata = MediaMetadata.Builder()
-            .setTitle(episode.title)
-            .setArtworkUri(httpUrlOrEmpty(episode.imageUrl).takeIf { it.isNotBlank() }?.toUri())
-            .setIsBrowsable(false)
-            .setIsPlayable(true)
-            .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST_EPISODE)
-            .build()
-        return MediaItem.Builder()
-            .setMediaId(episode.id)
-            .setUri(uri)
             .setMediaMetadata(metadata)
             .build()
     }
