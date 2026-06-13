@@ -1,0 +1,218 @@
+{
+  "meta": {
+    "app": "Ondes",
+    "subtitle": "Component & workflow map",
+    "description": "Every node below is a real package/component in the app (ovh.battistella.ondes.*). Pick a workflow on the left to light up the components it touches and see, step by step, what each one hands to the next.",
+    "package": "ovh.battistella.ondes"
+  },
+  "layers": [
+    { "id": "ui", "label": "UI · Compose screens + ViewModels (ui/*)" },
+    { "id": "repository", "label": "Repository · single source of truth (data/repository, data/settings)" },
+    { "id": "services", "label": "Services · playback / sync / download / import-export (playback, sync, download, data/opml, data/backup)" },
+    { "id": "data", "label": "Data sources (data/local, data/remote)" },
+    { "id": "platform", "label": "Platform & external systems" }
+  ],
+  "nodes": [
+    { "id": "home",          "label": "Home",            "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "library",       "label": "Library",         "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "podcast",       "label": "Podcast",         "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "search",        "label": "Search · Discover","sub": "Screen + ViewModel",       "layer": "ui" },
+    { "id": "player",        "label": "Player",          "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "downloads",     "label": "Downloads",       "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "queue",         "label": "Up-Next Queue",   "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "settings",      "label": "Settings",        "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "onboarding",    "label": "Onboarding",      "sub": "Screen + ViewModel",        "layer": "ui" },
+    { "id": "snackbar",      "label": "SnackbarController","sub": "common",                   "layer": "ui" },
+
+    { "id": "repository",    "label": "PodcastRepository","sub": "data/repository",           "layer": "repository" },
+    { "id": "settingsRepo",  "label": "SettingsRepository","sub": "data/settings",            "layer": "repository" },
+
+    { "id": "playbackConnection", "label": "PlaybackConnection", "sub": "playback · MediaController bridge", "layer": "services" },
+    { "id": "playbackService",    "label": "PlaybackService",    "sub": "playback · MediaLibraryService",    "layer": "services" },
+    { "id": "sleepTimer",         "label": "SleepTimer",         "sub": "playback",                          "layer": "services" },
+    { "id": "mediaLibraryTree",   "label": "MediaLibraryTree",   "sub": "playback · browse tree",            "layer": "services" },
+    { "id": "downloadManager",    "label": "DownloadManager",    "sub": "download",                          "layer": "services" },
+    { "id": "downloadWorker",     "label": "EpisodeDownloadWorker","sub": "download · Worker",               "layer": "services" },
+    { "id": "downloadNotifications","label": "DownloadNotifications","sub": "download",                      "layer": "services" },
+    { "id": "feedScheduler",      "label": "FeedRefreshScheduler","sub": "sync",                             "layer": "services" },
+    { "id": "feedWorker",         "label": "FeedRefreshWorker",  "sub": "sync · Worker",                     "layer": "services" },
+    { "id": "newEpisodeNotifier", "label": "NewEpisodeNotifier", "sub": "sync",                              "layer": "services" },
+    { "id": "opmlManager",        "label": "OpmlManager",        "sub": "data/opml",                         "layer": "services" },
+    { "id": "backupManager",      "label": "BackupManager",      "sub": "data/backup",                       "layer": "services" },
+
+    { "id": "room",          "label": "Room Database",   "sub": "data/local · DAOs + Entities", "layer": "data" },
+    { "id": "searchService", "label": "PodcastSearchService","sub": "data/remote",              "layer": "data" },
+    { "id": "rssParser",     "label": "RssParser",       "sub": "data/remote",                  "layer": "data" },
+
+    { "id": "workManager",   "label": "WorkManager",     "sub": "AndroidX background jobs",   "layer": "platform" },
+    { "id": "okhttp",        "label": "OkHttp",          "sub": "HTTP client (di/AppModule)", "layer": "platform" },
+    { "id": "exoplayer",     "label": "ExoPlayer · MediaSession","sub": "Media3",             "layer": "platform" },
+    { "id": "androidAuto",   "label": "Android Auto",    "sub": "external media browser",     "layer": "platform" },
+    { "id": "notifications", "label": "System Notifications","sub": "Android OS",             "layer": "platform" },
+    { "id": "storage",       "label": "Device Storage",  "sub": "app files / SAF documents",  "layer": "platform" },
+    { "id": "itunes",        "label": "iTunes API",      "sub": "itunes.apple.com",           "layer": "platform" },
+    { "id": "rssFeeds",      "label": "RSS Feeds",       "sub": "podcast hosts",              "layer": "platform" }
+  ],
+  "flows": [
+    {
+      "id": "subscribe",
+      "title": "Subscribe to a podcast",
+      "summary": "From a search result (or a pasted RSS URL) to a fully reconciled show in the user's library.",
+      "steps": [
+        { "from": "search",     "to": "repository", "label": "subscribe(feedUrl)", "note": "SearchViewModel calls PodcastRepository.subscribe() with the chosen feed URL." },
+        { "from": "repository", "to": "rssParser",  "label": "fetchAndParse(feedUrl)", "note": "subscribe() delegates to refreshFeed(markSubscribed = true), which asks RssParser to fetch and parse the feed." },
+        { "from": "rssParser",  "to": "okhttp",     "label": "GET feed XML", "note": "RssParser uses the shared OkHttpClient to download the raw feed." },
+        { "from": "okhttp",     "to": "rssFeeds",   "label": "HTTP request", "note": "OkHttp hits the podcast host and streams back the RSS/Atom document." },
+        { "from": "rssParser",  "to": "repository", "label": "ParsedFeed(title, author, episodes…)", "note": "Parsed metadata + episode list returns to the repository." },
+        { "from": "repository", "to": "room",       "label": "podcastDao.upsert(subscribed=true) + episode upserts", "note": "Repository reconciles the show and its episodes into Room, flagging it subscribed; known episodes keep their played/position state." },
+        { "from": "room",       "to": "library",    "label": "observeSubscriptions() Flow emits", "note": "LibraryViewModel observes a Room Flow, so the new show appears instantly without a manual refresh." },
+        { "from": "repository", "to": "snackbar",   "label": "Result<String> → confirmation", "note": "The Result is surfaced to the UI; SnackbarController shows success / error feedback." }
+      ]
+    },
+    {
+      "id": "play",
+      "title": "Play an episode",
+      "summary": "Tapping play hands an episode to the foreground media service and starts saving progress.",
+      "steps": [
+        { "from": "player",            "to": "playbackConnection", "label": "play(episode, queue)", "note": "PlayerViewModel calls PlaybackConnection.play() with the episode (and optional surrounding queue)." },
+        { "from": "playbackConnection","to": "settingsRepo",       "label": "read default + per-podcast speed", "note": "PlaybackConnection resolves the playback speed: per-podcast override if set, otherwise the user's default." },
+        { "from": "playbackConnection","to": "playbackService",    "label": "MediaController.setMediaItems(); play()", "note": "Episode(s) are converted to MediaItems and sent to PlaybackService over the MediaController session, seeking to the saved position." },
+        { "from": "playbackService",   "to": "exoplayer",          "label": "prepare + play audio", "note": "PlaybackService drives ExoPlayer and applies skip-silence / volume-boost audio effects." },
+        { "from": "playbackService",   "to": "notifications",      "label": "MediaSession notification", "note": "The MediaSession publishes lock-screen / notification transport controls." },
+        { "from": "playbackService",   "to": "room",               "label": "savePosition(id, positionMs, durationMs)", "note": "A position saver periodically writes progress back to Room so the user can resume later." },
+        { "from": "room",              "to": "home",               "label": "observeInProgress() emits", "note": "Home's \"Continue listening\" row reads the in-progress Flow and stays in sync." }
+      ]
+    },
+    {
+      "id": "download",
+      "title": "Download an episode",
+      "summary": "Offline download via a WorkManager job that survives the app being closed.",
+      "steps": [
+        { "from": "podcast",        "to": "downloadManager", "label": "enqueue(episodeId)", "note": "From the podcast / downloads UI, DownloadManager.enqueue() is called with the episode id." },
+        { "from": "downloadManager","to": "workManager",     "label": "OneTimeWorkRequest(KEY_EPISODE_ID)", "note": "DownloadManager enqueues unique work (KEEP policy) carrying the episode id as input data." },
+        { "from": "workManager",    "to": "downloadWorker",  "label": "doWork() — Wi-Fi constraint honoured", "note": "WorkManager runs EpisodeDownloadWorker when constraints (e.g. Wi-Fi-only) are met, even if the app is closed." },
+        { "from": "downloadWorker", "to": "repository",      "label": "updateDownload(DOWNLOADING)", "note": "Worker flips the episode's download state so the UI shows progress." },
+        { "from": "downloadWorker", "to": "okhttp",          "label": "stream audio bytes", "note": "Worker streams the audio file through the shared OkHttpClient, retrying transient 429/5xx errors." },
+        { "from": "okhttp",         "to": "storage",         "label": "write file", "note": "Bytes are written to app storage as the local copy." },
+        { "from": "downloadWorker", "to": "downloadNotifications", "label": "foreground progress notification", "note": "Worker runs as a foreground service with a progress notification." },
+        { "from": "downloadWorker", "to": "repository",      "label": "updateDownload(DOWNLOADED, localPath)", "note": "On success the episode is marked DOWNLOADED with its local path (FAILED / QUEUED on error)." },
+        { "from": "repository",     "to": "room",            "label": "persist downloadState", "note": "Repository writes the final state into Room." },
+        { "from": "room",           "to": "downloads",       "label": "observeDownloaded() emits", "note": "Downloads screen observes the downloaded Flow and lists the now-offline episode." }
+      ]
+    },
+    {
+      "id": "backgroundRefresh",
+      "title": "Background refresh + new-episode notification",
+      "summary": "A periodic job checks every subscription, notifies on new episodes, and can auto-download them.",
+      "steps": [
+        { "from": "feedScheduler",     "to": "workManager",  "label": "enqueueUniquePeriodicWork (every N h, Wi-Fi)", "note": "FeedRefreshScheduler schedules a periodic, network-constrained job (cancelled when the user disables background refresh)." },
+        { "from": "workManager",       "to": "feedWorker",   "label": "doWork()", "note": "WorkManager wakes FeedRefreshWorker on schedule." },
+        { "from": "feedWorker",        "to": "repository",   "label": "refreshSubscriptionsForNew()", "note": "Worker asks the repository to refresh every subscribed feed and report only genuinely new episodes." },
+        { "from": "repository",        "to": "rssParser",    "label": "fetchAndParse(each feed)", "note": "Repository re-parses each subscribed feed (via RssParser → OkHttp → host)." },
+        { "from": "repository",        "to": "room",         "label": "upsert new episodes", "note": "New episodes are written to Room; existing ones keep their state." },
+        { "from": "feedWorker",        "to": "newEpisodeNotifier", "label": "notify(new batches)", "note": "Worker hands the batches of new episodes to NewEpisodeNotifier." },
+        { "from": "newEpisodeNotifier","to": "notifications", "label": "system notification", "note": "A grouped \"new episodes\" notification is posted." },
+        { "from": "feedWorker",        "to": "downloadManager", "label": "enqueue() if podcast.autoDownload", "note": "For shows with auto-download on, the worker enqueues each new episode — handing off to the Download flow." }
+      ]
+    },
+    {
+      "id": "importOpml",
+      "title": "Import OPML",
+      "summary": "Bulk-subscribe from a standard OPML file exported by another podcast app.",
+      "steps": [
+        { "from": "settings",     "to": "storage",      "label": "pick .opml document", "note": "Settings opens the system file picker (SAF); the chosen document's InputStream is opened." },
+        { "from": "settings",     "to": "opmlManager",  "label": "import(inputStream)", "note": "SettingsViewModel passes the stream to OpmlManager.import()." },
+        { "from": "opmlManager",  "to": "repository",   "label": "subscribe(feedUrl) per entry", "note": "OpmlManager parses the outline and subscribes to each listed feed, skipping ones already subscribed." },
+        { "from": "repository",   "to": "rssParser",    "label": "fetchAndParse(feedUrl)", "note": "Each subscribe() fetches & parses that feed (RssParser → OkHttp → host)." },
+        { "from": "repository",   "to": "room",         "label": "upsert podcasts + episodes", "note": "Every imported show is reconciled into Room." },
+        { "from": "room",         "to": "library",      "label": "observeSubscriptions() emits", "note": "The whole imported library appears as the Flow emits; OpmlManager returns the count added." }
+      ]
+    },
+    {
+      "id": "exportOpml",
+      "title": "Export OPML",
+      "summary": "Write the user's subscriptions out as a portable, lock-in-free OPML file.",
+      "steps": [
+        { "from": "settings",    "to": "storage",     "label": "create .opml document", "note": "Settings asks the system for a destination document; its OutputStream is opened." },
+        { "from": "settings",    "to": "opmlManager", "label": "export(outputStream)", "note": "SettingsViewModel calls OpmlManager.export()." },
+        { "from": "opmlManager", "to": "repository",  "label": "getSubscriptionsOnce()", "note": "OpmlManager reads the current subscriptions snapshot from the repository." },
+        { "from": "repository",  "to": "room",        "label": "podcastDao query", "note": "Repository reads subscribed shows from Room." },
+        { "from": "opmlManager", "to": "storage",     "label": "write OPML XML", "note": "OpmlManager serialises the shows to OPML and writes them to the chosen file; returns the count exported." }
+      ]
+    },
+    {
+      "id": "backup",
+      "title": "Backup / Restore",
+      "summary": "A full JSON snapshot of subscriptions, listening progress, queue and settings — so a reinstall keeps everything.",
+      "steps": [
+        { "from": "settings",      "to": "backupManager", "label": "export(out) / import(in)", "note": "Settings drives BackupManager with a SAF stream for the backup file." },
+        { "from": "backupManager", "to": "room",          "label": "read/write podcasts, episodes, queue (DAOs)", "note": "BackupManager talks directly to the DAOs to dump or restore library, per-episode progress and the Up-Next queue." },
+        { "from": "backupManager", "to": "settingsRepo",  "label": "read/write settings (theme, speed…)", "note": "User preferences are included in the same snapshot via SettingsRepository." },
+        { "from": "backupManager", "to": "storage",       "label": "JSON backup document", "note": "Everything is serialised to / read from a single JSON document on disk." }
+      ]
+    },
+    {
+      "id": "discover",
+      "title": "Search / Discover podcasts",
+      "summary": "Free-text search and theme charts powered by the public iTunes APIs — no key, no account.",
+      "steps": [
+        { "from": "search",        "to": "repository",    "label": "search(term) / topPodcasts(genreId)", "note": "SearchViewModel asks the repository to search by name/author or fetch a theme's top shows." },
+        { "from": "repository",    "to": "searchService", "label": "PodcastSearchService.search()", "note": "Repository delegates to PodcastSearchService, which builds the iTunes storefront URL." },
+        { "from": "searchService", "to": "okhttp",        "label": "GET itunes.apple.com/search|lookup", "note": "The service calls iTunes over OkHttp and parses the JSON, de-duplicating by feed URL." },
+        { "from": "okhttp",        "to": "itunes",        "label": "HTTP request", "note": "OkHttp performs the request against Apple's public endpoints." },
+        { "from": "searchService", "to": "repository",    "label": "List<PodcastSearchResult>", "note": "Clean, de-duplicated results return to the repository." },
+        { "from": "repository",    "to": "search",        "label": "Result<List<…>> → UI list", "note": "SearchViewModel renders the results; each can feed the Subscribe flow." }
+      ]
+    },
+    {
+      "id": "sleepTimer",
+      "title": "Sleep timer",
+      "summary": "Stop playback after a fixed duration, or at the end of the current episode.",
+      "steps": [
+        { "from": "player",            "to": "sleepTimer",         "label": "start(durationMs) / startEndOfEpisode()", "note": "PlayerViewModel injects SleepTimer directly and arms it from the timer sheet." },
+        { "from": "sleepTimer",        "to": "player",             "label": "remainingMs / endOfEpisodeArmed StateFlow", "note": "SleepTimer exposes countdown StateFlows the Player UI displays live." },
+        { "from": "sleepTimer",        "to": "playbackConnection", "label": "pause() on expiry", "note": "When the countdown hits zero (or the episode ends), SleepTimer calls PlaybackConnection.pause()." },
+        { "from": "playbackConnection","to": "playbackService",    "label": "MediaController.pause()", "note": "The pause is relayed to the media service." },
+        { "from": "playbackService",   "to": "exoplayer",          "label": "ExoPlayer.pause()", "note": "ExoPlayer stops and the notification updates." }
+      ]
+    },
+    {
+      "id": "queue",
+      "title": "Up-Next queue",
+      "summary": "A persistent, reorderable play queue (\"Play next\" / \"Add to queue\").",
+      "steps": [
+        { "from": "queue",             "to": "repository",         "label": "addToQueueEnd / playNextInQueue / setQueueOrder", "note": "QueueViewModel mutates the queue through the repository's queue operations." },
+        { "from": "repository",        "to": "room",               "label": "queueDao writes (sortIndex)", "note": "The repository persists ordering in the Room queue table, so it survives restarts." },
+        { "from": "room",              "to": "queue",              "label": "observeQueue() emits", "note": "The Queue screen observes the queue Flow and re-renders on every change." },
+        { "from": "queue",             "to": "playbackConnection", "label": "playFromQueue(queue, startIndex)", "note": "Starting playback hands the whole ordered queue to PlaybackConnection." },
+        { "from": "playbackConnection","to": "playbackService",    "label": "setMediaItems(queue)", "note": "PlaybackService loads the queue into ExoPlayer for continuous, gapless next-up playback." }
+      ]
+    },
+    {
+      "id": "androidAuto",
+      "title": "Android Auto browse & play",
+      "summary": "The car head-unit browses Continue / Subscriptions / Downloads and plays hands-free.",
+      "steps": [
+        { "from": "androidAuto",     "to": "playbackService",  "label": "onGetLibraryRoot / onGetChildren(parentId)", "note": "Android Auto connects to PlaybackService (a MediaLibraryService) and requests the browse tree." },
+        { "from": "playbackService", "to": "mediaLibraryTree", "label": "root() / children(parentId)", "note": "PlaybackService delegates browse requests to MediaLibraryTree, after verifying the caller is trusted." },
+        { "from": "mediaLibraryTree","to": "repository",       "label": "getSubscriptionsOnce / inProgress / downloaded", "note": "The tree pulls the right episode lists from the repository for each folder." },
+        { "from": "repository",      "to": "room",             "label": "DAO queries", "note": "Repository reads from Room." },
+        { "from": "playbackService", "to": "androidAuto",      "label": "List<MediaItem> (browsable tree)", "note": "Folders + playable items are returned for the car UI to render." },
+        { "from": "androidAuto",     "to": "playbackService",  "label": "onAddMediaItems → play", "note": "Selecting an item adds it to ExoPlayer and starts playback — reusing the Play flow." }
+      ]
+    },
+    {
+      "id": "onboarding",
+      "title": "First-run onboarding",
+      "summary": "The interest picker seeds a brand-new library from iTunes theme charts.",
+      "steps": [
+        { "from": "onboarding",   "to": "repository",    "label": "topPodcasts(genreId) per picked interest", "note": "OnboardingViewModel asks the repository for top shows in each interest the user picked." },
+        { "from": "repository",   "to": "searchService", "label": "topPodcasts → iTunes charts", "note": "PodcastSearchService reads the genre chart (via OkHttp → iTunes) and returns suggested shows." },
+        { "from": "onboarding",   "to": "repository",    "label": "subscribe(feedUrl) for chosen shows", "note": "Each show the user keeps is subscribed — reusing the Subscribe flow (parse → Room)." },
+        { "from": "repository",   "to": "room",          "label": "seed library + episodes", "note": "The picked shows and their episodes are written to Room." },
+        { "from": "onboarding",   "to": "settingsRepo",  "label": "mark onboarding complete", "note": "A settings flag flips so onboarding never shows again." },
+        { "from": "room",         "to": "home",          "label": "observeLatest() emits", "note": "Home immediately shows the latest episodes from the freshly-seeded library." }
+      ]
+    }
+  ]
+}
